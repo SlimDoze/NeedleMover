@@ -31,7 +31,7 @@ export default function AU_SU_EmailPassword() {
         placeholder={Constant_FormInfoText.InputName} 
         value={emailValue}  
         onChangeText={(text) => setEmail(text)}  
-      />
+      /> 
 
       <UserInput
         placeholder={Constant_FormInfoText.InputHandle}
