@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, Button, StyleSheet, TouchableOpacity, Image, Dimensions, Platform } from "react-native";
 import UserInput from "@/components/UserInput";
-import {Constant_FormInfoText} from "@/constants/Forms/LoginRegisterInfoText";
+import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
 
 // Bildschirmgröße ermitteln
 const { width } = Dimensions.get("window");
@@ -44,7 +44,7 @@ export default function AU_SU_EmailPassword() {
       />
 
       {/* Button zum Absenden der Daten */}
-      <Button title={SubmitButtonText}  />
+      <Button title={SubmitButtonText} onPress={() => {}} />
     </View>
   );
 }
