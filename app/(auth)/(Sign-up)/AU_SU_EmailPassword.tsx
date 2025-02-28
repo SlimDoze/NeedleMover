@@ -1,37 +1,33 @@
 import React, { useState } from "react";
-import { View, Text, Button, StyleSheet, TouchableOpacity, Image, Dimensions, Platform } from "react-native";
+import { View, Text, Button, StyleSheet, TouchableOpacity, Image, Dimensions, Switch } from "react-native";
 import UserInput from "@/components/UserInput";
 import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
+import { router } from "expo-router";
 
-
+// Bildschirmgröße ermitteln
 const { width } = Dimensions.get("window");
 
-const LoginText = "LoginText";
-const LogMsg = "Profile picture clicked";
-const SubmitButtonText = "Submit";
-
 export default function AU_SU_EmailPassword() {
-  const [emailValue, setEmail] = useState("");  
-  const [handleValue, setHandle] = useState(""); 
+  const [emailValue, setEmail] = useState("");  // Zustand für die E-Mail-Adresse
+  const [handleValue, setHandle] = useState(""); // Zustand für den Benutzernamen (Handle)
 
   const handleProfilePictureClick = () => {
-    console.log(LogMsg);
+    console.log("Profile picture clicked");
   };
 
   return (
     <View style={styles.container}>
+      <Text style={styles.Title}>{Constant_FormInfoText.NeedleMover}</Text>
 
       <TouchableOpacity onPress={handleProfilePictureClick}>
         <Image source={require("../../../assets/images/profilepictureicon.png")} style={styles.profilePicture} />
       </TouchableOpacity>
 
-      <Text style={styles.title}>{LoginText}</Text>
-
       <UserInput 
         placeholder={Constant_FormInfoText.InputName} 
         value={emailValue}  
         onChangeText={(text) => setEmail(text)}  
-      /> 
+      />
 
       <UserInput
         placeholder={Constant_FormInfoText.InputHandle}
@@ -39,7 +35,9 @@ export default function AU_SU_EmailPassword() {
         onChangeText={(text) => setHandle(text)}  
       />
 
-      <Button title={SubmitButtonText} onPress={() => {}} />
+      <View style={styles.Button}>
+        <Button title={Constant_FormInfoText.Continue} onPress={() => {router.push('/(auth)/(Sign-up)/AU_SU_EmailVerification')}} />
+      </View>
     </View>
   );
 }
@@ -47,16 +45,16 @@ export default function AU_SU_EmailPassword() {
 const styles = StyleSheet.create({
   container: {
     flex: 1, 
-    justifyContent: "flex-end",  
+    justifyContent: "center",  
     alignItems: "center",  
     backgroundColor: "#f5f5f5", 
     paddingHorizontal: width * 0.1, 
     paddingBottom: 40,
   },
-  title: {
-    fontSize: 22,  
+  Title: {
+    fontSize: 50,  
     fontWeight: "bold",  
-    marginBottom: 20,  
+    marginBottom: 20  
   },
   profilePicture: {
     width: 100,  
@@ -64,13 +62,10 @@ const styles = StyleSheet.create({
     borderRadius: 50,  
     marginBottom: 10,  
   },
-  inputWrapper: {
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    marginBottom: 15,
-    height: 40,
-    justifyContent: "center",
+  Button: {
+    marginTop: 10, // Reduced space between toggle and button
+    width: "100%", // Adjust the width as needed
+    maxWidth: 400, // Set a maximum width
+    paddingHorizontal: 20,
   },
 });
