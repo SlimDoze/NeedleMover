@@ -3,7 +3,7 @@ import { View, Text, Button, StyleSheet, TouchableOpacity, Image, Dimensions, Pl
 import UserInput from "@/components/UserInput";
 import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
 
-// Bildschirmgröße ermitteln
+
 const { width } = Dimensions.get("window");
 
 const LoginText = "LoginText";
@@ -11,8 +11,8 @@ const LogMsg = "Profile picture clicked";
 const SubmitButtonText = "Submit";
 
 export default function AU_SU_EmailPassword() {
-  const [emailValue, setEmail] = useState("");  // Zustand für die E-Mail-Adresse
-  const [handleValue, setHandle] = useState(""); // Zustand für den Benutzernamen (Handle)
+  const [emailValue, setEmail] = useState("");  
+  const [handleValue, setHandle] = useState(""); 
 
   const handleProfilePictureClick = () => {
     console.log(LogMsg);
@@ -21,29 +21,24 @@ export default function AU_SU_EmailPassword() {
   return (
     <View style={styles.container}>
 
-      {/* Profilbild */}
       <TouchableOpacity onPress={handleProfilePictureClick}>
         <Image source={require("../../../assets/images/profilepictureicon.png")} style={styles.profilePicture} />
       </TouchableOpacity>
 
-      {/* Login Titel */}
       <Text style={styles.title}>{LoginText}</Text>
 
-      {/* Eingabefelder für Name */}
       <UserInput 
         placeholder={Constant_FormInfoText.InputName} 
-        value={emailValue}  // Setzt den Wert auf den aktuellen Email-Status
-        onChangeText={(text) => setEmail(text)}  // Wenn sich der Text ändert, wird setEmail aufgerufen
+        value={emailValue}  
+        onChangeText={(text) => setEmail(text)}  
       />
 
-      {/* Eingabefelder für Handle */}
       <UserInput
         placeholder={Constant_FormInfoText.InputHandle}
-        value={handleValue}  // Setzt den Wert auf den aktuellen Handle-Status
-        onChangeText={(text) => setHandle(text)}  // Wenn sich der Text ändert, wird setHandle aufgerufen
+        value={handleValue}  
+        onChangeText={(text) => setHandle(text)}  
       />
 
-      {/* Button zum Absenden der Daten */}
       <Button title={SubmitButtonText} onPress={() => {}} />
     </View>
   );
@@ -51,23 +46,23 @@ export default function AU_SU_EmailPassword() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, // Füllt den gesamten Bildschirm
-    justifyContent: "flex-end",  // Zentriert alle Elemente vertikal
-    alignItems: "center",  // Zentriert alle Elemente horizontal
-    backgroundColor: "#f5f5f5", // Hintergrundfarbe
-    paddingHorizontal: width * 0.1, // Dynamisches Padding basierend auf der Bildschirmgröße
+    flex: 1, 
+    justifyContent: "flex-end",  
+    alignItems: "center",  
+    backgroundColor: "#f5f5f5", 
+    paddingHorizontal: width * 0.1, 
     paddingBottom: 40,
   },
   title: {
-    fontSize: 22,  // Schriftgröße
-    fontWeight: "bold",  // Fettgedruckt
-    marginBottom: 20,  // Abstand nach unten
+    fontSize: 22,  
+    fontWeight: "bold",  
+    marginBottom: 20,  
   },
   profilePicture: {
-    width: 100,  // Feste Breite für das Profilbild
-    height: 100,  // Feste Höhe für das Profilbild
-    borderRadius: 50,  // Rundes Profilbild
-    marginBottom: 10,  // Abstand nach unten
+    width: 100,  
+    height: 100,  
+    borderRadius: 50,  
+    marginBottom: 10,  
   },
   inputWrapper: {
     borderColor: "#ccc",

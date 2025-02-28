@@ -4,7 +4,7 @@ import React from 'react'
 const AU_LI_UsernameAvatar = () => {
   return (
     <View>
-      <Text>AU_LI_UsernameAvatar</Text>
+      <Text></Text>
     </View>
   )
 }

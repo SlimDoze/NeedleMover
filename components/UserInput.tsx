@@ -6,7 +6,7 @@ interface CustomInputProps {
   value?: string;
   onChangeText?: (text: string) => void;
   secureTextEntry?: boolean;
-  style?: object; // Erlaubt styling von außen
+  style?: object; 
 }
 
 const UserInput: React.FC<CustomInputProps> = ({
@@ -24,7 +24,7 @@ const UserInput: React.FC<CustomInputProps> = ({
   };
 
   return (
-    <View style={[styles.container, style]}> {/* Externe Styles erlauben */}
+    <View style={[styles.container, style]}>
       <TextInput
         style={styles.input}
         placeholder={placeholder}
@@ -41,7 +41,7 @@ export default UserInput;
 
 const styles = StyleSheet.create({
   container: {
-    width: Platform.OS === "web" ? "50%" : "90%", // Web = 50%, Mobile = 90%
+    width: Platform.OS === "web" ? "50%" : "90%", 
     marginVertical: 10,
   },
   input: {

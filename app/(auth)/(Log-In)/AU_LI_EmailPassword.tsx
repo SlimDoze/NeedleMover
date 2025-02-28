@@ -4,7 +4,7 @@ import React from 'react'
 const AU_LI_EmailPassword = () => {
   return (
     <View>
-      <Text>AU_LI_EmailPassword</Text>
+      <Text></Text>
     </View>
   )
 }

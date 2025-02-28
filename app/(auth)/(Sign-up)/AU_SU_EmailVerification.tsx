@@ -4,7 +4,7 @@ import React from 'react'
 const AU_SU_EmailVerification = () => {
   return (
     <View>
-      <Text>AU_SU_EmailVerification</Text>
+      <Text></Text>
     </View>
   )
 }
