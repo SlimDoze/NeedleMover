@@ -1,16 +1,21 @@
 import React, { useState } from "react";
 import { View, Text, Button, StyleSheet, TouchableOpacity, Image, Dimensions, Platform } from "react-native";
 import UserInput from "@/components/UserInput";
+import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
 
 // Bildschirmgröße ermitteln
 const { width } = Dimensions.get("window");
+
+const LoginText = "LoginText";
+const LogMsg = "Profile picture clicked";
+const SubmitButtonText = "Submit";
 
 export default function AU_SU_EmailPassword() {
   const [emailValue, setEmail] = useState("");  // Zustand für die E-Mail-Adresse
   const [handleValue, setHandle] = useState(""); // Zustand für den Benutzernamen (Handle)
 
   const handleProfilePictureClick = () => {
-    console.log("Profile picture clicked");
+    console.log(LogMsg);
   };
 
   return (
@@ -22,24 +27,24 @@ export default function AU_SU_EmailPassword() {
       </TouchableOpacity>
 
       {/* Login Titel */}
-      <Text style={styles.title}>Login</Text>
+      <Text style={styles.title}>{LoginText}</Text>
 
       {/* Eingabefelder für Name */}
       <UserInput 
-        placeholder="Enter your Name"
+        placeholder={Constant_FormInfoText.InputName} 
         value={emailValue}  // Setzt den Wert auf den aktuellen Email-Status
         onChangeText={(text) => setEmail(text)}  // Wenn sich der Text ändert, wird setEmail aufgerufen
       />
 
       {/* Eingabefelder für Handle */}
       <UserInput
-        placeholder="Enter your Handle"
+        placeholder={Constant_FormInfoText.InputHandle}
         value={handleValue}  // Setzt den Wert auf den aktuellen Handle-Status
         onChangeText={(text) => setHandle(text)}  // Wenn sich der Text ändert, wird setHandle aufgerufen
       />
 
       {/* Button zum Absenden der Daten */}
-      <Button title="Submit" onPress={() => console.log("Email:", emailValue, "Handle:", handleValue)} />
+      <Button title={SubmitButtonText} onPress={() => {}} />
     </View>
   );
 }
