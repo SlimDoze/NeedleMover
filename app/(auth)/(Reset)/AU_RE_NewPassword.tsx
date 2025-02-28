@@ -1,12 +1,12 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 
-const _layput = () => {
+const AU_RE_NewPassword = () => {
   return (
     <View>
-      <Text>_layput</Text>
+      <Text>AU_RE_NewPassword</Text>
     </View>
   )
 }
 
-export default _layput
+export default AU_RE_NewPassword
