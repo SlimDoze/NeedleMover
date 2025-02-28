@@ -15,7 +15,10 @@ const index = () => {
           <Text style={styles.buttonText}>Sign-Up-2</Text>
     </TouchableOpacity>
     
-    <TouchableOpacity style={styles.button} onPress={() => router.push('/AU_LI_EmailPassword')}>
+
+
+    {/* To Be Implemented */}
+    {/* <TouchableOpacity style={styles.button} onPress={() => router.push('/AU_LI_EmailPassword')}>
           <Text style={styles.buttonText}>Log-In-1</Text>
     </TouchableOpacity>
 
@@ -33,7 +36,7 @@ const index = () => {
 
     <TouchableOpacity style={styles.button} onPress={() => router.push('/AU_RE_NewPassword')}>
           <Text style={styles.buttonText}>Reset-3</Text>
-    </TouchableOpacity>
+    </TouchableOpacity> */}
     </View>
   )
 }
