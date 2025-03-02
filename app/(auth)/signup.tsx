@@ -37,15 +37,19 @@ export default function SignUpScreen() {
     }
   };
 
-  const handleRegister = () => {
-    if (validateSecondStep(userData)) {
-      // Implement registration logic
-      console.log('Registration Data:', userData);
-      Alert.alert('Success', 'Registration completed!');
-      // Optionally navigate to next screen
-      // router.push('/home');
-    }
-  };
+ 
+const handleSignUp = () => {
+  if (validateSecondStep(userData)) {
+    // Implement registration logic
+    console.log('Registration Data:', userData);
+    Alert.alert('Success', 'Registration completed!', [
+      {
+        text: 'OK',
+        onPress: () => router.replace('../(teams)/selection')
+      }
+    ]);
+  }
+};
 
   const handleProfilePictureClick = () => {
     console.log("Profile picture clicked");
@@ -124,7 +128,7 @@ export default function SignUpScreen() {
           <View style={styles.Button}>
             <Button 
               title={Constant_FormInfoText.Register} 
-              onPress={handleRegister} 
+              onPress={handleSignUp} 
             />
           </View>
 

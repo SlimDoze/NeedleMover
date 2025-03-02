@@ -41,14 +41,14 @@ export default function LoginScreen() {
       });
       
       // Navigate to teams screen after successful login
-    //   router.replace('/teams'); //TODO
+      router.replace('../(teams)/selection');
     } else {
       alert('Please enter email and password');
     }
   };
 
   const navigateToResetPassword = () => {
-    router.push('/reset');
+    // router.push('/reset');
   };
 
   // Funktion für den Zurück-Button
