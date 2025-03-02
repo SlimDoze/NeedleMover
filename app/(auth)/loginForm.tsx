@@ -57,7 +57,7 @@ export default function LoginScreen() {
 
       <TouchableOpacity onPress={handleProfilePictureClick}>
         <Image 
-          source={require("../../../assets/images/profilepictureicon.png")} 
+          source={require("../../assets/images/ProfilePictureIcon.png")} 
           style={styles.profilePicture} 
         />
       </TouchableOpacity>

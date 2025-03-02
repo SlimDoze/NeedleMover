@@ -152,7 +152,7 @@ export default function ResetPasswordWorkflow() {
 
       <TouchableOpacity onPress={() => console.log("Profile picture clicked")}>
         <Image 
-          source={require("../../../assets/images/profilepictureicon.png")} 
+          source={require("../../assets/images/ProfilePictureIcon.png")} 
           style={styles.profilePicture} 
         />
       </TouchableOpacity>
