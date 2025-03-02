@@ -6,7 +6,7 @@ import UserInput from "@/components/General/UserInput";
 import { createSignupFormManager } from "@/lib/LIB_Authentification";
 import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
 import { View, Text, Button, StyleSheet, TouchableOpacity, Image, Dimensions, Switch, Alert } from "react-native";
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons'; // Füge diese Zeile hinzu
 
 // Bildschirmgröße ermitteln
 const { width } = Dimensions.get("window");
@@ -33,7 +33,7 @@ export default function SignUpScreen() {
 
   const prevStep = () => {
     if (formStep > 1) {
-      setFormStep(prev => prev - 1);  
+      setFormStep(prev => prev - 1);
     }
   };
 
@@ -51,15 +51,27 @@ export default function SignUpScreen() {
     console.log("Profile picture clicked");
   };
 
+  // Funktion für den Zurück-Button
+  const handleGoBack = () => {
+    if (formStep > 1) {
+      prevStep();
+    } else {
+      router.back();
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
+      
+      {/* Zurück-Button */}
       <TouchableOpacity 
         style={styles.backButton} 
-        onPress={prevStep}
->
-  <AntDesign name="arrowleft" size={24} color="black" />
-</TouchableOpacity>
+        onPress={handleGoBack}
+      >
+        <AntDesign name="arrowleft" size={24} color="black" />
+      </TouchableOpacity>
+      
       <Text style={styles.Title}>{Constant_FormInfoText.NeedleMover}</Text>
 
       <TouchableOpacity onPress={handleProfilePictureClick}>
@@ -163,10 +175,11 @@ const styles = StyleSheet.create({
     maxWidth: 400, 
     paddingHorizontal: 20,
   },
+  // Neuer Style für den Zurück-Button
   backButton: {
     position: 'absolute',
     top: 50,
     left: 20,
     zIndex: 10,
-},
+  },
 });

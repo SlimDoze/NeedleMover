@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
@@ -7,7 +6,7 @@ import UserInput from "@/components/General/UserInput";
 import { AppColors } from "@/constants/AppColors";
 import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
 import { validateEmail } from "@/lib/LIB_Authentification";
-
+import { AntDesign } from '@expo/vector-icons'; // Füge diese Zeile hinzu
 import { 
   View, 
   Text, 
@@ -79,6 +78,15 @@ export default function ResetPasswordFlow() {
     console.log('Password reset successful');
     Alert.alert('Success', 'Your password has been reset');
     router.replace('/loginForm');
+  };
+
+  // Funktion für den Zurück-Button
+  const handleGoBack = () => {
+    if (step > 1) {
+      setPageTwo(step - 1);
+    } else {
+      router.back();
+    }
   };
 
   const renderEmailPage = () => (
@@ -154,6 +162,15 @@ export default function ResetPasswordFlow() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
+      
+      {/* Zurück-Button */}
+      <TouchableOpacity 
+        style={styles.backButton} 
+        onPress={handleGoBack}
+      >
+        <AntDesign name="arrowleft" size={24} color="black" />
+      </TouchableOpacity>
+      
       <Text style={styles.Title}>{Constant_FormInfoText.NeedleMover}</Text>
 
       <TouchableOpacity onPress={() => console.log("Profile picture clicked")}>
@@ -222,5 +239,12 @@ const styles = StyleSheet.create({
     marginTop: 15,
     color: AppColors.primary,
     textDecorationLine: 'underline',
+  },
+  // Neuer Style für den Zurück-Button
+  backButton: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 10,
   },
 });
