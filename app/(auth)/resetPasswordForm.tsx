@@ -1,4 +1,13 @@
 import React, { useState } from "react";
+
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
+import { useRouter } from "expo-router";
+import UserInput from "@/components/General/UserInput";
+import { AppColors } from "@/constants/AppColors";
+import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
+import { validateEmail } from "@/lib/LIB_Authentification";
+
 import { 
   View, 
   Text, 
@@ -10,62 +19,59 @@ import {
   TextInput,
   Alert
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
-import { useRouter } from "expo-router";
-import UserInput from "@/components/General/UserInput";
-import { AppColors } from "@/constants/AppColors";
-import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
-import { validateEmail } from "@/lib/LIB_signUpForm";
 
+// Bildschirmgröße ermitteln
 const { width } = Dimensions.get("window");
 
-export default function ResetPasswordWorkflow() {
+export default function ResetPasswordFlow() {
   const router = useRouter();
-  const [step, setStep] = useState(1);
+  const [step, setPageTwo] = useState(1);
   const [email, setEmail] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Simulated verification code generation (would be backend in real app)
+  // Verification Code Generation (would be backend in real app)
   const generateVerificationCode = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
   };
 
+  // Checks if Email is valid
   const handleEmailSubmit = () => {
     if (!validateEmail(email)) {
       Alert.alert('Invalid Email', 'Please enter a valid email address');
       return;
     }
 
-    // Simulate sending verification code
+   // Generates Code and sends it to the email
     const code = generateVerificationCode();
     console.log(`Verification code sent to ${email}: ${code}`);
     
     // In a real app, you'd call a backend endpoint to send the email
     Alert.alert('Verification Code Sent', 'Check your email for the 6-digit code');
-    setStep(2);
+
+    // Switches the page to the next step
+    setPageTwo(2);
   };
 
-  const handleVerifyCode = () => {
-    // In a real app, verify against backend-generated code
+  const checkVerificationCode = () => {
+    // In a real app, Gegenprüfung des Codes mit dem Backend
     if (verificationCode.length === 6) {
-      setStep(3);
+      setPageTwo(3);
     } else {
       Alert.alert('Invalid Code', 'Please enter the 6-digit code sent to your email');
     }
   };
 
-  const handleResetPassword = () => {
-    // Validate new password
+  const ValidateNewPassword = () => {
+    // Neues Password Validieren
     if (newPassword !== confirmPassword) {
       Alert.alert('Password Mismatch', 'Passwords do not match');
       return;
     }
 
     if (newPassword.length < 6) {
-      Alert.alert('Weak Password', 'Password must be at least 6 characters');
+      Alert.alert('Weak Password', 'Password must be at least 6 characters long');
       return;
     }
 
@@ -75,7 +81,7 @@ export default function ResetPasswordWorkflow() {
     router.replace('/loginForm');
   };
 
-  const renderEmailStep = () => (
+  const renderEmailPage = () => (
     <View style={styles.stepContainer}>
       <Text style={styles.description}>
         Enter the email address associated with your account
@@ -94,7 +100,7 @@ export default function ResetPasswordWorkflow() {
     </View>
   );
 
-  const renderVerificationStep = () => (
+  const renderVerificationPage = () => (
     <View style={styles.stepContainer}>
       <Text style={styles.description}>
         Enter the 6-digit verification code sent to {email}
@@ -110,16 +116,16 @@ export default function ResetPasswordWorkflow() {
       <View style={styles.Button}>
         <Button 
           title="Verify Code" 
-          onPress={handleVerifyCode} 
+          onPress={checkVerificationCode} 
         />
       </View>
-      <TouchableOpacity onPress={() => setStep(1)}>
+      <TouchableOpacity onPress={() => setPageTwo(1)}>
         <Text style={styles.resendText}>Resend Code</Text>
       </TouchableOpacity>
     </View>
   );
 
-  const renderNewPasswordStep = () => (
+  const renderNewPasswordPage = () => (
     <View style={styles.stepContainer}>
       <Text style={styles.description}>
         Create a new password for your account
@@ -139,7 +145,7 @@ export default function ResetPasswordWorkflow() {
       <View style={styles.Button}>
         <Button 
           title="Reset Password" 
-          onPress={handleResetPassword} 
+          onPress={ValidateNewPassword} 
         />
       </View>
     </View>
@@ -157,9 +163,9 @@ export default function ResetPasswordWorkflow() {
         />
       </TouchableOpacity>
 
-      {step === 1 && renderEmailStep()}
-      {step === 2 && renderVerificationStep()}
-      {step === 3 && renderNewPasswordStep()}
+      {step === 1 && renderEmailPage()}
+      {step === 2 && renderVerificationPage()}
+      {step === 3 && renderNewPasswordPage()}
     </SafeAreaView>
   );
 }

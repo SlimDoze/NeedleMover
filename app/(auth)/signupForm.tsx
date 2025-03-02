@@ -1,22 +1,12 @@
 import React, { useState } from "react";
-import { 
-  View, 
-  Text, 
-  Button, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Image, 
-  Dimensions, 
-  Switch, 
-  Alert 
-} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
-
 import UserInput from "@/components/General/UserInput";
-import { createSignupFormManager } from "@/lib/LIB_signUpForm";
+import { createSignupFormManager } from "@/lib/LIB_Authentification";
 import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
+import { View, Text, Button, StyleSheet, TouchableOpacity, Image, Dimensions, Switch, Alert } from "react-native";
+import { AntDesign } from '@expo/vector-icons';
 
 // Bildschirmgröße ermitteln
 const { width } = Dimensions.get("window");
@@ -43,7 +33,7 @@ export default function SignUpScreen() {
 
   const prevStep = () => {
     if (formStep > 1) {
-      setFormStep(prev => prev - 1);
+      setFormStep(prev => prev - 1);  
     }
   };
 
@@ -64,6 +54,12 @@ export default function SignUpScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
+      <TouchableOpacity 
+        style={styles.backButton} 
+        onPress={prevStep}
+>
+  <AntDesign name="arrowleft" size={24} color="black" />
+</TouchableOpacity>
       <Text style={styles.Title}>{Constant_FormInfoText.NeedleMover}</Text>
 
       <TouchableOpacity onPress={handleProfilePictureClick}>
@@ -167,4 +163,10 @@ const styles = StyleSheet.create({
     maxWidth: 400, 
     paddingHorizontal: 20,
   },
+  backButton: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 10,
+},
 });
