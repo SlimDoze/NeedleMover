@@ -1,4 +1,12 @@
 import React, { useState } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
+import { useRouter } from "expo-router";
+import UserInput from "@/components/General/UserInput";
+import { AppColors } from "@/constants/AppColors";
+import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
+import { AntDesign } from '@expo/vector-icons'; // Füge diese Zeile hinzu
+
 import { 
   View, 
   Text, 
@@ -9,13 +17,6 @@ import {
   Dimensions, 
   Switch 
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
-import { useRouter } from "expo-router";
-
-import UserInput from "@/components/General/UserInput";
-import { AppColors } from "@/constants/AppColors";
-import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
 
 // Bildschirmgröße ermitteln
 const { width } = Dimensions.get("window");
@@ -31,9 +32,9 @@ export default function LoginScreen() {
   };
 
   const handleLogin = () => {
-    // Add validation logic here
+    // Text Input Validation Logic
     if (emailValue.trim() && passwordValue.trim()) {
-      // Implement login logic
+      // Data Transfer to Backend
       console.log('Login attempt with:', {
         email: emailValue,
         rememberMe: isRememberMe
@@ -47,27 +48,44 @@ export default function LoginScreen() {
   };
 
   const navigateToResetPassword = () => {
-    router.push('/resetPasswordForm');
+    router.push('/reset');
+  };
+
+  // Funktion für den Zurück-Button
+  const handleGoBack = () => {
+    router.back();
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
+      
+      {/* Zurück-Button */}
+      <TouchableOpacity 
+        style={styles.backButton} 
+        onPress={handleGoBack}
+      >
+        <AntDesign name="arrowleft" size={24} color="black" />
+      </TouchableOpacity>
+      
       <Text style={styles.Title}>{Constant_FormInfoText.NeedleMover}</Text>
 
+      {/* Profile Picture */}
       <TouchableOpacity onPress={handleProfilePictureClick}>
         <Image 
-          source={require("../../../assets/images/profilepictureicon.png")} 
+          source={require("../../assets/images/ProfilePictureIcon.png")} 
           style={styles.profilePicture} 
         />
       </TouchableOpacity>
 
+      {/* Email Input */}
       <UserInput 
         placeholder={Constant_FormInfoText.InputEmail} 
         value={emailValue}  
         onChangeText={(text) => setEmail(text)}  
       />
 
+      {/* Password Input */}
       <UserInput
         placeholder={Constant_FormInfoText.InputPassword}
         value={passwordValue}  
@@ -75,6 +93,7 @@ export default function LoginScreen() {
         secureTextEntry
       />
 
+      {/* Login Button */}
       <View style={styles.Button}>
         <Button 
           title="Log In" 
@@ -82,6 +101,7 @@ export default function LoginScreen() {
         />
       </View>
 
+      {/* InfoText + Toggle Container */}
       <View style={styles.switchContainer}>
         <Text style={styles.switchText}>Remember Me</Text>
         <Switch
@@ -135,5 +155,12 @@ const styles = StyleSheet.create({
     marginTop: 15,
     color: AppColors.primary,
     textDecorationLine: 'underline',
+  },
+  // Neuer Style für den Zurück-Button
+  backButton: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 10,
   },
 });

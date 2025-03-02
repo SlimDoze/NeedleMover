@@ -13,7 +13,7 @@ export default function JoinTeamScreen() {
   const handleJoinTeam = () => {
     // Implement team joining logic here
     // After joining the team, navigate to the team home
-    router.replace('/teams');
+    // router.replace('/teams');
   };
 
   return (
