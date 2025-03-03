@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -91,6 +91,13 @@ export default function TeamSelectionScreen() {
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
   const [scrollOffset, setScrollOffset] = useState(0);
+  const [contentHeight, setContentHeight] = useState(0);
+  const [scrollViewHeight, setScrollViewHeight] = useState(0);
+  const [cardItems, setCardItems] = useState<TeamCardItem[]>([]);
+
+  useEffect(() => {
+    setCardItems(determineTeamCards());
+  }, []);
 
   // Determine whether to show create team card
   const determineTeamCards = (): TeamCardItem[] => {
@@ -132,6 +139,15 @@ export default function TeamSelectionScreen() {
 
   const navigateToTeam = (teamId: string) => {
     router.push(`../(teams)/${teamId}`);
+  };
+
+  const onLayout = (event: any) => {
+    const { height } = event.nativeEvent.layout;
+    setScrollViewHeight(height);
+  };
+
+  const onContentSizeChange = (width: number, height: number) => {
+    setContentHeight(height);
   };
 
   const renderCreateTeamCard = () => (
@@ -186,6 +202,9 @@ export default function TeamSelectionScreen() {
       return null;
     }
 
+    const isLastCard = index === cardItems.length - 1;
+    const maxScrollPosition = contentHeight - scrollViewHeight;
+
     // Regular team card rendering logic
     const scale = scrollY.interpolate({
       inputRange: [
@@ -207,8 +226,23 @@ export default function TeamSelectionScreen() {
       extrapolate: 'clamp'
     });
 
-    // Determine if it's the first card and no scrolling has occurred
+    // Special handling for the first and last card
     const isInitialState = index === 0 && scrollOffset === 0;
+    const isActiveLastCard = isLastCard && scrollOffset >= maxScrollPosition * 0.85;
+
+    // If this is the last card and we're near the bottom of the scroll view,
+    // ensure only the last card is fully highlighted
+    let cardScale = scale;
+    let cardOpacity = opacity;
+    
+    if (isActiveLastCard) {
+      cardScale = new Animated.Value(1);
+      cardOpacity = new Animated.Value(1);
+    } else if (isLastCard && scrollOffset > (index - 0.5) * CARD_HEIGHT) {
+      // Handle case where we're scrolling through the last card but not at the bottom
+      cardScale = scale;
+      cardOpacity = opacity;
+    }
 
     return (
       <Animated.View 
@@ -218,9 +252,9 @@ export default function TeamSelectionScreen() {
           { 
             backgroundColor: team.color,
             transform: [{ 
-              scale: isInitialState ? 1 : scale 
+              scale: isInitialState ? 1 : cardScale 
             }],
-            opacity: isInitialState ? 1 : opacity,
+            opacity: isInitialState ? 1 : cardOpacity,
           }
         ]}
       >
@@ -286,15 +320,17 @@ export default function TeamSelectionScreen() {
         style={styles.scrollView}
         contentContainerStyle={[
           styles.scrollViewContent,
-          { paddingBottom: height * 0.3 }
+          { paddingBottom: height * 0.5 } // Increased bottom padding
         ]}
         onScroll={handleScroll}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         snapToInterval={CARD_HEIGHT * 0.9}
         decelerationRate="fast"
+        onLayout={onLayout}
+        onContentSizeChange={onContentSizeChange}
       >
-        {determineTeamCards().map(renderTeamCard)}
+        {cardItems.map(renderTeamCard)}
       </Animated.ScrollView>
 
       <View style={styles.footer}>
