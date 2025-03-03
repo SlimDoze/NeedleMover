@@ -1,5 +1,5 @@
 // app/(teams)/selection.tsx
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   Animated,
   PanResponder,
   Platform,
+  ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -20,11 +21,16 @@ const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.85;
 const CARD_HEIGHT = height * 0.55;
 
+// Define platform-specific styles outside the component
+const androidStyles = Platform.OS === 'android' 
+  ? { renderToHardwareTextureAndroid: true } as ViewStyle
+  : {};
+
 // Mock data for teams
 const mockTeams = [
   {
     id: '1',
-    name: 'Beats Collective',
+    name: 'Team #1',
     description: 'Hip hop production team focused on creating radio-ready instrumentals',
     memberCount: 5,
     lastActive: '2 hours ago',
@@ -42,7 +48,7 @@ const mockTeams = [
   },
   {
     id: '3',
-    name: 'Electronic Vibes',
+    name: 'Drum Collective',
     description: 'EDM production team specializing in house and techno tracks',
     memberCount: 3,
     lastActive: '3 days ago',
@@ -55,6 +61,7 @@ export default function TeamSelectionScreen() {
   const router = useRouter();
   const [teams] = useState(mockTeams);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   
   const position = useRef(new Animated.ValueXY()).current;
   const rotation = position.x.interpolate({
@@ -63,29 +70,14 @@ export default function TeamSelectionScreen() {
     extrapolate: 'clamp',
   });
 
-  const navigateToTeam = useCallback(() => {
-    // Navigate to the selected team
-    router.push(`../(teams)/${teams[currentIndex].id}`);
-  }, [currentIndex, router, teams]);
-
-  const navigateToCreateTeam = () => {
-    router.push('../(teams)/create');
-  };
-
-  const navigateToJoinTeam = () => {
-    router.push('../(teams)/join');
-  };
-
+  // PanResponder neu erstellen, wenn sich currentIndex ändert
   const panResponder = useRef(
     PanResponder.create({
-      // Erhöhen Sie die Empfindlichkeit
-      onStartShouldSetPanResponder: () => true,
-      onStartShouldSetPanResponderCapture: () => true,
+      onStartShouldSetPanResponder: () => !isTransitioning,
       onMoveShouldSetPanResponder: (_, gestureState) => 
-        Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5,
+        !isTransitioning && (Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5),
       
       onPanResponderGrant: () => {
-        // In neueren React Native Versionen können wir offset direkt setzen
         position.extractOffset();
       },
       
@@ -95,37 +87,36 @@ export default function TeamSelectionScreen() {
       ),
       
       onPanResponderRelease: (_, gestureState) => {
-        // Offset zurücksetzen
         position.flattenOffset();
         
-        // Schwellenwert für Swipes
-        const swipeThreshold = width * 0.25; // 25% der Bildschirmbreite
+        const swipeThreshold = width * 0.25;
         
         if (gestureState.dx > swipeThreshold) {
-          // Nach rechts geswiped - zum Team navigieren
+          setIsTransitioning(true);
           Animated.timing(position, {
             toValue: { x: width, y: 0 },
             duration: 250,
             useNativeDriver: true,
           }).start(() => {
             navigateToTeam();
-            // Position nach der Navigation zurücksetzen
             position.setValue({ x: 0, y: 0 });
+            setIsTransitioning(false);
           });
         } else if (gestureState.dx < -swipeThreshold) {
-          // Nach links geswiped - nächste Karte
+          setIsTransitioning(true);
           Animated.timing(position, {
             toValue: { x: -width, y: 0 },
             duration: 250,
             useNativeDriver: true,
           }).start(() => {
             const nextIndex = (currentIndex + 1) % teams.length;
-            setCurrentIndex(nextIndex);
-            // Position nach der Indexänderung zurücksetzen
             position.setValue({ x: 0, y: 0 });
+            setCurrentIndex(nextIndex);
+            setTimeout(() => {
+              setIsTransitioning(false);
+            }, 100);
           });
         } else {
-          // Zurück zur Ausgangsposition
           Animated.spring(position, {
             toValue: { x: 0, y: 0 },
             friction: 5,
@@ -136,64 +127,71 @@ export default function TeamSelectionScreen() {
     })
   ).current;
 
+  // Setze Position zurück wenn sich Index ändert
+  useEffect(() => {
+    position.setValue({ x: 0, y: 0 });
+  }, [currentIndex]);
+
+  const navigateToTeam = () => {
+    router.push(`../(teams)/${teams[currentIndex].id}`);
+  };
+
+  const navigateToCreateTeam = () => {
+    router.push('../(teams)/create');
+  };
+
+  const navigateToJoinTeam = () => {
+    router.push('../(teams)/join');
+  };
+
   const renderCards = () => {
-    return teams.map((team, index) => {
-      // Nur aktuelle und nächste Karte rendern
-      if (index < currentIndex || index > currentIndex + 1) return null;
-
-      const isCurrentCard = index === currentIndex;
-      
-      // Platform-spezifische Style-Optimierungen
-      const platformStyles = Platform.OS === 'android' ? { renderToHardwareTextureAndroid: true } : {};
-      
-      const cardStyle = isCurrentCard
-        ? {
-            transform: [
-              { translateX: position.x },
-              { translateY: position.y },
-              { rotate: rotation },
-            ],
-            zIndex: 1,
-            ...platformStyles,
-          }
-        : {
-            transform: [
-              { scale: 0.95 },
-              { translateY: 10 },
-            ],
-            zIndex: 0,
-          };
-
-      return (
+    // Array für alle zu rendernden Karten
+    const cards = [];
+    
+    // Aktuelle Karte
+    if (currentIndex < teams.length) {
+      const currentTeam = teams[currentIndex];
+      cards.push(
         <Animated.View
-          key={team.id}
-          style={[styles.card, cardStyle]}
-          {...(isCurrentCard ? panResponder.panHandlers : {})}
+          key={`current-${currentIndex}`}
+          style={[
+            styles.card,
+            androidStyles,
+            {
+              transform: [
+                { translateX: position.x },
+                { translateY: position.y },
+                { rotate: rotation },
+              ],
+              zIndex: 2,
+            },
+          ]}
+          {...panResponder.panHandlers}
         >
-          <View style={[styles.teamImageContainer, { backgroundColor: team.color }]}>
-            <Image source={team.image} style={styles.teamImage} />
+          <View style={[styles.teamImageContainer, { backgroundColor: currentTeam.color }]}>
+            <Image source={currentTeam.image} style={styles.teamImage} />
             <TouchableOpacity style={styles.infoButton}>
               <Ionicons name="information-circle-outline" size={28} color="#fff" />
             </TouchableOpacity>
           </View>
           
           <View style={styles.cardContent}>
-            <Text style={styles.teamName}>{team.name}</Text>
-            <Text style={styles.teamDescription}>{team.description}</Text>
+            <Text style={styles.teamName}>{currentTeam.name}</Text>
+            <Text style={styles.teamDescription}>{currentTeam.description}</Text>
             
             <View style={styles.teamStats}>
               <View style={styles.statItem}>
                 <Ionicons name="people" size={18} color={AppColors.text.muted} />
-                <Text style={styles.statText}>{team.memberCount} members</Text>
+                <Text style={styles.statText}>{currentTeam.memberCount} members</Text>
               </View>
               <View style={styles.statItem}>
                 <Ionicons name="time-outline" size={18} color={AppColors.text.muted} />
-                <Text style={styles.statText}>Active {team.lastActive}</Text>
+                <Text style={styles.statText}>Active {currentTeam.lastActive}</Text>
               </View>
             </View>
 
             <TouchableOpacity 
-              style={[styles.openButton, { backgroundColor: team.color }]}
+              style={[styles.openButton, { backgroundColor: currentTeam.color }]}
               onPress={navigateToTeam}
             >
               <Text style={styles.openButtonText}>Open Team</Text>
@@ -201,7 +199,60 @@ export default function TeamSelectionScreen() {
           </View>
         </Animated.View>
       );
-    });
+    }
+
+    // Nächste Karte
+    const nextIndex = (currentIndex + 1) % teams.length;
+    if (nextIndex !== currentIndex) {
+      const nextTeam = teams[nextIndex];
+      cards.push(
+        <Animated.View
+          key={`next-${nextIndex}`}
+          style={[
+            styles.card, 
+            {
+              transform: [
+                { scale: 0.95 },
+                { translateY: 10 },
+              ],
+              zIndex: 1,
+            }
+          ]}
+        >
+          <View style={[styles.teamImageContainer, { backgroundColor: nextTeam.color }]}>
+            <Image source={nextTeam.image} style={styles.teamImage} />
+            <TouchableOpacity style={styles.infoButton}>
+              <Ionicons name="information-circle-outline" size={28} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.cardContent}>
+            <Text style={styles.teamName}>{nextTeam.name}</Text>
+            <Text style={styles.teamDescription}>{nextTeam.description}</Text>
+            
+            <View style={styles.teamStats}>
+              <View style={styles.statItem}>
+                <Ionicons name="people" size={18} color={AppColors.text.muted} />
+                <Text style={styles.statText}>{nextTeam.memberCount} members</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Ionicons name="time-outline" size={18} color={AppColors.text.muted} />
+                <Text style={styles.statText}>Active {nextTeam.lastActive}</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity 
+              style={[styles.openButton, { backgroundColor: nextTeam.color }]}
+              onPress={() => {}}
+            >
+              <Text style={styles.openButtonText}>Open Team</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      );
+    }
+
+    return cards;
   };
 
   return (

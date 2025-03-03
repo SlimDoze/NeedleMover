@@ -1,9 +1,12 @@
-// app/(teams)/_layout.tsx
+// app/(teams)/[id]/_layout.tsx
 import React from 'react';
-import { Stack } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { AppColors } from '@/constants/AppColors';
 
-export default function TeamsLayout() {
+export default function TeamDetailLayout() {
+  const { id } = useLocalSearchParams();
+  const teamId = Array.isArray(id) ? id[0] : id || '';
+
   return (
     <Stack
       screenOptions={{
@@ -21,22 +24,21 @@ export default function TeamsLayout() {
       }}
     >
       <Stack.Screen 
-        name="selection" 
+        name="index"
         options={{ 
-          headerShown: false,
+          title: `Team ${teamId}`,
         }} 
       />
       <Stack.Screen 
-        name="create" 
+        name="create-space"
         options={{ 
-          title: 'Create Team',
-          presentation: 'modal',
+          title: 'Create Space',
         }} 
       />
       <Stack.Screen 
-        name="join" 
+        name="roadmap"
         options={{ 
-          title: 'Join Team',
+          title: 'Team Roadmap',
         }} 
       />
     </Stack>
