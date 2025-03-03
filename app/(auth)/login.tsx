@@ -35,7 +35,9 @@ export default function LoginScreen() {
     console.log("Profile picture clicked");
   };
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
+    router.replace('../(teams)/selection'); // Überschriebt Login-Logik, um direkt auf Teams-Auswahl zu springen (nur für Testzwecke)
+
     // Text Input Validation Logic
     if (!emailValue.trim() || !passwordValue.trim()) {
       Alert.alert('Error', 'Please enter email and password');
