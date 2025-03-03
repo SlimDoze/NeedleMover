@@ -9,10 +9,7 @@ import {
   Animated,
   ScrollView,
   NativeScrollEvent,
-  NativeSyntheticEvent,
-  ViewStyle,
-  TextStyle,
-  ImageStyle
+  NativeSyntheticEvent
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -31,8 +28,23 @@ type Team = {
   memberCount: number;
   lastActive: string;
   color: string;
-  image: number; // for require'd images
+  image: number;
 };
+
+// Create Team type
+type CreateTeamCard = { 
+  type: 'create'; 
+  id: string; 
+  color: string; 
+};
+
+// Union type for card items
+type TeamCardItem = Team | CreateTeamCard;
+
+// Type guard to check if the item is a Team
+function isTeam(item: TeamCardItem): item is Team {
+  return 'name' in item && 'description' in item;
+}
 
 // Mock data for teams
 const mockTeams: Team[] = [
@@ -80,6 +92,33 @@ export default function TeamSelectionScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const [scrollOffset, setScrollOffset] = useState(0);
 
+  // Determine whether to show create team card
+  const determineTeamCards = (): TeamCardItem[] => {
+    if (mockTeams.length === 0) {
+      // No teams: first card is create team
+      return [
+        {
+          type: 'create',
+          id: 'create-team',
+          color: AppColors.primary,
+        },
+        ...mockTeams
+      ];
+    } else if (mockTeams.length === 1) {
+      // One team: second card is create team
+      return [
+        ...mockTeams,
+        {
+          type: 'create',
+          id: 'create-team',
+          color: AppColors.primary,
+        }
+      ];
+    }
+    // Three or more teams: no create team card
+    return mockTeams;
+  };
+
   const handleScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { y: scrollY } } }],
     {
@@ -95,8 +134,59 @@ export default function TeamSelectionScreen() {
     router.push(`../(teams)/${teamId}`);
   };
 
-  const renderTeamCard = (team: Team, index: number) => {
-    // Create interpolation for scale
+  const renderCreateTeamCard = () => (
+    <Animated.View 
+      key="create-team"
+      style={[
+        styles.teamCard, 
+        { 
+          backgroundColor: AppColors.primary,
+          opacity: 1,
+        }
+      ]}
+    >
+      <TouchableOpacity 
+        style={styles.teamCardContent}
+        onPress={() => router.push('../(teams)/create')}
+      >
+        <View style={styles.teamHeader}>
+          <Text style={styles.teamName}>Create Team</Text>
+          <Feather 
+            name="plus-circle" 
+            size={24} 
+            color="white" 
+          />
+        </View>
+        
+        <View style={styles.createTeamContent}>
+          <Text style={styles.createTeamDescription}>
+            {mockTeams.length === 0 
+              ? "Start your first music collaboration" 
+              : "Expand your network and create a new team"}
+          </Text>
+          <TouchableOpacity 
+            style={styles.createTeamButton}
+            onPress={() => router.push('../(teams)/create')}
+          >
+            <Text style={styles.createTeamButtonText}>Create Team</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+
+  const renderTeamCard = (team: TeamCardItem, index: number) => {
+    // If it's a create team card
+    if ('type' in team && team.type === 'create') {
+      return renderCreateTeamCard();
+    }
+
+    // At this point, we know it's a Team due to the type guard
+    if (!isTeam(team)) {
+      return null;
+    }
+
+    // Regular team card rendering logic
     const scale = scrollY.interpolate({
       inputRange: [
         (index - 1) * CARD_HEIGHT,
@@ -107,7 +197,6 @@ export default function TeamSelectionScreen() {
       extrapolate: 'clamp'
     });
 
-    // Create interpolation for opacity
     const opacity = scrollY.interpolate({
       inputRange: [
         (index - 1) * CARD_HEIGHT,
@@ -195,14 +284,17 @@ export default function TeamSelectionScreen() {
       <Animated.ScrollView
         ref={scrollViewRef}
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollViewContent}
+        contentContainerStyle={[
+          styles.scrollViewContent,
+          { paddingBottom: height * 0.3 }
+        ]}
         onScroll={handleScroll}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         snapToInterval={CARD_HEIGHT * 0.9}
         decelerationRate="fast"
       >
-        {mockTeams.map(renderTeamCard)}
+        {determineTeamCards().map(renderTeamCard)}
       </Animated.ScrollView>
 
       <View style={styles.footer}>
@@ -230,34 +322,7 @@ export default function TeamSelectionScreen() {
   );
 }
 
-// Define explicit types for styles
-interface Styles {
-  container: ViewStyle;
-  header: ViewStyle;
-  headerTitleContainer: ViewStyle;
-  title: TextStyle;
-  profileButton: ViewStyle;
-  profileImage: ImageStyle;
-  scrollView: ViewStyle;
-  scrollViewContent: ViewStyle;
-  teamCard: ViewStyle;
-  teamCardContent: ViewStyle;
-  teamHeader: ViewStyle;
-  teamName: TextStyle;
-  teamDetails: ViewStyle;
-  teamImage: ImageStyle;
-  teamInfo: ViewStyle;
-  teamDescription: TextStyle;
-  teamStats: ViewStyle;
-  statItem: ViewStyle;
-  statText: TextStyle;
-  footer: ViewStyle;
-  footerButton: ViewStyle;
-  footerButtonText: TextStyle;
-  createButton: ViewStyle;
-}
-
-const styles = StyleSheet.create<Styles>({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: AppColors.background,
@@ -397,5 +462,29 @@ const styles = StyleSheet.create<Styles>({
     shadowOpacity: 0.2,
     shadowRadius: 3,
     elevation: 3,
+  },
+  createTeamContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  createTeamDescription: {
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+    paddingHorizontal: 20,
+  },
+  createTeamButton: {
+    backgroundColor: 'white',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+  },
+  createTeamButtonText: {
+    color: AppColors.primary,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
