@@ -5,9 +5,8 @@ import { useRouter } from "expo-router";
 import UserInput from "@/components/General/UserInput";
 import { AppColors } from "@/constants/AppColors";
 import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
-import { validateEmail } from "@/lib/LIB_Authentification";
-import { useAuth } from "@/lib/LIB_AuthContext";
 import { AntDesign } from '@expo/vector-icons';
+
 import { 
   View, 
   Text, 
@@ -26,7 +25,6 @@ const { width } = Dimensions.get("window");
 
 export default function ResetPasswordFlow() {
   const router = useRouter();
-  const { resetPassword, updatePassword } = useAuth();
   const [step, setPageTwo] = useState(1);
   const [email, setEmail] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
@@ -34,67 +32,62 @@ export default function ResetPasswordFlow() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Einfache E-Mail-Validierung
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleEmailSubmit = async () => {
     if (!validateEmail(email)) {
-      Alert.alert('Invalid Email', 'Please enter a valid email address');
+      Alert.alert('Ungültige E-Mail', 'Bitte gib eine gültige E-Mail-Adresse ein');
       return;
     }
 
-    try {
-      setIsLoading(true);
-      
-      // Call Supabase password reset
-      await resetPassword(email);
-      
+    // Senden der Zurücksetzungs-E-Mail simulieren
+    setIsLoading(true);
+    
+    // Verzögerung simulieren
+    setTimeout(() => {
       Alert.alert(
-        'Reset Email Sent', 
-        'Check your email for instructions to reset your password',
+        'Zurücksetzungs-E-Mail gesendet', 
+        'Prüfe deine E-Mail für Anweisungen zum Zurücksetzen deines Passworts',
         [{ text: 'OK', onPress: () => setPageTwo(2) }]
       );
-    } catch (error: any) {
-      console.error(error);
-      Alert.alert('Error', error.message || 'Failed to send reset email');
-    } finally {
       setIsLoading(false);
-    }
+    }, 1000);
   };
 
   const checkVerificationCode = () => {
-    // In a real Supabase implementation, code verification happens when they click the link in email
-    // For now, we'll simulate this by just checking length
+    // Einfache Verifizierung - nur Länge prüfen
     if (verificationCode.length === 6) {
       setPageTwo(3);
     } else {
-      Alert.alert('Invalid Code', 'Please enter the 6-digit code sent to your email');
+      Alert.alert('Ungültiger Code', 'Bitte gib den 6-stelligen Code ein, der an deine E-Mail gesendet wurde');
     }
   };
 
   const handleUpdatePassword = async () => {
     if (newPassword !== confirmPassword) {
-      Alert.alert('Password Mismatch', 'Passwords do not match');
+      Alert.alert('Passwörter stimmen nicht überein', 'Die Passwörter müssen übereinstimmen');
       return;
     }
 
     if (newPassword.length < 6) {
-      Alert.alert('Weak Password', 'Password must be at least 6 characters long');
+      Alert.alert('Schwaches Passwort', 'Das Passwort muss mindestens 6 Zeichen lang sein');
       return;
     }
 
-    try {
-      setIsLoading(true);
-      
-      // Update password with Supabase
-      await updatePassword(newPassword);
-      
-      Alert.alert('Success', 'Your password has been reset', [
+    // Passwort-Update simulieren
+    setIsLoading(true);
+    
+    // Verzögerung simulieren
+    setTimeout(() => {
+      Alert.alert('Erfolg', 'Dein Passwort wurde zurückgesetzt', [
         { text: 'OK', onPress: () => router.replace('/login') }
       ]);
-    } catch (error: any) {
-      console.error(error);
-      Alert.alert('Error', error.message || 'Failed to update password');
-    } finally {
       setIsLoading(false);
-    }
+    }, 1000);
   };
 
   const handleGoBack = () => {
@@ -108,10 +101,10 @@ export default function ResetPasswordFlow() {
   const renderEmailPage = () => (
     <View style={styles.stepContainer}>
       <Text style={styles.description}>
-        Enter the email address associated with your account
+        Gib die E-Mail-Adresse ein, die mit deinem Konto verknüpft ist
       </Text>
       <UserInput 
-        placeholder="Email Address"
+        placeholder="Email Adresse"
         value={email}
         onChangeText={setEmail}
       />
@@ -120,7 +113,7 @@ export default function ResetPasswordFlow() {
           <ActivityIndicator size="large" color={AppColors.primary} />
         ) : (
           <Button 
-            title="Send Verification Code" 
+            title="Verifizierungscode senden" 
             onPress={handleEmailSubmit} 
           />
         )}
@@ -131,11 +124,11 @@ export default function ResetPasswordFlow() {
   const renderVerificationPage = () => (
     <View style={styles.stepContainer}>
       <Text style={styles.description}>
-        Enter the 6-digit verification code sent to {email}
+        Gib den 6-stelligen Verifizierungscode ein, der an {email} gesendet wurde
       </Text>
       <TextInput
         style={styles.codeInput}
-        placeholder="Enter 6-digit code"
+        placeholder="6-stelligen Code eingeben"
         keyboardType="numeric"
         maxLength={6}
         value={verificationCode}
@@ -143,12 +136,12 @@ export default function ResetPasswordFlow() {
       />
       <View style={styles.Button}>
         <Button 
-          title="Verify Code" 
+          title="Code verifizieren" 
           onPress={checkVerificationCode} 
         />
       </View>
       <TouchableOpacity onPress={() => handleEmailSubmit()}>
-        <Text style={styles.resendText}>Resend Code</Text>
+        <Text style={styles.resendText}>Code erneut senden</Text>
       </TouchableOpacity>
     </View>
   );
@@ -156,16 +149,16 @@ export default function ResetPasswordFlow() {
   const renderNewPasswordPage = () => (
     <View style={styles.stepContainer}>
       <Text style={styles.description}>
-        Create a new password for your account
+        Erstelle ein neues Passwort für dein Konto
       </Text>
       <UserInput 
-        placeholder="New Password"
+        placeholder="Neues Passwort"
         value={newPassword}
         onChangeText={setNewPassword}
         secureTextEntry
       />
       <UserInput 
-        placeholder="Confirm New Password"
+        placeholder="Neues Passwort bestätigen"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         secureTextEntry
@@ -175,7 +168,7 @@ export default function ResetPasswordFlow() {
           <ActivityIndicator size="large" color={AppColors.primary} />
         ) : (
           <Button 
-            title="Reset Password" 
+            title="Passwort zurücksetzen" 
             onPress={handleUpdatePassword} 
           />
         )}
@@ -263,7 +256,6 @@ const styles = StyleSheet.create({
     color: AppColors.primary,
     textDecorationLine: 'underline',
   },
-  // Neuer Style für den Zurück-Button
   backButton: {
     position: 'absolute',
     top: 50,

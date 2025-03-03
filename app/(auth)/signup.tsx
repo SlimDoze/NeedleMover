@@ -3,9 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import UserInput from "@/components/General/UserInput";
-import { createSignupFormManager } from "@/lib/LIB_Authentification";
 import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
-import { useAuth } from "@/lib/LIB_AuthContext";
 import { 
   View, 
   Text, 
@@ -20,27 +18,85 @@ import {
 } from "react-native";
 import { AntDesign } from '@expo/vector-icons';
 import { AppColors } from "@/constants/AppColors";
+
 // Bildschirmgröße ermitteln
 const { width } = Dimensions.get("window");
 
+// Benutzerdatenschnittstelle
+interface UserSignupData {
+  name: string;
+  handle: string;
+  email: string;
+  password: string;
+  stayLoggedIn: boolean;
+}
+
 export default function SignUpScreen() {
   const router = useRouter();
-  const { signUp } = useAuth();
-  const { initialState, validateFirstStep, validateSecondStep } = createSignupFormManager();
+  
+  const initialState: UserSignupData = {
+    name: '',
+    handle: '',
+    email: '',
+    password: '',
+    stayLoggedIn: false
+  };
   
   const [formStep, setFormStep] = useState(1);
   const [userData, setUserData] = useState(initialState);
   const [isLoading, setIsLoading] = useState(false);
 
-  const updateField = (field: keyof typeof userData, value: string | boolean) => {
+  const updateField = (field: keyof UserSignupData, value: string | boolean) => {
     setUserData(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
+  // Einfache Validierungsfunktionen
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password: string): boolean => {
+    return password.length >= 6;
+  };
+
+  const validateFirstStep = () => {
+    if (!userData.name.trim()) {
+      Alert.alert('Validierungsfehler', 'Bitte gib deinen Namen ein');
+      return false;
+    }
+    if (!userData.handle.trim()) {
+      Alert.alert('Validierungsfehler', 'Bitte gib dein Handle ein');
+      return false;
+    }
+    return true;
+  };
+
+  const validateSecondStep = () => {
+    if (!userData.email.trim()) {
+      Alert.alert('Validierungsfehler', 'Bitte gib deine E-Mail ein');
+      return false;
+    }
+    if (!validateEmail(userData.email)) {
+      Alert.alert('Validierungsfehler', 'Bitte gib eine gültige E-Mail ein');
+      return false;
+    }
+    if (!userData.password.trim()) {
+      Alert.alert('Validierungsfehler', 'Bitte gib ein Passwort ein');
+      return false;
+    }
+    if (!validatePassword(userData.password)) {
+      Alert.alert('Validierungsfehler', 'Das Passwort muss mindestens 6 Zeichen lang sein');
+      return false;
+    }
+    return true;
+  };
+
   const nextStep = () => {
-    if (formStep === 1 && validateFirstStep(userData)) {
+    if (formStep === 1 && validateFirstStep()) {
       setFormStep(2);
     }
   };
@@ -51,41 +107,29 @@ export default function SignUpScreen() {
     }
   };
 
-  const handleSignUp = async () => {
-    if (validateSecondStep(userData)) {
-      try {
-        setIsLoading(true);
+  const handleSignUp = () => {
+    if (validateSecondStep()) {
+      // Registrierungsprozess simulieren
+      setIsLoading(true);
+      
+      // Netzwerkverzögerung simulieren
+      setTimeout(() => {
+        console.log('Registrierungsdaten:', userData);
         
-        // Call Supabase auth from our context
-        const { error } = await signUp(
-          userData.email, 
-          userData.password, 
-          {
-            name: userData.name,
-            handle: userData.handle
-          }
-        );
-        
-        if (error) throw error;
-        
-        // Navigate to teams screen after successful registration
-        Alert.alert('Success', 'Registration completed!', [
+        // Nach erfolgreicher Registrierung zur Team-Auswahl navigieren
+        Alert.alert('Erfolg', 'Registrierung abgeschlossen!', [
           {
             text: 'OK',
             onPress: () => router.replace('../(teams)/selection')
           }
         ]);
-      } catch (error: any) {
-        console.error(error);
-        Alert.alert('Registration Failed', error.message || 'Please try again');
-      } finally {
         setIsLoading(false);
-      }
+      }, 1500);
     }
   };
 
   const handleProfilePictureClick = () => {
-    console.log("Profile picture clicked");
+    console.log("Profilbild angeklickt");
   };
 
   const handleGoBack = () => {
@@ -116,7 +160,7 @@ export default function SignUpScreen() {
         />
       </TouchableOpacity>
 
-      {/* First Step: Name and Handle */}
+      {/* Erster Schritt: Name und Handle */}
       {formStep === 1 && (
         <>
           <UserInput 
@@ -140,7 +184,7 @@ export default function SignUpScreen() {
         </>
       )}
 
-      {/* Second Step: Email, Password, and Auto-Login */}
+      {/* Zweiter Schritt: E-Mail, Passwort und Auto-Login */}
       {formStep === 2 && (
         <>
           <UserInput 
@@ -179,6 +223,7 @@ export default function SignUpScreen() {
     </SafeAreaView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1, 
@@ -213,7 +258,6 @@ const styles = StyleSheet.create({
     maxWidth: 400, 
     paddingHorizontal: 20,
   },
-  // Neuer Style für den Zurück-Button
   backButton: {
     position: 'absolute',
     top: 50,

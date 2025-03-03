@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import UserInput from "@/components/General/UserInput";
 import { AppColors } from "@/constants/AppColors";
 import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
-import { AntDesign } from '@expo/vector-icons'; // Füge diese Zeile hinzu
+import { AntDesign } from '@expo/vector-icons';
 
 import { 
   View, 
@@ -15,7 +15,8 @@ import {
   TouchableOpacity, 
   Image, 
   Dimensions, 
-  Switch 
+  Switch,
+  ActivityIndicator
 } from "react-native";
 
 // Bildschirmgröße ermitteln
@@ -26,23 +27,32 @@ export default function LoginScreen() {
   const [emailValue, setEmail] = useState("");
   const [passwordValue, setPassword] = useState("");
   const [isRememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleProfilePictureClick = () => {
     console.log("Profile picture clicked");
   };
+  
   const handleLogin = () => {
-    // Text Input Validation Logic
+    // Einfache Validierung
     if (emailValue.trim() && passwordValue.trim()) {
-      // Data Transfer to Backend
-      console.log('Login attempt with:', {
-        email: emailValue,
-        rememberMe: isRememberMe
-      });
+      // Lade-Animation anzeigen
+      setIsLoading(true);
       
-      // Navigate to teams screen after successful login
-      router.replace('../(teams)/selection');
+      // Verzögerung simulieren
+      setTimeout(() => {
+        console.log('Login Versuch mit:', {
+          email: emailValue,
+          rememberMe: isRememberMe
+        });
+        
+        setIsLoading(false);
+        
+        // Zur Team-Auswahlseite navigieren
+        router.replace('../(teams)/selection');
+      }, 1000);
     } else {
-      alert('Please enter email and password');
+      alert('Bitte E-Mail und Passwort eingeben');
     }
   };
 
@@ -50,7 +60,6 @@ export default function LoginScreen() {
     router.push('/reset');
   };
 
-  // Funktion für den Zurück-Button
   const handleGoBack = () => {
     router.back();
   };
@@ -69,7 +78,7 @@ export default function LoginScreen() {
       
       <Text style={styles.Title}>{Constant_FormInfoText.NeedleMover}</Text>
 
-      {/* Profile Picture */}
+      {/* Profilbild */}
       <TouchableOpacity onPress={handleProfilePictureClick}>
         <Image 
           source={require("../../assets/images/ProfilePictureIcon.png")} 
@@ -77,14 +86,14 @@ export default function LoginScreen() {
         />
       </TouchableOpacity>
 
-      {/* Email Input */}
+      {/* E-Mail-Eingabe */}
       <UserInput 
         placeholder={Constant_FormInfoText.InputEmail} 
         value={emailValue}  
         onChangeText={(text) => setEmail(text)}  
       />
 
-      {/* Password Input */}
+      {/* Passwort-Eingabe */}
       <UserInput
         placeholder={Constant_FormInfoText.InputPassword}
         value={passwordValue}  
@@ -92,15 +101,19 @@ export default function LoginScreen() {
         secureTextEntry
       />
 
-      {/* Login Button */}
+      {/* Login-Button */}
       <View style={styles.Button}>
-        <Button 
-          title="Log In" 
-          onPress={handleLogin} 
-        />
+        {isLoading ? (
+          <ActivityIndicator size="large" color={AppColors.primary} />
+        ) : (
+          <Button 
+            title="Log In" 
+            onPress={handleLogin} 
+          />
+        )}
       </View>
 
-      {/* InfoText + Toggle Container */}
+      {/* "Angemeldet bleiben"-Schalter */}
       <View style={styles.switchContainer}>
         <Text style={styles.switchText}>Remember Me</Text>
         <Switch
@@ -155,7 +168,6 @@ const styles = StyleSheet.create({
     color: AppColors.primary,
     textDecorationLine: 'underline',
   },
-  // Neuer Style für den Zurück-Button
   backButton: {
     position: 'absolute',
     top: 50,
