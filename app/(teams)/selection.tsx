@@ -1,4 +1,4 @@
-// app/(teams)/selection.tsx
+// This is an improved version of the card swiping mechanics for app/(teams)/selection.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -20,13 +20,9 @@ import { AppColors } from '@/constants/AppColors';
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.85;
 const CARD_HEIGHT = height * 0.55;
+const SWIPE_THRESHOLD = width * 0.25;
 
-// Define platform-specific styles outside the component
-const androidStyles = Platform.OS === 'android' 
-  ? { renderToHardwareTextureAndroid: true } as ViewStyle
-  : {};
-
-// Mock data for teams
+// Mock data remains the same as your original file
 const mockTeams = [
   {
     id: '1',
@@ -63,14 +59,83 @@ export default function TeamSelectionScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   
+  // Separate animation values for each card for better control
   const position = useRef(new Animated.ValueXY()).current;
+  const secondCardScale = useRef(new Animated.Value(0.95)).current;
+  const secondCardTranslateY = useRef(new Animated.Value(10)).current;
+  
+  // Reset animations when currentIndex changes
+  useEffect(() => {
+    position.setValue({ x: 0, y: 0 });
+    secondCardScale.setValue(0.95);
+    secondCardTranslateY.setValue(10);
+  }, [currentIndex]);
+
   const rotation = position.x.interpolate({
     inputRange: [-width / 2, 0, width / 2],
     outputRange: ['-10deg', '0deg', '10deg'],
     extrapolate: 'clamp',
   });
 
-  // PanResponder neu erstellen, wenn sich currentIndex ändert
+  // Function to handle navigating to a team detail page
+  const navigateToTeam = (teamId: string) => {
+    router.push(`../(teams)/${teamId}`);
+  };
+
+  // Handle clicking the open button directly (not a swipe)
+  const handleOpenTeam = () => {
+    navigateToTeam(teams[currentIndex].id);
+  };
+
+  // Function to handle going to the next team
+  const goToNextTeam = () => {
+    setIsTransitioning(true);
+    
+    // Animate current card off to the left
+    Animated.timing(position, {
+      toValue: { x: -width, y: 0 },
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => {
+      // Update index after animation
+      const nextIndex = (currentIndex + 1) % teams.length;
+      setCurrentIndex(nextIndex);
+      
+      // Reset position for the new card
+      position.setValue({ x: 0, y: 0 });
+      
+      // Allow swiping again
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 50);
+    });
+  };
+  
+  // Function to handle going to the previous team
+  const goToPreviousTeam = () => {
+    setIsTransitioning(true);
+    
+    // Animate current card off to the right
+    Animated.timing(position, {
+      toValue: { x: width, y: 0 },
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => {
+      // Update index after animation
+      const prevIndex = (currentIndex - 1 + teams.length) % teams.length;
+      setCurrentIndex(prevIndex);
+      
+      // Reset position for the new card
+      position.setValue({ x: 0, y: 0 });
+      
+      // Allow swiping again
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 50);
+    });
+  };
+  
+  // Improved PanResponder with clearer conditions
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => !isTransitioning,
@@ -78,77 +143,73 @@ export default function TeamSelectionScreen() {
         !isTransitioning && (Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5),
       
       onPanResponderGrant: () => {
+        // Use extractOffset instead of accessing _value directly to avoid TypeScript errors
         position.extractOffset();
       },
       
-      onPanResponderMove: Animated.event(
-        [null, { dx: position.x, dy: position.y }],
-        { useNativeDriver: false }
-      ),
+      onPanResponderMove: (_, gestureState) => {
+        // Only move card horizontally
+        position.setValue({
+          x: gestureState.dx,
+          y: 0
+        });
+        
+        // Animate the second card slightly based on the first card's position
+        if (gestureState.dx < 0) {
+          // When swiping left (showing next), make the next card bigger
+          const scaleValue = 0.95 + Math.min(Math.abs(gestureState.dx) / width * 0.05, 0.05);
+          secondCardScale.setValue(scaleValue);
+          secondCardTranslateY.setValue(10 - (Math.abs(gestureState.dx) / width * 10));
+        } else if (gestureState.dx > 0) {
+          // When swiping right (showing previous), also animate
+          const scaleValue = 0.95 + Math.min(Math.abs(gestureState.dx) / width * 0.05, 0.05);
+          secondCardScale.setValue(scaleValue);
+          secondCardTranslateY.setValue(10 - (Math.abs(gestureState.dx) / width * 10));
+        }
+      },
       
       onPanResponderRelease: (_, gestureState) => {
         position.flattenOffset();
         
-        const swipeThreshold = width * 0.25;
-        
-        if (gestureState.dx > swipeThreshold) {
-          setIsTransitioning(true);
-          Animated.timing(position, {
-            toValue: { x: width, y: 0 },
-            duration: 250,
-            useNativeDriver: true,
-          }).start(() => {
-            navigateToTeam();
-            position.setValue({ x: 0, y: 0 });
-            setIsTransitioning(false);
-          });
-        } else if (gestureState.dx < -swipeThreshold) {
-          setIsTransitioning(true);
-          Animated.timing(position, {
-            toValue: { x: -width, y: 0 },
-            duration: 250,
-            useNativeDriver: true,
-          }).start(() => {
-            const nextIndex = (currentIndex + 1) % teams.length;
-            position.setValue({ x: 0, y: 0 });
-            setCurrentIndex(nextIndex);
-            setTimeout(() => {
-              setIsTransitioning(false);
-            }, 100);
-          });
+        // Determine if swipe is significant enough to trigger action
+        if (gestureState.dx > SWIPE_THRESHOLD) {
+          // Swiped right - go to previous team
+          goToPreviousTeam();
+          
+        } else if (gestureState.dx < -SWIPE_THRESHOLD) {
+          // Swiped left - go to next team
+          goToNextTeam();
         } else {
-          Animated.spring(position, {
-            toValue: { x: 0, y: 0 },
-            friction: 5,
-            useNativeDriver: true,
-          }).start();
+          // Not swiped far enough - spring back to center
+          Animated.parallel([
+            Animated.spring(position, {
+              toValue: { x: 0, y: 0 },
+              friction: 5,
+              useNativeDriver: true,
+            }),
+            Animated.spring(secondCardScale, {
+              toValue: 0.95,
+              friction: 5,
+              useNativeDriver: true,
+            }),
+            Animated.spring(secondCardTranslateY, {
+              toValue: 10,
+              friction: 5,
+              useNativeDriver: true,
+            })
+          ]).start();
         }
       },
     })
   ).current;
 
-  // Setze Position zurück wenn sich Index ändert
-  useEffect(() => {
-    position.setValue({ x: 0, y: 0 });
-  }, [currentIndex]);
-
-  const navigateToTeam = () => {
-    router.push(`../(teams)/${teams[currentIndex].id}`);
-  };
-
-  const navigateToCreateTeam = () => {
-    router.push('../(teams)/create');
-  };
-
-  const navigateToJoinTeam = () => {
-    router.push('../(teams)/join');
-  };
-
+  // Function to render the cards
   const renderCards = () => {
-    // Array für alle zu rendernden Karten
+    if (teams.length === 0) return null;
+    
     const cards = [];
     
-    // Aktuelle Karte
+    // Current card (top card)
     if (currentIndex < teams.length) {
       const currentTeam = teams[currentIndex];
       cards.push(
@@ -156,7 +217,6 @@ export default function TeamSelectionScreen() {
           key={`current-${currentIndex}`}
           style={[
             styles.card,
-            androidStyles,
             {
               transform: [
                 { translateX: position.x },
@@ -168,6 +228,7 @@ export default function TeamSelectionScreen() {
           ]}
           {...panResponder.panHandlers}
         >
+          {/* Card content same as your original code */}
           <View style={[styles.teamImageContainer, { backgroundColor: currentTeam.color }]}>
             <Image source={currentTeam.image} style={styles.teamImage} />
             <TouchableOpacity style={styles.infoButton}>
@@ -192,7 +253,7 @@ export default function TeamSelectionScreen() {
 
             <TouchableOpacity 
               style={[styles.openButton, { backgroundColor: currentTeam.color }]}
-              onPress={navigateToTeam}
+              onPress={handleOpenTeam}
             >
               <Text style={styles.openButtonText}>Open Team</Text>
             </TouchableOpacity>
@@ -201,49 +262,59 @@ export default function TeamSelectionScreen() {
       );
     }
 
-    // Nächste Karte
+    // Next/Previous card (card below current)
+    // Determine which card to show below based on swipe direction
+    // This is a simplification - in a full implementation you might want to keep
+    // track of swipe direction and show appropriate next/prev card
     const nextIndex = (currentIndex + 1) % teams.length;
-    if (nextIndex !== currentIndex) {
-      const nextTeam = teams[nextIndex];
+    const prevIndex = (currentIndex - 1 + teams.length) % teams.length;
+    
+    // For now we'll always show the next card as the second card
+    // In a more complex implementation, you might change this based on swipe direction
+    const secondCardIndex = nextIndex;
+    
+    if (secondCardIndex !== currentIndex) {
+      const secondTeam = teams[secondCardIndex];
       cards.push(
         <Animated.View
-          key={`next-${nextIndex}`}
+          key={`second-${secondCardIndex}`}
           style={[
             styles.card, 
             {
               transform: [
-                { scale: 0.95 },
-                { translateY: 10 },
+                { scale: secondCardScale },
+                { translateY: secondCardTranslateY },
               ],
               zIndex: 1,
             }
           ]}
         >
-          <View style={[styles.teamImageContainer, { backgroundColor: nextTeam.color }]}>
-            <Image source={nextTeam.image} style={styles.teamImage} />
+          {/* Next card content same as your original code */}
+          <View style={[styles.teamImageContainer, { backgroundColor: secondTeam.color }]}>
+            <Image source={secondTeam.image} style={styles.teamImage} />
             <TouchableOpacity style={styles.infoButton}>
               <Ionicons name="information-circle-outline" size={28} color="#fff" />
             </TouchableOpacity>
           </View>
           
           <View style={styles.cardContent}>
-            <Text style={styles.teamName}>{nextTeam.name}</Text>
-            <Text style={styles.teamDescription}>{nextTeam.description}</Text>
+            <Text style={styles.teamName}>{secondTeam.name}</Text>
+            <Text style={styles.teamDescription}>{secondTeam.description}</Text>
             
             <View style={styles.teamStats}>
               <View style={styles.statItem}>
                 <Ionicons name="people" size={18} color={AppColors.text.muted} />
-                <Text style={styles.statText}>{nextTeam.memberCount} members</Text>
+                <Text style={styles.statText}>{secondTeam.memberCount} members</Text>
               </View>
               <View style={styles.statItem}>
                 <Ionicons name="time-outline" size={18} color={AppColors.text.muted} />
-                <Text style={styles.statText}>Active {nextTeam.lastActive}</Text>
+                <Text style={styles.statText}>Active {secondTeam.lastActive}</Text>
               </View>
             </View>
 
             <TouchableOpacity 
-              style={[styles.openButton, { backgroundColor: nextTeam.color }]}
-              onPress={() => {}}
+              style={[styles.openButton, { backgroundColor: secondTeam.color }]}
+              disabled={true}
             >
               <Text style={styles.openButtonText}>Open Team</Text>
             </TouchableOpacity>
@@ -255,6 +326,7 @@ export default function TeamSelectionScreen() {
     return cards;
   };
 
+  // Main render for the component
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -284,12 +356,12 @@ export default function TeamSelectionScreen() {
       </View>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerButton} onPress={navigateToJoinTeam}>
+        <TouchableOpacity style={styles.footerButton} onPress={() => router.push('../(teams)/join')}>
           <Feather name="user-plus" size={20} color="#fff" />
           <Text style={styles.footerButtonText}>Join Team</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.createButton} onPress={navigateToCreateTeam}>
+        <TouchableOpacity style={styles.createButton} onPress={() => router.push('../(teams)/create')}>
           <Feather name="plus" size={24} color="#fff" />
         </TouchableOpacity>
         
@@ -301,13 +373,14 @@ export default function TeamSelectionScreen() {
 
       <View style={styles.swipeHelp}>
         <Feather name="chevrons-left" size={20} color={AppColors.text.muted} />
-        <Text style={styles.swipeHelpText}>Swipe to navigate</Text>
+        <Text style={styles.swipeHelpText}>Wischen zum Navigieren zwischen Teams</Text>
         <Feather name="chevrons-right" size={20} color={AppColors.text.muted} />
       </View>
     </SafeAreaView>
   );
 }
 
+// Styles remain mostly the same as your original code
 const styles = StyleSheet.create({
   container: {
     flex: 1,
