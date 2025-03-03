@@ -39,6 +39,13 @@ export default function TeamsLayout() {
           title: 'Join Team',
         }} 
       />
+      {/* Add this to hide the [id] header */}
+      <Stack.Screen
+        name="[id]"
+        options={{
+          headerShown: false
+        }}
+      />
     </Stack>
   );
 }

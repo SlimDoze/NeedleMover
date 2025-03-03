@@ -44,6 +44,14 @@ export default function TeamDetailScreen() {
       <ScrollView>
         {/* Team Header */}
         <View style={[styles.teamHeader, { backgroundColor: team.color }]}>
+          {/* Custom Back Button */}
+          <TouchableOpacity 
+            style={styles.customBackButton}
+            onPress={() => router.back()}
+          >
+            <Ionicons name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+          
           <View style={styles.teamInfo}>
             <Text style={styles.teamName}>{team.name}</Text>
             <Text style={styles.teamDescription}>{team.description}</Text>
@@ -150,20 +158,35 @@ const styles = StyleSheet.create({
   },
   teamHeader: {
     padding: 20,
-    paddingTop: 40,
+    paddingTop: 50, // Increased top padding for the back button
     paddingBottom: 40,
+    position: 'relative', // For absolute positioning of back button
   },
-  teamInfo: {},
+  teamInfo: {
+    alignItems: 'center', // Center content horizontally
+  },
   teamName: {
-    fontSize: 28,
+    fontSize: 30, // Slightly larger for emphasis
     fontWeight: 'bold',
     color: 'white',
-    marginBottom: 8,
+    marginBottom: 10,
+    textAlign: 'center', // Center text
   },
   teamDescription: {
     fontSize: 16,
     color: 'rgba(255, 255, 255, 0.9)',
     lineHeight: 22,
+    textAlign: 'center', // Center text
+    maxWidth: '90%', // Prevent text from stretching too wide
+  },
+  customBackButton: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    zIndex: 10,
+    padding: 8, // Larger touch target
+    borderRadius: 20, // Make it slightly rounded
+    backgroundColor: 'rgba(0, 0, 0, 0.1)', // Subtle background
   },
   actionsContainer: {
     flexDirection: 'row',
