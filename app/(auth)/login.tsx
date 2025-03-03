@@ -1,177 +1,86 @@
-import React, { useState } from "react";
+import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import { useRouter } from "expo-router";
-import UserInput from "@/components/General/UserInput";
-import { AppColors } from "@/constants/AppColors";
-import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign } from "@expo/vector-icons";
+import UserInput from "@/components/(Auth)/UserInput";
+import { Const_AuthInfoText } from "@/constants/(Auth)/AuthInfoText";
+import { styles } from "@/constants/(Auth)/LoginStylesheet";
+import { useLogin } from "@/hooks/(auth)/useLogin";
+import { Const_Image } from "@/constants/CONST_Image";
 
-import { 
-  View, 
-  Text, 
-  Button, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Image, 
-  Dimensions, 
+import {
+  View,
+  Text,
+  Button,
+  TouchableOpacity,
+  Image,
   Switch,
-  ActivityIndicator
+  ActivityIndicator,
 } from "react-native";
 
-// Bildschirmgröße ermitteln
-const { width } = Dimensions.get("window");
-
 export default function LoginScreen() {
-  const router = useRouter();
-  const [emailValue, setEmail] = useState("");
-  const [passwordValue, setPassword] = useState("");
-  const [isRememberMe, setRememberMe] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleProfilePictureClick = () => {
-    console.log("Profile picture clicked");
-  };
-  
-  const handleLogin = () => {
-    // Einfache Validierung
-    if (emailValue.trim() && passwordValue.trim()) {
-      // Lade-Animation anzeigen
-      setIsLoading(true);
-      
-      // Verzögerung simulieren
-      setTimeout(() => {
-        console.log('Login Versuch mit:', {
-          email: emailValue,
-          rememberMe: isRememberMe
-        });
-        
-        setIsLoading(false);
-        
-        // Zur Team-Auswahlseite navigieren
-        router.replace('../(teams)/selection');
-      }, 1000);
-    } else {
-      alert('Bitte E-Mail und Passwort eingeben');
-    }
-  };
-
-  const navigateToResetPassword = () => {
-    router.push('/reset');
-  };
-
-  const handleGoBack = () => {
-    router.back();
-  };
+  const {
+    emailValue,
+    setEmail,
+    passwordValue,
+    setPassword,
+    isRememberMe,
+    setRememberMe,
+    isLoading,
+    handleLogin,
+    handleGoBack,
+    navigateToResetPassword,
+  } = useLogin();
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
-      
+
       {/* Zurück-Button */}
-      <TouchableOpacity 
-        style={styles.backButton} 
-        onPress={handleGoBack}
-      >
+      <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
         <AntDesign name="arrowleft" size={24} color="black" />
       </TouchableOpacity>
-      
-      <Text style={styles.Title}>{Constant_FormInfoText.NeedleMover}</Text>
+
+      <Text style={styles.Title}>{Const_AuthInfoText.NeedleMover}</Text>
 
       {/* Profilbild */}
-      <TouchableOpacity onPress={handleProfilePictureClick}>
-        <Image 
-          source={require("../../assets/images/ProfilePictureIcon.png")} 
-          style={styles.profilePicture} 
-        />
+      <TouchableOpacity onPress={() => console.log("Profile picture clicked")}>
+      <Image source={Const_Image.ProfilePictureIcon} style={styles.profilePicture} /> 
       </TouchableOpacity>
 
       {/* E-Mail-Eingabe */}
-      <UserInput 
-        placeholder={Constant_FormInfoText.InputEmail} 
-        value={emailValue}  
-        onChangeText={(text) => setEmail(text)}  
+      <UserInput
+        placeholder={Const_AuthInfoText.InputEmail}
+        value={emailValue}
+        onChangeText={setEmail}
       />
 
       {/* Passwort-Eingabe */}
       <UserInput
-        placeholder={Constant_FormInfoText.InputPassword}
-        value={passwordValue}  
-        onChangeText={(text) => setPassword(text)}
+        placeholder={Const_AuthInfoText.InputPassword}
+        value={passwordValue}
+        onChangeText={setPassword}
         secureTextEntry
       />
 
       {/* Login-Button */}
       <View style={styles.Button}>
         {isLoading ? (
-          <ActivityIndicator size="large" color={AppColors.primary} />
+          <ActivityIndicator size="large" color={"#8A4FFF"} />
         ) : (
-          <Button 
-            title="Log In" 
-            onPress={handleLogin} 
-          />
+          <Button title="Log In" onPress={handleLogin} />
         )}
       </View>
 
       {/* "Angemeldet bleiben"-Schalter */}
       <View style={styles.switchContainer}>
-        <Text style={styles.switchText}>Remember Me</Text>
-        <Switch
-          value={isRememberMe}
-          onValueChange={(value) => setRememberMe(value)}
-        />
+        <Text style={styles.switchText}>{Const_AuthInfoText.RememberMe}</Text>
+        <Switch value={isRememberMe} onValueChange={setRememberMe} />
       </View>
 
       <TouchableOpacity onPress={navigateToResetPassword}>
-        <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+        <Text style={styles.forgotPasswordText}>{Const_AuthInfoText.forgotPassword}</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1, 
-    justifyContent: "center",  
-    alignItems: "center",  
-    backgroundColor: AppColors.background, 
-    paddingHorizontal: width * 0.1, 
-    paddingBottom: 40,
-  },
-  Title: {
-    fontSize: 50,  
-    fontWeight: "bold",  
-    marginBottom: 20  
-  },
-  profilePicture: {
-    width: 100,  
-    height: 100,  
-    borderRadius: 50,  
-    marginBottom: 10,  
-  },
-  switchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 10,
-  },
-  switchText: {
-    marginRight: 10, 
-  },
-  Button: {
-    marginTop: 10, 
-    width: "100%", 
-    maxWidth: 400, 
-    paddingHorizontal: 20,
-  },
-  forgotPasswordText: {
-    marginTop: 15,
-    color: AppColors.primary,
-    textDecorationLine: 'underline',
-  },
-  backButton: {
-    position: 'absolute',
-    top: 50,
-    left: 20,
-    zIndex: 10,
-  },
-});

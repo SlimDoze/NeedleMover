@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
-import UserInput from "@/components/General/UserInput";
-import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
+import UserInput from "@/components/(Auth)/UserInput";
+import { Const_AuthInfoText } from "@/constants/(Auth)/AuthInfoText";
 import { 
   View, 
   Text, 
@@ -151,7 +151,7 @@ export default function SignUpScreen() {
         <AntDesign name="arrowleft" size={24} color="black" />
       </TouchableOpacity>
       
-      <Text style={styles.Title}>{Constant_FormInfoText.NeedleMover}</Text>
+      <Text style={styles.Title}>{Const_AuthInfoText.NeedleMover}</Text>
 
       <TouchableOpacity onPress={handleProfilePictureClick}>
         <Image 
@@ -164,20 +164,20 @@ export default function SignUpScreen() {
       {formStep === 1 && (
         <>
           <UserInput 
-            placeholder={Constant_FormInfoText.InputName} 
+            placeholder={Const_AuthInfoText.InputName} 
             value={userData.name}  
             onChangeText={(text) => updateField('name', text)}  
           />
 
           <UserInput
-            placeholder={Constant_FormInfoText.InputHandle}
+            placeholder={Const_AuthInfoText.InputHandle}
             value={userData.handle}  
             onChangeText={(text) => updateField('handle', text)}  
           />
 
           <View style={styles.Button}>
             <Button 
-              title={Constant_FormInfoText.Continue} 
+              title={Const_AuthInfoText.Continue} 
               onPress={nextStep} 
             />
           </View>
@@ -188,13 +188,13 @@ export default function SignUpScreen() {
       {formStep === 2 && (
         <>
           <UserInput 
-            placeholder={Constant_FormInfoText.InputEmail} 
+            placeholder={Const_AuthInfoText.InputEmail} 
             value={userData.email}  
             onChangeText={(text) => updateField('email', text)}  
           />
 
           <UserInput
-            placeholder={Constant_FormInfoText.InputPassword}
+            placeholder={Const_AuthInfoText.InputPassword}
             value={userData.password}  
             onChangeText={(text) => updateField('password', text)}
             secureTextEntry
@@ -205,14 +205,14 @@ export default function SignUpScreen() {
               <ActivityIndicator size="large" color={AppColors.primary} />
             ) : (
               <Button 
-                title={Constant_FormInfoText.Register} 
+                title={Const_AuthInfoText.Register} 
                 onPress={handleSignUp} 
               />
             )}
           </View>
 
           <View style={styles.switchContainer}>
-            <Text style={styles.switchText}>{Constant_FormInfoText.StayLoggedIn}</Text>
+            <Text style={styles.switchText}>{Const_AuthInfoText.StayLoggedIn}</Text>
             <Switch
               value={userData.stayLoggedIn}
               onValueChange={(value) => updateField('stayLoggedIn', value)}

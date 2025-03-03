@@ -1,4 +1,4 @@
-export const Constant_FormInfoText = {
+export const Const_AuthInfoText = {
   InputName: "Enter your Name",
   InputHandle: "Enter your Handle",
   InputEmail: "Enter your Email",
@@ -8,4 +8,6 @@ export const Constant_FormInfoText = {
   NeedleMover: "Needle Mover",
   Continue: "Continue",
   Register: "Register",
+  RememberMe: "Remember me",
+  forgotPassword: "Forgot Password?",
 };

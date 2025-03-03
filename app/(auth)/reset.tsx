@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
-import UserInput from "@/components/General/UserInput";
+import UserInput from "@/components/(Auth)/UserInput";
 import { AppColors } from "@/constants/AppColors";
-import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
+import { Const_AuthInfoText } from "@/constants/(Auth)/AuthInfoText";
 import { AntDesign } from '@expo/vector-icons';
 
 import { 
@@ -187,7 +187,7 @@ export default function ResetPasswordFlow() {
         <AntDesign name="arrowleft" size={24} color="black" />
       </TouchableOpacity>
       
-      <Text style={styles.Title}>{Constant_FormInfoText.NeedleMover}</Text>
+      <Text style={styles.Title}>{Const_AuthInfoText.NeedleMover}</Text>
 
       <TouchableOpacity onPress={() => console.log("Profile picture clicked")}>
         <Image 
