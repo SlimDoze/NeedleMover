@@ -3,10 +3,10 @@ import { useRouter } from "expo-router";
 
 export function useLogin() {
   const router = useRouter();
-  const [emailValue, setEmail] = useState("");
-  const [passwordValue, setPassword] = useState("");
-  const [isRememberMe, setRememberMe] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [emailValue, setEmail] = useState<string>("");
+  const [passwordValue, setPassword] = useState<string>("");
+  const [isRememberMe, setRememberMe] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleLogin = () => {
     if (emailValue.trim() && passwordValue.trim()) {

@@ -75,7 +75,7 @@ export default function LoginScreen() {
       {/* "Angemeldet bleiben"-Schalter */}
       <View style={styles.switchContainer}>
         <Text style={styles.switchText}>{Const_AuthInfoText.RememberMe}</Text>
-        <Switch value={isRememberMe} onValueChange={setRememberMe} />
+        <Switch value={!!isRememberMe} onValueChange={setRememberMe} />
       </View>
 
       <TouchableOpacity onPress={navigateToResetPassword}>

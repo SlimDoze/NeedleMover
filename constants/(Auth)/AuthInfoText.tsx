@@ -1,3 +1,6 @@
+// Buttons/UI/Text in COmponents is not Split by InfoText its a //TODO
+
+
 export const Const_AuthInfoText = {
   InputName: "Enter your Name",
   InputHandle: "Enter your Handle",
@@ -10,4 +13,16 @@ export const Const_AuthInfoText = {
   Register: "Register",
   RememberMe: "Remember me",
   forgotPassword: "Forgot Password?",
+  EnterEmail_Reset: "Enter the email address associated with your account",
+  EmailPlaceholder: "Email Address",
+  SendVerificationCode: "Send Verification Code",
+  VerifyCode: "Verify Code",
+  EnterSixDigitCode: "Enter the 6-digit Code",
+  ResentCode: "Resend Code",
+  NewPassword: "New Password",
+  ConfirmPassword: "Confirm Password",
+  UpdatePassword: "Update Password",
+  ResetPassword: "Reset Password",
+  CreateNewPassword: "Create a new password for your account",
+  EnterVerificationCode: "Enter the 6-digit verification code, sent to: {email}",
 };
