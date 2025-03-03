@@ -32,6 +32,8 @@ export default function LoginScreen() {
   };
 
   const handleLogin = () => {
+    router.replace('../(teams)/selection'); // Überschriebt Login-Logik, um direkt auf Teams-Auswahl zu springen (nur für Testzwecke)
+
     // Text Input Validation Logic
     if (emailValue.trim() && passwordValue.trim()) {
       // Data Transfer to Backend
