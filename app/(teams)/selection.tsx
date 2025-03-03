@@ -1,5 +1,4 @@
-// This is an improved version of the card swiping mechanics for app/(teams)/selection.tsx
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,9 +7,12 @@ import {
   Image,
   Dimensions,
   Animated,
-  PanResponder,
-  Platform,
+  ScrollView,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   ViewStyle,
+  TextStyle,
+  ImageStyle
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -18,19 +20,29 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { AppColors } from '@/constants/AppColors';
 
 const { width, height } = Dimensions.get('window');
+const CARD_HEIGHT = height * 0.25;
 const CARD_WIDTH = width * 0.85;
-const CARD_HEIGHT = height * 0.55;
-const SWIPE_THRESHOLD = width * 0.25;
 
-// Mock data remains the same as your original file
-const mockTeams = [
+// Team type definition
+type Team = {
+  id: string;
+  name: string;
+  description: string;
+  memberCount: number;
+  lastActive: string;
+  color: string;
+  image: number; // for require'd images
+};
+
+// Mock data for teams
+const mockTeams: Team[] = [
   {
     id: '1',
     name: 'Team #1',
     description: 'Hip hop production team focused on creating radio-ready instrumentals',
     memberCount: 5,
     lastActive: '2 hours ago',
-    color: '#8A4FFF', // Purple (primary)
+    color: '#8A4FFF',
     image: require('@/assets/images/ProfilePictureIcon.png')
   },
   {
@@ -39,7 +51,7 @@ const mockTeams = [
     description: 'Rock band and production studio working on our debut EP',
     memberCount: 4,
     lastActive: 'Yesterday',
-    color: '#4F8AFF', // Blue
+    color: '#4F8AFF',
     image: require('@/assets/images/ProfilePictureIcon.png')
   },
   {
@@ -48,289 +60,130 @@ const mockTeams = [
     description: 'EDM production team specializing in house and techno tracks',
     memberCount: 3,
     lastActive: '3 days ago',
-    color: '#FF4F8A', // Pink
+    color: '#FF4F8A',
     image: require('@/assets/images/ProfilePictureIcon.png')
   },
+  {
+    id: '4',
+    name: 'Acoustic Collective',
+    description: 'Acoustic and folk music collaboration platform',
+    memberCount: 6,
+    lastActive: '1 week ago',
+    color: '#4AFFB4',
+    image: require('@/assets/images/ProfilePictureIcon.png')
+  }
 ];
 
 export default function TeamSelectionScreen() {
   const router = useRouter();
-  const [teams] = useState(mockTeams);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  
-  // Separate animation values for each card for better control
-  const position = useRef(new Animated.ValueXY()).current;
-  const secondCardScale = useRef(new Animated.Value(0.95)).current;
-  const secondCardTranslateY = useRef(new Animated.Value(10)).current;
-  
-  // Reset animations when currentIndex changes
-  useEffect(() => {
-    position.setValue({ x: 0, y: 0 });
-    secondCardScale.setValue(0.95);
-    secondCardTranslateY.setValue(10);
-  }, [currentIndex]);
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [scrollOffset, setScrollOffset] = useState(0);
 
-  const rotation = position.x.interpolate({
-    inputRange: [-width / 2, 0, width / 2],
-    outputRange: ['-10deg', '0deg', '10deg'],
-    extrapolate: 'clamp',
-  });
+  const handleScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+    {
+      useNativeDriver: false,
+      listener: (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const offsetY = event.nativeEvent.contentOffset.y;
+        setScrollOffset(offsetY);
+      }
+    }
+  );
 
-  // Function to handle navigating to a team detail page
   const navigateToTeam = (teamId: string) => {
     router.push(`../(teams)/${teamId}`);
   };
 
-  // Handle clicking the open button directly (not a swipe)
-  const handleOpenTeam = () => {
-    navigateToTeam(teams[currentIndex].id);
-  };
-
-  // Function to handle going to the next team
-  const goToNextTeam = () => {
-    setIsTransitioning(true);
-    
-    // Animate current card off to the left
-    Animated.timing(position, {
-      toValue: { x: -width, y: 0 },
-      duration: 250,
-      useNativeDriver: true,
-    }).start(() => {
-      // Update index after animation
-      const nextIndex = (currentIndex + 1) % teams.length;
-      setCurrentIndex(nextIndex);
-      
-      // Reset position for the new card
-      position.setValue({ x: 0, y: 0 });
-      
-      // Allow swiping again
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 50);
+  const renderTeamCard = (team: Team, index: number) => {
+    // Create interpolation for scale
+    const scale = scrollY.interpolate({
+      inputRange: [
+        (index - 1) * CARD_HEIGHT,
+        index * CARD_HEIGHT,
+        (index + 1) * CARD_HEIGHT
+      ],
+      outputRange: [0.8, 1, 0.8],
+      extrapolate: 'clamp'
     });
-  };
-  
-  // Function to handle going to the previous team
-  const goToPreviousTeam = () => {
-    setIsTransitioning(true);
-    
-    // Animate current card off to the right
-    Animated.timing(position, {
-      toValue: { x: width, y: 0 },
-      duration: 250,
-      useNativeDriver: true,
-    }).start(() => {
-      // Update index after animation
-      const prevIndex = (currentIndex - 1 + teams.length) % teams.length;
-      setCurrentIndex(prevIndex);
-      
-      // Reset position for the new card
-      position.setValue({ x: 0, y: 0 });
-      
-      // Allow swiping again
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 50);
-    });
-  };
-  
-  // Improved PanResponder with clearer conditions
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => !isTransitioning,
-      onMoveShouldSetPanResponder: (_, gestureState) => 
-        !isTransitioning && (Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5),
-      
-      onPanResponderGrant: () => {
-        // Use extractOffset instead of accessing _value directly to avoid TypeScript errors
-        position.extractOffset();
-      },
-      
-      onPanResponderMove: (_, gestureState) => {
-        // Only move card horizontally
-        position.setValue({
-          x: gestureState.dx,
-          y: 0
-        });
-        
-        // Animate the second card slightly based on the first card's position
-        if (gestureState.dx < 0) {
-          // When swiping left (showing next), make the next card bigger
-          const scaleValue = 0.95 + Math.min(Math.abs(gestureState.dx) / width * 0.05, 0.05);
-          secondCardScale.setValue(scaleValue);
-          secondCardTranslateY.setValue(10 - (Math.abs(gestureState.dx) / width * 10));
-        } else if (gestureState.dx > 0) {
-          // When swiping right (showing previous), also animate
-          const scaleValue = 0.95 + Math.min(Math.abs(gestureState.dx) / width * 0.05, 0.05);
-          secondCardScale.setValue(scaleValue);
-          secondCardTranslateY.setValue(10 - (Math.abs(gestureState.dx) / width * 10));
-        }
-      },
-      
-      onPanResponderRelease: (_, gestureState) => {
-        position.flattenOffset();
-        
-        // Determine if swipe is significant enough to trigger action
-        if (gestureState.dx > SWIPE_THRESHOLD) {
-          // Swiped right - go to previous team
-          goToPreviousTeam();
-          
-        } else if (gestureState.dx < -SWIPE_THRESHOLD) {
-          // Swiped left - go to next team
-          goToNextTeam();
-        } else {
-          // Not swiped far enough - spring back to center
-          Animated.parallel([
-            Animated.spring(position, {
-              toValue: { x: 0, y: 0 },
-              friction: 5,
-              useNativeDriver: true,
-            }),
-            Animated.spring(secondCardScale, {
-              toValue: 0.95,
-              friction: 5,
-              useNativeDriver: true,
-            }),
-            Animated.spring(secondCardTranslateY, {
-              toValue: 10,
-              friction: 5,
-              useNativeDriver: true,
-            })
-          ]).start();
-        }
-      },
-    })
-  ).current;
 
-  // Function to render the cards
-  const renderCards = () => {
-    if (teams.length === 0) return null;
-    
-    const cards = [];
-    
-    // Current card (top card)
-    if (currentIndex < teams.length) {
-      const currentTeam = teams[currentIndex];
-      cards.push(
-        <Animated.View
-          key={`current-${currentIndex}`}
-          style={[
-            styles.card,
-            {
-              transform: [
-                { translateX: position.x },
-                { translateY: position.y },
-                { rotate: rotation },
-              ],
-              zIndex: 2,
-            },
-          ]}
-          {...panResponder.panHandlers}
+    // Create interpolation for opacity
+    const opacity = scrollY.interpolate({
+      inputRange: [
+        (index - 1) * CARD_HEIGHT,
+        index * CARD_HEIGHT,
+        (index + 1) * CARD_HEIGHT
+      ],
+      outputRange: [0.6, 1, 0.6],
+      extrapolate: 'clamp'
+    });
+
+    // Determine if it's the first card and no scrolling has occurred
+    const isInitialState = index === 0 && scrollOffset === 0;
+
+    return (
+      <Animated.View 
+        key={team.id} 
+        style={[
+          styles.teamCard, 
+          { 
+            backgroundColor: team.color,
+            transform: [{ 
+              scale: isInitialState ? 1 : scale 
+            }],
+            opacity: isInitialState ? 1 : opacity,
+          }
+        ]}
+      >
+        <TouchableOpacity 
+          style={styles.teamCardContent}
+          onPress={() => navigateToTeam(team.id)}
         >
-          {/* Card content same as your original code */}
-          <View style={[styles.teamImageContainer, { backgroundColor: currentTeam.color }]}>
-            <Image source={currentTeam.image} style={styles.teamImage} />
-            <TouchableOpacity style={styles.infoButton}>
-              <Ionicons name="information-circle-outline" size={28} color="#fff" />
-            </TouchableOpacity>
+          <View style={styles.teamHeader}>
+            <Text style={styles.teamName}>{team.name}</Text>
+            <Ionicons 
+              name="information-circle-outline" 
+              size={24} 
+              color="white" 
+            />
           </View>
           
-          <View style={styles.cardContent}>
-            <Text style={styles.teamName}>{currentTeam.name}</Text>
-            <Text style={styles.teamDescription}>{currentTeam.description}</Text>
-            
-            <View style={styles.teamStats}>
-              <View style={styles.statItem}>
-                <Ionicons name="people" size={18} color={AppColors.text.muted} />
-                <Text style={styles.statText}>{currentTeam.memberCount} members</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Ionicons name="time-outline" size={18} color={AppColors.text.muted} />
-                <Text style={styles.statText}>Active {currentTeam.lastActive}</Text>
+          <View style={styles.teamDetails}>
+            <Image 
+              source={team.image} 
+              style={styles.teamImage} 
+            />
+            <View style={styles.teamInfo}>
+              <Text style={styles.teamDescription} numberOfLines={2}>
+                {team.description}
+              </Text>
+              <View style={styles.teamStats}>
+                <View style={styles.statItem}>
+                  <Ionicons name="people" size={16} color="white" />
+                  <Text style={styles.statText}>
+                    {team.memberCount} members
+                  </Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Ionicons name="time-outline" size={16} color="white" />
+                  <Text style={styles.statText}>
+                    Active {team.lastActive}
+                  </Text>
+                </View>
               </View>
             </View>
-
-            <TouchableOpacity 
-              style={[styles.openButton, { backgroundColor: currentTeam.color }]}
-              onPress={handleOpenTeam}
-            >
-              <Text style={styles.openButtonText}>Open Team</Text>
-            </TouchableOpacity>
           </View>
-        </Animated.View>
-      );
-    }
-
-    // Next/Previous card (card below current)
-    // Determine which card to show below based on swipe direction
-    // This is a simplification - in a full implementation you might want to keep
-    // track of swipe direction and show appropriate next/prev card
-    const nextIndex = (currentIndex + 1) % teams.length;
-    const prevIndex = (currentIndex - 1 + teams.length) % teams.length;
-    
-    // For now we'll always show the next card as the second card
-    // In a more complex implementation, you might change this based on swipe direction
-    const secondCardIndex = nextIndex;
-    
-    if (secondCardIndex !== currentIndex) {
-      const secondTeam = teams[secondCardIndex];
-      cards.push(
-        <Animated.View
-          key={`second-${secondCardIndex}`}
-          style={[
-            styles.card, 
-            {
-              transform: [
-                { scale: secondCardScale },
-                { translateY: secondCardTranslateY },
-              ],
-              zIndex: 1,
-            }
-          ]}
-        >
-          {/* Next card content same as your original code */}
-          <View style={[styles.teamImageContainer, { backgroundColor: secondTeam.color }]}>
-            <Image source={secondTeam.image} style={styles.teamImage} />
-            <TouchableOpacity style={styles.infoButton}>
-              <Ionicons name="information-circle-outline" size={28} color="#fff" />
-            </TouchableOpacity>
-          </View>
-          
-          <View style={styles.cardContent}>
-            <Text style={styles.teamName}>{secondTeam.name}</Text>
-            <Text style={styles.teamDescription}>{secondTeam.description}</Text>
-            
-            <View style={styles.teamStats}>
-              <View style={styles.statItem}>
-                <Ionicons name="people" size={18} color={AppColors.text.muted} />
-                <Text style={styles.statText}>{secondTeam.memberCount} members</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Ionicons name="time-outline" size={18} color={AppColors.text.muted} />
-                <Text style={styles.statText}>Active {secondTeam.lastActive}</Text>
-              </View>
-            </View>
-
-            <TouchableOpacity 
-              style={[styles.openButton, { backgroundColor: secondTeam.color }]}
-              disabled={true}
-            >
-              <Text style={styles.openButtonText}>Open Team</Text>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-      );
-    }
-
-    return cards;
+        </TouchableOpacity>
+      </Animated.View>
+    );
   };
 
-  // Main render for the component
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Your Teams</Text>
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.title}>Your Teams</Text>
+        </View>
         <TouchableOpacity style={styles.profileButton}>
           <Image 
             source={require('@/assets/images/ProfilePictureIcon.png')} 
@@ -339,49 +192,72 @@ export default function TeamSelectionScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.cardsContainer}>
-        {renderCards()}
-      </View>
-
-      <View style={styles.indicatorContainer}>
-        {teams.map((_, index) => (
-          <View
-            key={index}
-            style={[
-              styles.indicator,
-              index === currentIndex ? styles.activeIndicator : null,
-            ]}
-          />
-        ))}
-      </View>
+      <Animated.ScrollView
+        ref={scrollViewRef}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollViewContent}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+        snapToInterval={CARD_HEIGHT * 0.9}
+        decelerationRate="fast"
+      >
+        {mockTeams.map(renderTeamCard)}
+      </Animated.ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerButton} onPress={() => router.push('../(teams)/join')}>
+        <TouchableOpacity 
+          style={styles.footerButton} 
+          onPress={() => router.push('../(teams)/join')}
+        >
           <Feather name="user-plus" size={20} color="#fff" />
           <Text style={styles.footerButtonText}>Join Team</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.createButton} onPress={() => router.push('../(teams)/create')}>
+        <TouchableOpacity 
+          style={styles.createButton} 
+          onPress={() => router.push('../(teams)/create')}
+        >
           <Feather name="plus" size={24} color="#fff" />
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.footerButton} onPress={() => {}}>
-          <Feather name="search" size={20} color="#fff" />
-          <Text style={styles.footerButtonText}>Find Teams</Text>
+          <Feather name="edit" size={20} color="#fff" />
+          <Text style={styles.footerButtonText}>Edit Team</Text>
         </TouchableOpacity>
-      </View>
-
-      <View style={styles.swipeHelp}>
-        <Feather name="chevrons-left" size={20} color={AppColors.text.muted} />
-        <Text style={styles.swipeHelpText}>Wischen zum Navigieren zwischen Teams</Text>
-        <Feather name="chevrons-right" size={20} color={AppColors.text.muted} />
       </View>
     </SafeAreaView>
   );
 }
 
-// Styles remain mostly the same as your original code
-const styles = StyleSheet.create({
+// Define explicit types for styles
+interface Styles {
+  container: ViewStyle;
+  header: ViewStyle;
+  headerTitleContainer: ViewStyle;
+  title: TextStyle;
+  profileButton: ViewStyle;
+  profileImage: ImageStyle;
+  scrollView: ViewStyle;
+  scrollViewContent: ViewStyle;
+  teamCard: ViewStyle;
+  teamCardContent: ViewStyle;
+  teamHeader: ViewStyle;
+  teamName: TextStyle;
+  teamDetails: ViewStyle;
+  teamImage: ImageStyle;
+  teamInfo: ViewStyle;
+  teamDescription: TextStyle;
+  teamStats: ViewStyle;
+  statItem: ViewStyle;
+  statText: TextStyle;
+  footer: ViewStyle;
+  footerButton: ViewStyle;
+  footerButtonText: TextStyle;
+  createButton: ViewStyle;
+}
+
+const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
     backgroundColor: AppColors.background,
@@ -392,6 +268,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 15,
+  },
+  headerTitleContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: -1,
   },
   title: {
     fontSize: 28,
@@ -408,100 +291,73 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  cardsContainer: {
+  scrollView: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  card: {
+  scrollViewContent: {
+    paddingVertical: height * 0.1,
+    alignItems: 'center',
+  },
+  teamCard: {
     width: CARD_WIDTH,
     height: CARD_HEIGHT,
     borderRadius: 20,
-    backgroundColor: '#fff',
-    position: 'absolute',
+    marginVertical: 10,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 5,
+      height: 4,
     },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 7,
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
   },
-  teamImageContainer: {
-    height: CARD_HEIGHT * 0.4,
-    justifyContent: 'center',
+  teamCardContent: {
+    flex: 1,
+    padding: 15,
+    justifyContent: 'space-between',
+  },
+  teamHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  teamName: {
+    color: 'white',
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+  teamDetails: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
   teamImage: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    borderWidth: 2,
-    borderColor: '#fff',
+    marginRight: 15,
   },
-  infoButton: {
-    position: 'absolute',
-    top: 15,
-    right: 15,
-  },
-  cardContent: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+  teamInfo: {
     flex: 1,
   },
-  teamName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: AppColors.text.dark,
-    marginBottom: 8,
-  },
   teamDescription: {
-    fontSize: 16,
-    color: AppColors.text.muted,
-    marginBottom: 16,
+    color: 'white',
+    fontSize: 14,
+    marginBottom: 10,
   },
   teamStats: {
     flexDirection: 'row',
-    marginBottom: 20,
   },
   statItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: 15,
   },
   statText: {
-    marginLeft: 6,
-    color: AppColors.text.muted,
-  },
-  openButton: {
-    backgroundColor: AppColors.primary,
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 'auto',
-  },
-  openButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  indicatorContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  indicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#ccc',
-    marginHorizontal: 4,
-  },
-  activeIndicator: {
-    backgroundColor: AppColors.primary,
-    width: 16,
+    color: 'white',
+    marginLeft: 5,
+    fontSize: 12,
   },
   footer: {
     flexDirection: 'row',
@@ -541,15 +397,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 3,
     elevation: 3,
-  },
-  swipeHelp: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingBottom: 10,
-  },
-  swipeHelpText: {
-    color: AppColors.text.muted,
-    marginHorizontal: 8,
   },
 });
