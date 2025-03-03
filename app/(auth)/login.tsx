@@ -31,17 +31,16 @@ export default function LoginScreen() {
     console.log("Profile picture clicked");
   };
   const handleLogin = () => {
-    // DEVELOPMENT: Always navigate to team selection
-    router.replace('../(teams)/selection');
-  
+    // Text Input Validation Logic
     if (emailValue.trim() && passwordValue.trim()) {
+      // Data Transfer to Backend
       console.log('Login attempt with:', {
         email: emailValue,
         rememberMe: isRememberMe
       });
       
       // Navigate to teams screen after successful login
-      router.replace('/(teams)/selection');
+      router.replace('../(teams)/selection');
     } else {
       alert('Please enter email and password');
     }
