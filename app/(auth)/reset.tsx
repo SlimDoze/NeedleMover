@@ -6,7 +6,8 @@ import UserInput from "@/components/General/UserInput";
 import { AppColors } from "@/constants/AppColors";
 import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
 import { validateEmail } from "@/lib/LIB_Authentification";
-import { AntDesign } from '@expo/vector-icons'; // Füge diese Zeile hinzu
+import { useAuth } from "@/lib/LIB_AuthContext";
+import { AntDesign } from '@expo/vector-icons';
 import { 
   View, 
   Text, 
@@ -16,7 +17,8 @@ import {
   Image, 
   Dimensions,
   TextInput,
-  Alert
+  Alert,
+  ActivityIndicator
 } from "react-native";
 
 // Bildschirmgröße ermitteln
@@ -24,37 +26,42 @@ const { width } = Dimensions.get("window");
 
 export default function ResetPasswordFlow() {
   const router = useRouter();
+  const { resetPassword, updatePassword } = useAuth();
   const [step, setPageTwo] = useState(1);
   const [email, setEmail] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Verification Code Generation (would be backend in real app)
-  const generateVerificationCode = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  };
-
-  // Checks if Email is valid
-  const handleEmailSubmit = () => {
+  const handleEmailSubmit = async () => {
     if (!validateEmail(email)) {
       Alert.alert('Invalid Email', 'Please enter a valid email address');
       return;
     }
 
-   // Generates Code and sends it to the email
-    const code = generateVerificationCode();
-    console.log(`Verification code sent to ${email}: ${code}`);
-    
-    // In a real app, you'd call a backend endpoint to send the email
-    Alert.alert('Verification Code Sent', 'Check your email for the 6-digit code');
-
-    // Switches the page to the next step
-    setPageTwo(2);
+    try {
+      setIsLoading(true);
+      
+      // Call Supabase password reset
+      await resetPassword(email);
+      
+      Alert.alert(
+        'Reset Email Sent', 
+        'Check your email for instructions to reset your password',
+        [{ text: 'OK', onPress: () => setPageTwo(2) }]
+      );
+    } catch (error: any) {
+      console.error(error);
+      Alert.alert('Error', error.message || 'Failed to send reset email');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const checkVerificationCode = () => {
-    // In a real app, Gegenprüfung des Codes mit dem Backend
+    // In a real Supabase implementation, code verification happens when they click the link in email
+    // For now, we'll simulate this by just checking length
     if (verificationCode.length === 6) {
       setPageTwo(3);
     } else {
@@ -62,8 +69,7 @@ export default function ResetPasswordFlow() {
     }
   };
 
-  const ValidateNewPassword = () => {
-    // Neues Password Validieren
+  const handleUpdatePassword = async () => {
     if (newPassword !== confirmPassword) {
       Alert.alert('Password Mismatch', 'Passwords do not match');
       return;
@@ -74,13 +80,23 @@ export default function ResetPasswordFlow() {
       return;
     }
 
-    // Simulate password reset
-    console.log('Password reset successful');
-    Alert.alert('Success', 'Your password has been reset');
-    router.replace('/loginForm');
+    try {
+      setIsLoading(true);
+      
+      // Update password with Supabase
+      await updatePassword(newPassword);
+      
+      Alert.alert('Success', 'Your password has been reset', [
+        { text: 'OK', onPress: () => router.replace('/login') }
+      ]);
+    } catch (error: any) {
+      console.error(error);
+      Alert.alert('Error', error.message || 'Failed to update password');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Funktion für den Zurück-Button
   const handleGoBack = () => {
     if (step > 1) {
       setPageTwo(step - 1);
@@ -100,10 +116,14 @@ export default function ResetPasswordFlow() {
         onChangeText={setEmail}
       />
       <View style={styles.Button}>
-        <Button 
-          title="Send Verification Code" 
-          onPress={handleEmailSubmit} 
-        />
+        {isLoading ? (
+          <ActivityIndicator size="large" color={AppColors.primary} />
+        ) : (
+          <Button 
+            title="Send Verification Code" 
+            onPress={handleEmailSubmit} 
+          />
+        )}
       </View>
     </View>
   );
@@ -127,7 +147,7 @@ export default function ResetPasswordFlow() {
           onPress={checkVerificationCode} 
         />
       </View>
-      <TouchableOpacity onPress={() => setPageTwo(1)}>
+      <TouchableOpacity onPress={() => handleEmailSubmit()}>
         <Text style={styles.resendText}>Resend Code</Text>
       </TouchableOpacity>
     </View>
@@ -151,10 +171,14 @@ export default function ResetPasswordFlow() {
         secureTextEntry
       />
       <View style={styles.Button}>
-        <Button 
-          title="Reset Password" 
-          onPress={ValidateNewPassword} 
-        />
+        {isLoading ? (
+          <ActivityIndicator size="large" color={AppColors.primary} />
+        ) : (
+          <Button 
+            title="Reset Password" 
+            onPress={handleUpdatePassword} 
+          />
+        )}
       </View>
     </View>
   );
@@ -163,7 +187,6 @@ export default function ResetPasswordFlow() {
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
       
-      {/* Zurück-Button */}
       <TouchableOpacity 
         style={styles.backButton} 
         onPress={handleGoBack}

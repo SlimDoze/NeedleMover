@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import { useRouter } from "expo-router";
+import { router, useRouter } from "expo-router";
 import UserInput from "@/components/General/UserInput";
 import { AppColors } from "@/constants/AppColors";
 import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
-import { AntDesign } from '@expo/vector-icons'; // Füge diese Zeile hinzu
-
+import { AntDesign } from '@expo/vector-icons';
+import { useAuth } from "@/lib/LIB_AuthContext";
 import { 
   View, 
   Text, 
@@ -15,7 +15,9 @@ import {
   TouchableOpacity, 
   Image, 
   Dimensions, 
-  Switch 
+  Switch,
+  ActivityIndicator,
+  Alert
 } from "react-native";
 
 // Bildschirmgröße ermitteln
@@ -23,35 +25,45 @@ const { width } = Dimensions.get("window");
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { signIn } = useAuth();
   const [emailValue, setEmail] = useState("");
   const [passwordValue, setPassword] = useState("");
   const [isRememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleProfilePictureClick = () => {
     console.log("Profile picture clicked");
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     // Text Input Validation Logic
-    if (emailValue.trim() && passwordValue.trim()) {
-      // Data Transfer to Backend
-      console.log('Login attempt with:', {
-        email: emailValue,
-        rememberMe: isRememberMe
-      });
+    if (!emailValue.trim() || !passwordValue.trim()) {
+      Alert.alert('Error', 'Please enter email and password');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      
+      // Call Supabase auth
+      const { error } = await signIn(emailValue, passwordValue);
+      
+      if (error) throw error;
       
       // Navigate to teams screen after successful login
       router.replace('../(teams)/selection');
-    } else {
-      alert('Please enter email and password');
+    } catch (error: any) {
+      console.error(error);
+      Alert.alert('Login Failed', error.message || 'Please check your credentials');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const navigateToResetPassword = () => {
-    // router.push('/reset');
+    router.push('/reset');
   };
 
-  // Funktion für den Zurück-Button
   const handleGoBack = () => {
     router.back();
   };
@@ -60,7 +72,6 @@ export default function LoginScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
       
-      {/* Zurück-Button */}
       <TouchableOpacity 
         style={styles.backButton} 
         onPress={handleGoBack}
@@ -70,7 +81,6 @@ export default function LoginScreen() {
       
       <Text style={styles.Title}>{Constant_FormInfoText.NeedleMover}</Text>
 
-      {/* Profile Picture */}
       <TouchableOpacity onPress={handleProfilePictureClick}>
         <Image 
           source={require("../../assets/images/ProfilePictureIcon.png")} 
@@ -78,14 +88,12 @@ export default function LoginScreen() {
         />
       </TouchableOpacity>
 
-      {/* Email Input */}
       <UserInput 
         placeholder={Constant_FormInfoText.InputEmail} 
         value={emailValue}  
         onChangeText={(text) => setEmail(text)}  
       />
 
-      {/* Password Input */}
       <UserInput
         placeholder={Constant_FormInfoText.InputPassword}
         value={passwordValue}  
@@ -93,15 +101,18 @@ export default function LoginScreen() {
         secureTextEntry
       />
 
-      {/* Login Button */}
       <View style={styles.Button}>
-        <Button 
-          title="Log In" 
-          onPress={handleLogin} 
-        />
+        {isLoading ? (
+          <ActivityIndicator size="large" color={AppColors.primary} />
+        ) : (
+          <Button 
+            title="Log In" 
+            onPress={handleLogin} 
+
+          />
+        )}
       </View>
 
-      {/* InfoText + Toggle Container */}
       <View style={styles.switchContainer}>
         <Text style={styles.switchText}>Remember Me</Text>
         <Switch

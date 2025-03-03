@@ -5,18 +5,32 @@ import { useRouter } from "expo-router";
 import UserInput from "@/components/General/UserInput";
 import { createSignupFormManager } from "@/lib/LIB_Authentification";
 import { Constant_FormInfoText } from "@/constants/Forms/LoginRegisterInfoText";
-import { View, Text, Button, StyleSheet, TouchableOpacity, Image, Dimensions, Switch, Alert } from "react-native";
-import { AntDesign } from '@expo/vector-icons'; // Füge diese Zeile hinzu
-
+import { useAuth } from "@/lib/LIB_AuthContext";
+import { 
+  View, 
+  Text, 
+  Button, 
+  StyleSheet, 
+  TouchableOpacity, 
+  Image, 
+  Dimensions, 
+  Switch, 
+  Alert,
+  ActivityIndicator 
+} from "react-native";
+import { AntDesign } from '@expo/vector-icons';
+import { AppColors } from "@/constants/AppColors";
 // Bildschirmgröße ermitteln
 const { width } = Dimensions.get("window");
 
 export default function SignUpScreen() {
   const router = useRouter();
+  const { signUp } = useAuth();
   const { initialState, validateFirstStep, validateSecondStep } = createSignupFormManager();
   
   const [formStep, setFormStep] = useState(1);
   const [userData, setUserData] = useState(initialState);
+  const [isLoading, setIsLoading] = useState(false);
 
   const updateField = (field: keyof typeof userData, value: string | boolean) => {
     setUserData(prev => ({
@@ -37,25 +51,43 @@ export default function SignUpScreen() {
     }
   };
 
- 
-const handleSignUp = () => {
-  if (validateSecondStep(userData)) {
-    // Implement registration logic
-    console.log('Registration Data:', userData);
-    Alert.alert('Success', 'Registration completed!', [
-      {
-        text: 'OK',
-        onPress: () => router.replace('../(teams)/selection')
+  const handleSignUp = async () => {
+    if (validateSecondStep(userData)) {
+      try {
+        setIsLoading(true);
+        
+        // Call Supabase auth from our context
+        const { error } = await signUp(
+          userData.email, 
+          userData.password, 
+          {
+            name: userData.name,
+            handle: userData.handle
+          }
+        );
+        
+        if (error) throw error;
+        
+        // Navigate to teams screen after successful registration
+        Alert.alert('Success', 'Registration completed!', [
+          {
+            text: 'OK',
+            onPress: () => router.replace('../(teams)/selection')
+          }
+        ]);
+      } catch (error: any) {
+        console.error(error);
+        Alert.alert('Registration Failed', error.message || 'Please try again');
+      } finally {
+        setIsLoading(false);
       }
-    ]);
-  }
-};
+    }
+  };
 
   const handleProfilePictureClick = () => {
     console.log("Profile picture clicked");
   };
 
-  // Funktion für den Zurück-Button
   const handleGoBack = () => {
     if (formStep > 1) {
       prevStep();
@@ -68,7 +100,6 @@ const handleSignUp = () => {
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
       
-      {/* Zurück-Button */}
       <TouchableOpacity 
         style={styles.backButton} 
         onPress={handleGoBack}
@@ -126,10 +157,14 @@ const handleSignUp = () => {
           />
 
           <View style={styles.Button}>
-            <Button 
-              title={Constant_FormInfoText.Register} 
-              onPress={handleSignUp} 
-            />
+            {isLoading ? (
+              <ActivityIndicator size="large" color={AppColors.primary} />
+            ) : (
+              <Button 
+                title={Constant_FormInfoText.Register} 
+                onPress={handleSignUp} 
+              />
+            )}
           </View>
 
           <View style={styles.switchContainer}>
@@ -144,7 +179,6 @@ const handleSignUp = () => {
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1, 
