@@ -15,11 +15,11 @@ export default function AuthSelectionScreen() {
   const router = useRouter();
 
   const navigateToSignUp = () => {
-    router.push('/signup');
+    router.push('../(auth)/signup');
   };
-
+  
   const navigateToLogin = () => {
-    router.push('/login');
+    router.push('../(auth)/login');
   };
 
   return (
