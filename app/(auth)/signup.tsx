@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
@@ -13,121 +13,27 @@ import {
   Image, 
   Dimensions, 
   Switch, 
-  Alert,
   ActivityIndicator 
 } from "react-native";
 import { AntDesign } from '@expo/vector-icons';
 import { AppColors } from "@/constants/AppColors";
-
+import { styles } from "@/constants/(Auth)/signUpStylesheet";
+import { useSignUp } from "@/hooks/(auth)/useSignup";
 // Bildschirmgröße ermitteln
 const { width } = Dimensions.get("window");
 
-// Benutzerdatenschnittstelle
-interface UserSignupData {
-  name: string;
-  handle: string;
-  email: string;
-  password: string;
-  stayLoggedIn: boolean;
-}
-
 export default function SignUpScreen() {
   const router = useRouter();
+  const {
+    formStep,
+    userData,
+    isLoading,
+    updateField,
+    nextStep,
+    prevStep,
+    handleSignUp
+  } = useSignUp(); // Using the custom hook
   
-  const initialState: UserSignupData = {
-    name: '',
-    handle: '',
-    email: '',
-    password: '',
-    stayLoggedIn: false
-  };
-  
-  const [formStep, setFormStep] = useState(1);
-  const [userData, setUserData] = useState(initialState);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const updateField = (field: keyof UserSignupData, value: string | boolean) => {
-    setUserData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  // Einfache Validierungsfunktionen
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validatePassword = (password: string): boolean => {
-    return password.length >= 6;
-  };
-
-  const validateFirstStep = () => {
-    if (!userData.name.trim()) {
-      Alert.alert('Validierungsfehler', 'Bitte gib deinen Namen ein');
-      return false;
-    }
-    if (!userData.handle.trim()) {
-      Alert.alert('Validierungsfehler', 'Bitte gib dein Handle ein');
-      return false;
-    }
-    return true;
-  };
-
-  const validateSecondStep = () => {
-    if (!userData.email.trim()) {
-      Alert.alert('Validierungsfehler', 'Bitte gib deine E-Mail ein');
-      return false;
-    }
-    if (!validateEmail(userData.email)) {
-      Alert.alert('Validierungsfehler', 'Bitte gib eine gültige E-Mail ein');
-      return false;
-    }
-    if (!userData.password.trim()) {
-      Alert.alert('Validierungsfehler', 'Bitte gib ein Passwort ein');
-      return false;
-    }
-    if (!validatePassword(userData.password)) {
-      Alert.alert('Validierungsfehler', 'Das Passwort muss mindestens 6 Zeichen lang sein');
-      return false;
-    }
-    return true;
-  };
-
-  const nextStep = () => {
-    if (formStep === 1 && validateFirstStep()) {
-      setFormStep(2);
-    }
-  };
-
-  const prevStep = () => {
-    if (formStep > 1) {
-      setFormStep(prev => prev - 1);
-    }
-  };
-
-  const handleSignUp = () => {
-    if (validateSecondStep()) {
-      // Registrierungsprozess simulieren
-      setIsLoading(true);
-      
-      // Netzwerkverzögerung simulieren
-      setTimeout(() => {
-        console.log('Registrierungsdaten:', userData);
-        
-        // Nach erfolgreicher Registrierung zur Team-Auswahl navigieren
-        Alert.alert('Erfolg', 'Registrierung abgeschlossen!', [
-          {
-            text: 'OK',
-            onPress: () => router.replace('../(teams)/selection')
-          }
-        ]);
-        setIsLoading(false);
-      }, 1500);
-    }
-  };
-
   const handleProfilePictureClick = () => {
     console.log("Profilbild angeklickt");
   };
@@ -223,45 +129,3 @@ export default function SignUpScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1, 
-    justifyContent: "center",  
-    alignItems: "center",  
-    backgroundColor: "#f5f5f5", 
-    paddingHorizontal: width * 0.1, 
-    paddingBottom: 40,
-  },
-  Title: {
-    fontSize: 50,  
-    fontWeight: "bold",  
-    marginBottom: 20  
-  },
-  profilePicture: {
-    width: 100,  
-    height: 100,  
-    borderRadius: 50,  
-    marginBottom: 10,  
-  },
-  switchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 10,
-  },
-  switchText: {
-    marginRight: 10, 
-  },
-  Button: {
-    marginTop: 10, 
-    width: "100%", 
-    maxWidth: 400, 
-    paddingHorizontal: 20,
-  },
-  backButton: {
-    position: 'absolute',
-    top: 50,
-    left: 20,
-    zIndex: 10,
-  },
-});
