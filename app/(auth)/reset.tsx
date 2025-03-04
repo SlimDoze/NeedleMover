@@ -12,6 +12,7 @@ import UserInput from "@/components/(Auth)/UserInput";
 export default function ResetPasswordFlow() {
   const {
     step,
+    setStep, // Updated to match the hook's naming convention
     email,
     setEmail,
     verificationCode,
