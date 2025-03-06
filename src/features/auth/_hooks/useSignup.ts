@@ -1,7 +1,10 @@
+// src/features/auth/_hooks/useSignup.tsx
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { Alert } from "react-native";
 import { TEAM_ROUTES } from "../_constants/routes";
+import { customAlter } from "@/common/lib/altert";
+
 // Benutzerdatenschnittstelle
 interface UserSignupData {
   name: string;
@@ -45,11 +48,11 @@ export function useSignUp() {
 
   const validateFirstStep = () => {
     if (!userData.name.trim()) {
-      Alert.alert('Validierungsfehler', 'Bitte gib deinen Namen ein');
+      customAlter('Validierungsfehler', 'Bitte gib deinen Namen ein');
       return false;
     }
     if (!userData.handle.trim()) {
-      Alert.alert('Validierungsfehler', 'Bitte gib dein Handle ein');
+      customAlter('Validierungsfehler', 'Bitte gib dein Handle ein');
       return false;
     }
     return true;
@@ -57,19 +60,19 @@ export function useSignUp() {
 
   const validateSecondStep = () => {
     if (!userData.email.trim()) {
-      Alert.alert('Validierungsfehler', 'Bitte gib deine E-Mail ein');
+      customAlter('Validierungsfehler', 'Bitte gib deine E-Mail ein');
       return false;
     }
     if (!validateEmail(userData.email)) {
-      Alert.alert('Validierungsfehler', 'Bitte gib eine gültige E-Mail ein');
+      customAlter('Validierungsfehler', 'Bitte gib eine gültige E-Mail ein');
       return false;
     }
     if (!userData.password.trim()) {
-      Alert.alert('Validierungsfehler', 'Bitte gib ein Passwort ein');
+      customAlter('Validierungsfehler', 'Bitte gib ein Passwort ein');
       return false;
     }
     if (!validatePassword(userData.password)) {
-      Alert.alert('Validierungsfehler', 'Das Passwort muss mindestens 6 Zeichen lang sein');
+      customAlter('Validierungsfehler', 'Das Passwort muss mindestens 6 Zeichen lang sein');
       return false;
     }
     return true;
@@ -87,30 +90,37 @@ export function useSignUp() {
     }
   };
 
-  
   const handleSignUp = () => {
-    
-    if (validateSecondStep()) {
-      setIsLoading(true);
+    try {
+      console.log("Starte Sign-Up mit Daten:", userData);
+      console.log("E-Mail-Validierung:", validateEmail(userData.email));
       
-      setTimeout(() => {
-        console.log('Registrierungsdaten:', userData);
+      const isValid = validateSecondStep();
+      console.log("Validierungsergebnis:", isValid);
+      
+      if (isValid) {
+        setIsLoading(true);
         
-        // Nach erfolgreicher Registrierung zur Team-Auswahl navigieren
-        Alert.alert('Erfolg', 'Registrierung abgeschlossen!', [
-          {
-            text: 'OK',
-            onPress: () => router.replace(TEAM_ROUTES.SELECTION)
-          }
-        ]);
-
-        
-        setIsLoading(false);
-      }, 1500);
+        setTimeout(() => {
+          console.log('Registrierungsdaten:', userData);
+          
+          // Nach erfolgreicher Registrierung zur Team-Auswahl navigieren
+          customAlter('Erfolg', 'Registrierung abgeschlossen!', [
+            {
+              text: 'OK',
+              onPress: () => router.replace(TEAM_ROUTES.SELECTION)
+            }
+          ]);
+          
+          setIsLoading(false);
+        }, 1500);
+      }
+    } catch (error) {
+      console.error("Fehler beim Sign-Up:", error);
+      customAlter('Fehler', 'Bei der Registrierung ist ein Fehler aufgetreten');
+      setIsLoading(false);
     }
   };
-
-  
 
   return {
     formStep,
@@ -122,3 +132,4 @@ export function useSignUp() {
     handleSignUp
   };
 }
+export default function DummyComponent() { return null; }

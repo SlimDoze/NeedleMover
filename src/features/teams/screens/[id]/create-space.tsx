@@ -160,19 +160,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   formCard: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
+  backgroundColor: 'white',
+  borderRadius: 12,
+  padding: 20,
+  marginBottom: 24,
+  elevation: 3, // ✅ Schatten auf Android
+  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)", // ✅ Schatten auf iOS & Web
+},
   inputContainer: {
     marginBottom: 20,
   },

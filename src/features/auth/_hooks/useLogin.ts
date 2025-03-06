@@ -1,6 +1,8 @@
+// src/features/auth/_hooks/useLogin.tsx
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { AUTH_ROUTES,TEAM_ROUTES } from "../_constants/routes";
+import { AUTH_ROUTES, TEAM_ROUTES } from "../_constants/routes";
+import { customAlter } from "@/common/lib/altert";
 
 export function useLogin() {
   const router = useRouter();
@@ -23,7 +25,7 @@ export function useLogin() {
         router.replace(TEAM_ROUTES.SELECTION);
       }, 1000);
     } else {
-      alert("Bitte E-Mail und Passwort eingeben");
+      customAlter("Hinweis", "Bitte E-Mail und Passwort eingeben");
     }
   };
 
@@ -48,3 +50,4 @@ export function useLogin() {
     navigateToResetPassword,
   };
 }
+export default function DummyComponent() { return null; }

@@ -1,5 +1,5 @@
-import { Dimensions, StyleSheet } from "react-native";
-import { AppColors } from "@/common/constants/AppColors";
+import { StyleSheet, Dimensions } from 'react-native';
+import { AppColors } from '@/common/constants/AppColors';
 
 const { width } = Dimensions.get("window");
 
@@ -17,19 +17,21 @@ export const styles = StyleSheet.create({
       fontWeight: "bold",  
       marginBottom: 20  
     },
+    description: {
+      textAlign: 'center',
+      marginBottom: 20,
+      color: AppColors.text.muted,
+      paddingHorizontal: 20,
+    },
     userAvatar: {
       width: 100,  
       height: 100,  
       borderRadius: 50,  
       marginBottom: 10,  
     },
-    switchContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginVertical: 10,
-    },
-    switchText: {
-      marginRight: 10, 
+    stepContainer: {
+      width: '100%',
+      alignItems: 'center',
     },
     Button: {
       marginTop: 10, 
@@ -37,7 +39,19 @@ export const styles = StyleSheet.create({
       maxWidth: 400, 
       paddingHorizontal: 20,
     },
-    forgotPasswordText: {
+    codeInput: {
+      width: '100%',
+      maxWidth: 400,
+      height: 50,
+      borderWidth: 1,
+      borderColor: '#ccc',
+      borderRadius: 8,
+      paddingHorizontal: 15,
+      marginBottom: 20,
+      textAlign: 'center',
+      fontSize: 18,
+    },
+    resendText: {
       marginTop: 15,
       color: AppColors.primary,
       textDecorationLine: 'underline',
@@ -48,4 +62,5 @@ export const styles = StyleSheet.create({
       left: 20,
       zIndex: 10,
     },
-  })
+  });
+export default function DummyComponent() { return null; }

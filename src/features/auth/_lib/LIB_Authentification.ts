@@ -1,4 +1,5 @@
-import { Alert } from 'react-native';
+// src/features/auth/_lib/LIB_Authentification.tsx
+import { customAlter } from "@/common/lib/altert";
 
 export interface UserSignupData {
   name: string;
@@ -28,11 +29,11 @@ export const createSignupFormManager = () => {
 
   const validateFirstStep = (data: Pick<UserSignupData, 'name' | 'handle'>) => {
     if (!data.name.trim()) {
-      Alert.alert('Validation Error', 'Please enter your name');
+      customAlter('Validation Error', 'Please enter your name');
       return false;
     }
     if (!data.handle.trim()) {
-      Alert.alert('Validation Error', 'Please enter your handle');
+      customAlter('Validation Error', 'Please enter your handle');
       return false;
     }
     return true;
@@ -40,19 +41,19 @@ export const createSignupFormManager = () => {
 
   const validateSecondStep = (data: Pick<UserSignupData, 'email' | 'password'>) => {
     if (!data.email.trim()) {
-      Alert.alert('Validation Error', 'Please enter your email');
+      customAlter('Validation Error', 'Please enter your email');
       return false;
     }
     if (!validateEmail(data.email)) {
-      Alert.alert('Validation Error', 'Please enter a valid email');
+      customAlter('Validation Error', 'Please enter a valid email');
       return false;
     }
     if (!data.password.trim()) {
-      Alert.alert('Validation Error', 'Please enter a password');
+      customAlter('Validation Error', 'Please enter a password');
       return false;
     }
     if (!validatePassword(data.password)) {
-      Alert.alert('Validation Error', 'Password must be at least 6 characters');
+      customAlter('Validation Error', 'Password must be at least 6 characters');
       return false;
     }
     return true;
@@ -64,3 +65,4 @@ export const createSignupFormManager = () => {
     validateSecondStep,
   };
 };
+export default function DummyComponent() { return null; }

@@ -1,6 +1,7 @@
+// src/features/auth/_hooks/useReset.tsx
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { Alert } from "react-native";
+import { customAlter } from "@/common/lib/altert";
 
 export function useResetPassword() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export function useResetPassword() {
 
   const handleEmailSubmit = async () => {
     if (!validateEmail(email)) {
-      Alert.alert('Invalid Email', 'Please enter a valid email address');
+      customAlter('Ungültige E-Mail', 'Bitte gib eine gültige E-Mail-Adresse ein');
       return;
     }
 
@@ -27,10 +28,10 @@ export function useResetPassword() {
     setIsLoading(true);
     
     setTimeout(() => {
-      Alert.alert(
-        'Reset Email Sent',
-        'Check your email for instructions to reset your password',
-        [{ text: 'OK', onPress: () => setStep(2) }] // Updated to use setStep
+      customAlter(
+        'Reset-E-Mail gesendet',
+        'Überprüfe deine E-Mails für Anweisungen zum Zurücksetzen deines Passworts',
+        [{ text: 'OK', onPress: () => setStep(2) }]
       );
       setIsLoading(false);
     }, 1000);
@@ -38,27 +39,27 @@ export function useResetPassword() {
 
   const checkVerificationCode = () => {
     if (verificationCode.length === 6) {
-      setStep(3); // Updated to use setStep
+      setStep(3);
     } else {
-      Alert.alert('Invalid Code', 'Please enter the 6-digit code sent to your email');
+      customAlter('Ungültiger Code', 'Bitte gib den 6-stelligen Code ein, der an deine E-Mail gesendet wurde');
     }
   };
 
   const handleUpdatePassword = async () => {
     if (newPassword !== confirmPassword) {
-      Alert.alert('Passwords Don\'t Match', 'Passwords must match');
+      customAlter('Passwörter stimmen nicht überein', 'Die Passwörter müssen übereinstimmen');
       return;
     }
 
     if (newPassword.length < 6) {
-      Alert.alert('Weak Password', 'Password must be at least 6 characters long');
+      customAlter('Schwaches Passwort', 'Das Passwort muss mindestens 6 Zeichen lang sein');
       return;
     }
 
     setIsLoading(true);
 
     setTimeout(() => {
-      Alert.alert('Success', 'Your password has been reset', [
+      customAlter('Erfolg', 'Dein Passwort wurde zurückgesetzt', [
         { text: 'OK', onPress: () => router.replace('./login') }
       ]);
       setIsLoading(false);
@@ -67,7 +68,7 @@ export function useResetPassword() {
 
   const handleGoBack = () => {
     if (step > 1) {
-      setStep(step - 1); // Updated to use setStep
+      setStep(step - 1);
     } else {
       router.back();
     }
@@ -75,7 +76,7 @@ export function useResetPassword() {
 
   return {
     step,
-    setStep, // Updated for consistent naming
+    setStep,
     email,
     setEmail,
     verificationCode,
@@ -91,3 +92,4 @@ export function useResetPassword() {
     handleGoBack,
   };
 }
+export default function DummyComponent() { return null; }

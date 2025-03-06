@@ -10,4 +10,4 @@ export const AUTH_ROUTES: {LOGIN: RelativePathString; RESET_PASSWORD: RelativePa
   export const TEAM_ROUTES: { SELECTION: RelativePathString } = {
     SELECTION: "../../teams/screens/selection",
   };
-  
+  export default function DummyComponent() { return null; }

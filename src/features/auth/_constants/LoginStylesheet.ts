@@ -1,4 +1,5 @@
-import { StyleSheet, Dimensions } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
+import { AppColors } from "@/common/constants/AppColors";
 
 const { width } = Dimensions.get("window");
 
@@ -7,7 +8,7 @@ export const styles = StyleSheet.create({
       flex: 1, 
       justifyContent: "center",  
       alignItems: "center",  
-      backgroundColor: "#f5f5f5", 
+      backgroundColor: AppColors.background, 
       paddingHorizontal: width * 0.1, 
       paddingBottom: 40,
     },
@@ -36,10 +37,16 @@ export const styles = StyleSheet.create({
       maxWidth: 400, 
       paddingHorizontal: 20,
     },
+    forgotPasswordText: {
+      marginTop: 15,
+      color: AppColors.primary,
+      textDecorationLine: 'underline',
+    },
     backButton: {
       position: 'absolute',
       top: 50,
       left: 20,
       zIndex: 10,
     },
-  });
+  })
+export default function DummyComponent() { return null; }

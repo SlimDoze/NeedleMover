@@ -40,3 +40,4 @@
 
 //   return <>{children}</>;
 // }
+export default function DummyComponent() { return null; }

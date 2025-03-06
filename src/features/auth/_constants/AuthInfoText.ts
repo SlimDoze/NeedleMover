@@ -24,3 +24,4 @@ export const Const_AuthInfoText = {
   CreateNewPassword: "Create a new password for your account",
   EnterVerificationCode: "Enter the 6-digit verification code, sent to: {email}",
 };
+export default function DummyComponent() { return null; }
