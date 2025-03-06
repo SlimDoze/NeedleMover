@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
+import { AUTH_ROUTES,TEAM_ROUTES } from "../_constants/routes";
 
 export function useLogin() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export function useLogin() {
         });
 
         setIsLoading(false);
-        router.replace("../../teams/screens/selection");
+        router.replace(TEAM_ROUTES.SELECTION);
       }, 1000);
     } else {
       alert("Bitte E-Mail und Passwort eingeben");
@@ -31,7 +32,7 @@ export function useLogin() {
   };
 
   const navigateToResetPassword = () => {
-    router.push("../screens/reset");
+    router.push(AUTH_ROUTES.RESET_PASSWORD);
   };
 
   return {

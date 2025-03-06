@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { Alert } from "react-native";
-import { AppColors } from "@/common/constants/AppColors";
+import { TEAM_ROUTES } from "../_constants/routes";
 // Benutzerdatenschnittstelle
 interface UserSignupData {
   name: string;
@@ -87,7 +87,9 @@ export function useSignUp() {
     }
   };
 
+  
   const handleSignUp = () => {
+    
     if (validateSecondStep()) {
       setIsLoading(true);
       
@@ -98,13 +100,17 @@ export function useSignUp() {
         Alert.alert('Erfolg', 'Registrierung abgeschlossen!', [
           {
             text: 'OK',
-            onPress: () => router.replace('../../teams/screens/selection')
+            onPress: () => router.replace(TEAM_ROUTES.SELECTION)
           }
         ]);
+
+        
         setIsLoading(false);
       }, 1500);
     }
   };
+
+  
 
   return {
     formStep,
