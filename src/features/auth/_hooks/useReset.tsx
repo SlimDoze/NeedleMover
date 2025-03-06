@@ -59,7 +59,7 @@ export function useResetPassword() {
 
     setTimeout(() => {
       Alert.alert('Success', 'Your password has been reset', [
-        { text: 'OK', onPress: () => router.replace('/login') }
+        { text: 'OK', onPress: () => router.replace('./login') }
       ]);
       setIsLoading(false);
     }, 1000);

@@ -138,7 +138,8 @@ export default function TeamSelectionScreen() {
   );
 
   const navigateToTeam = (teamId: string) => {
-    router.push(`./(teams)/${teamId}`);
+    // router.push(`./(teams)/${teamId}`);
+    router.push(`./${teamId}`);
   };
 
   const onLayout = (event: any) => {
@@ -163,7 +164,7 @@ export default function TeamSelectionScreen() {
     >
       <TouchableOpacity 
         style={styles.teamCardContent}
-        onPress={() => router.push('../(teams)/create')}
+        onPress={() => router.push('./create')}
       >
         <View style={styles.teamHeader}>
           <Text style={styles.teamName}>Create Team</Text>
@@ -182,7 +183,7 @@ export default function TeamSelectionScreen() {
           </Text>
           <TouchableOpacity 
             style={styles.createTeamButton}
-            onPress={() => router.push('../(teams)/create')}
+            onPress={() => router.push('./create')}
           >
             <Text style={styles.createTeamButtonText}>Create Team</Text>
           </TouchableOpacity>
@@ -336,7 +337,7 @@ export default function TeamSelectionScreen() {
       <View style={styles.footer}>
         <TouchableOpacity 
           style={styles.footerButton} 
-          onPress={() => router.push('../(teams)/join')}
+          onPress={() => router.push('./join')}
         >
           <Feather name="user-plus" size={20} color="#fff" />
           <Text style={styles.footerButtonText}>Join Team</Text>
