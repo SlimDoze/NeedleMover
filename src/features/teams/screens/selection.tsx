@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { AppColors } from '@/common/constants/AppColors';
+import { Platform } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 const CARD_HEIGHT = height * 0.25;
@@ -406,14 +407,23 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginVertical: 10,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 5,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 4,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+      },
+      android: {
+        elevation: 5,
+      },
+      web: {
+        boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.2)',
+      },
+    }),
   },
   teamCardContent: {
     flex: 1,
