@@ -1,7 +1,7 @@
 // utils/alert.ts
 import { Platform, Alert } from 'react-native';
 
-export const customAlter = (
+export const customAlert = (
   title: string, 
   message: string, 
   buttons?: Array<{ text: string, onPress?: () => void }>,

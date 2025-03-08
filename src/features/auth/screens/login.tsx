@@ -6,13 +6,7 @@ import { Const_AuthInfoText } from "../_constants/AuthInfoText";
 import { styles } from "../_constants/LoginStylesheet";
 import { useLogin } from "../_hooks/useLogin";
 import { Const_Image } from "@/common/constants/CONST_Image";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-} from "react-native";
-
-// Import common components
+import { View, Text, TouchableOpacity} from "react-native";
 import BackButton from "@/common/components/backButton";
 import ProfilePicture from "@/common/components/userAvatar";
 import LoadingButton from "@/common/components/loadingButton";

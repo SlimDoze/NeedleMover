@@ -4,22 +4,12 @@ import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import UserInput from "@/src/features/auth/_components/UserInput";
 import { Const_AuthInfoText } from "../_constants/AuthInfoText";
-import { 
-  View, 
-  Text, 
-  Button, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Image, 
-  Dimensions, 
-  Switch, 
-  ActivityIndicator 
-} from "react-native";
+import { View, Text, Button, TouchableOpacity, Image, Dimensions, Switch, ActivityIndicator  } from "react-native";
 import { AntDesign } from '@expo/vector-icons';
 import { AppColors } from "@/common/constants/AppColors";
 import { styles } from "../_constants/signUpStylesheet";
 import { useSignUp } from "../_hooks/useSignup";
-// Bildschirmgröße ermitteln
+
 const { width } = Dimensions.get("window");
 
 export default function SignUpScreen() {
@@ -32,7 +22,7 @@ export default function SignUpScreen() {
     nextStep,
     prevStep,
     handleSignUp
-  } = useSignUp(); // Using the custom hook
+  } = useSignUp();
   
   const handleUserAvatarClick = () => {
     console.log("Profilbild angeklickt");

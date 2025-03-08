@@ -1,5 +1,5 @@
-// src/features/auth/_lib/LIB_Authentification.tsx
-import { customAlter } from "@/common/lib/altert";
+import { AuthErrTxt } from "../_constants/AuthErrorText";
+import { customAlert } from "@/common/lib/altert";
 
 export interface UserSignupData {
   name: string;
@@ -29,11 +29,11 @@ export const createSignupFormManager = () => {
 
   const validateFirstStep = (data: Pick<UserSignupData, 'name' | 'handle'>) => {
     if (!data.name.trim()) {
-      customAlter('Validation Error', 'Please enter your name');
+      customAlert(AuthErrTxt.SignUp_ValidationErrHeader, AuthErrTxt.SignUp_EnterName);
       return false;
     }
     if (!data.handle.trim()) {
-      customAlter('Validation Error', 'Please enter your handle');
+      customAlert(AuthErrTxt.SignUp_ValidationErrHeader, AuthErrTxt.SignUp_EnterHandle);
       return false;
     }
     return true;
@@ -41,19 +41,19 @@ export const createSignupFormManager = () => {
 
   const validateSecondStep = (data: Pick<UserSignupData, 'email' | 'password'>) => {
     if (!data.email.trim()) {
-      customAlter('Validation Error', 'Please enter your email');
+      customAlert(AuthErrTxt.SignUp_ValidationErrHeader, AuthErrTxt.SignUp_EnterEmail);
       return false;
     }
     if (!validateEmail(data.email)) {
-      customAlter('Validation Error', 'Please enter a valid email');
+      customAlert(AuthErrTxt.SignUp_ValidationErrHeader, AuthErrTxt.SignUp_EnterValidMail);
       return false;
     }
     if (!data.password.trim()) {
-      customAlter('Validation Error', 'Please enter a password');
+      customAlert(AuthErrTxt.SignUp_ValidationErrHeader, AuthErrTxt.SignUp_EnterPassword);
       return false;
     }
     if (!validatePassword(data.password)) {
-      customAlter('Validation Error', 'Password must be at least 6 characters');
+      customAlert(AuthErrTxt.SignUp_ValidationErrHeader, AuthErrTxt.SignUp_PasswordCharacterLenght);
       return false;
     }
     return true;
