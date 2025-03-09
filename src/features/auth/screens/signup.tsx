@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
@@ -9,6 +9,17 @@ import { AntDesign } from '@expo/vector-icons';
 import { AppColors } from "@/common/constants/AppColors";
 import { styles } from "../_constants/signUpStylesheet";
 import { UseSignUp } from "../_hooks/useSignup";
+import { formStyles, webFormStyles } from "../_constants/formStyle";
+
+
+
+
+
+
+
+
+
+
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -21,6 +32,21 @@ export default function SignUpScreen() {
     prevStep,
     handleSignUp
   } = UseSignUp();
+  
+  // Füge CSS-Stil für Web-Formulare hinzu
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      // Füge einmal den Style zum Dokument hinzu
+      const style = document.createElement('style');
+      style.textContent = webFormStyles;
+      document.head.appendChild(style);
+      
+      // Clean-up beim Unmount
+      return () => {
+        document.head.removeChild(style);
+      };
+    }
+  }, []);
   
   const handleUserAvatarClick = () => {
     console.log("Profilbild angeklickt");
@@ -58,7 +84,7 @@ export default function SignUpScreen() {
       {formStep === 1 && (
         <>
           {Platform.OS === 'web' ? (
-            <form>
+            <form className="web-form-container">
               <UserInput 
                 placeholder={AuthInfoText.InputName} 
                 value={userData.name}   
@@ -72,7 +98,7 @@ export default function SignUpScreen() {
               />
             </form>
           ) : (
-            <>
+            <View style={formStyles.formContainer}>
               <UserInput 
                 placeholder={AuthInfoText.InputName} 
                 value={userData.name}   
@@ -84,7 +110,7 @@ export default function SignUpScreen() {
                 value={userData.handle}  
                 onChangeText={(text) => updateField('handle', text)}
               />
-            </>
+            </View>
           )}
 
           <View style={styles.Button}>
@@ -100,7 +126,7 @@ export default function SignUpScreen() {
       {formStep === 2 && (
         <>
           {Platform.OS === 'web' ? (
-            <form>
+            <form className="web-form-container">
               <UserInput 
                 placeholder={AuthInfoText.InputEmail} 
                 value={userData.email}  
@@ -115,7 +141,7 @@ export default function SignUpScreen() {
               />
             </form>
           ) : (
-            <>
+            <View style={formStyles.formContainer}>
               <UserInput 
                 placeholder={AuthInfoText.InputEmail} 
                 value={userData.email}  
@@ -128,7 +154,7 @@ export default function SignUpScreen() {
                 onChangeText={(text) => updateField('password', text)}
                 secureTextEntry
               />
-            </>
+            </View>
           )}
 
           <View style={styles.Button}>

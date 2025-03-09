@@ -28,14 +28,14 @@ const userAvatar: React.FC<userAvatarProps> = ({
           { width: size, height: size, borderRadius: size / 2 },
           style
         ]}
+        resizeMode="cover"
       />
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-    userAvatar: {
-    resizeMode: "cover",
+  userAvatar: {
   },
 });
 

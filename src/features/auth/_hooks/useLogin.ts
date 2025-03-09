@@ -43,7 +43,7 @@ export function UseLogin() {
       // Temporary simulation for development
       console.log("Login attempt with:", {
         email: emailValue,
-        password: "[REDACTED]",
+        password: passwordValue,
         rememberMe: isRememberMe,
       });
       

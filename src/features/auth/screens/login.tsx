@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import UserInput from "@/src/features/auth/_components/UserInput";
 import { AuthInfoText } from "../_constants/AuthInfoText";
 import { styles } from "../_constants/LoginStylesheet";
+import { formStyles, webFormStyles } from "../_constants/formStyle";
 import { UseLogin } from "../_hooks/useLogin";
 import { CommonImages } from "@/common/constants/CONST_Image";
-import { View, Text, TouchableOpacity} from "react-native";
+import { View, Text, TouchableOpacity, Platform } from "react-native";
 import BackButton from "@/common/components/backButton";
 import ProfilePicture from "@/common/components/userAvatar";
 import LoadingButton from "@/common/components/loadingButton";
@@ -26,6 +27,19 @@ const LoginScreen: React.FC = () => {
     navigateToResetPassword,
   } = UseLogin();
 
+  // Füge CSS-Stil für Web-Formulare hinzu
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const style = document.createElement('style');
+      style.textContent = webFormStyles;
+      document.head.appendChild(style);
+      
+      return () => {
+        document.head.removeChild(style);
+      };
+    }
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
@@ -39,18 +53,37 @@ const LoginScreen: React.FC = () => {
         onPress={() => console.log("Profile picture clicked")} 
       />
       
-      <UserInput
-        placeholder={AuthInfoText.InputEmail}
-        value={emailValue}
-        onChangeText={setEmail}
-      />
-      
-      <UserInput
-        placeholder={AuthInfoText.InputPassword}
-        value={passwordValue}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+      {Platform.OS === 'web' ? (
+        <form className="web-form-container">
+          <UserInput
+            placeholder={AuthInfoText.InputEmail}
+            value={emailValue}
+            onChangeText={setEmail}
+          />
+          
+          <UserInput
+            placeholder={AuthInfoText.InputPassword}
+            value={passwordValue}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+        </form>
+      ) : (
+        <View style={formStyles.formContainer}>
+          <UserInput
+            placeholder={AuthInfoText.InputEmail}
+            value={emailValue}
+            onChangeText={setEmail}
+          />
+          
+          <UserInput
+            placeholder={AuthInfoText.InputPassword}
+            value={passwordValue}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+        </View>
+      )}
       
       <View style={styles.Button}>
         <LoadingButton
