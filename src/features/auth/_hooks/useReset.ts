@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { customAlert } from "@/common/lib/altert";
-import { AuthErrTxt } from "../_constants/AuthErrorText";
+import { ResetMsg } from "../_constants/AuthErrorText";
 import { AUTH_ROUTES } from "../_constants/routes";
 
 export function useResetPassword() {
@@ -22,7 +22,7 @@ export function useResetPassword() {
 
   const handleEmailSubmit = async () => {
     if (!validateEmail(email)) {
-      customAlert(AuthErrTxt.Reset_InvalidEmailHeader, AuthErrTxt.Reset_InvalidEmailBody);
+      customAlert(ResetMsg.InvalidEmailHeader, ResetMsg.InvalidEmailErr);
       return;
     }
 
@@ -31,7 +31,7 @@ export function useResetPassword() {
     
     setTimeout(() => {
       customAlert(
-        AuthErrTxt.Reset_EmailSentHeader, AuthErrTxt.Reset_EmailSentBody,
+        ResetMsg.EmailSentHeader, ResetMsg.EmailSentBody,
         [{ text: 'OK', onPress: () => setStep(2) }]
       );
       setIsLoading(false);
@@ -42,25 +42,25 @@ export function useResetPassword() {
     if (verificationCode.length === 6) {
       setStep(3);
     } else {
-      customAlert(AuthErrTxt.Reset_InvalidCodeHeader, AuthErrTxt.Reset_InvalidCodeHeader);
+      customAlert(ResetMsg.InvalidCodeHeader, ResetMsg.InvalidCodeHeader);
     }
   };
 
   const handleUpdatePassword = async () => {
     if (newPassword !== confirmPassword) {
-      customAlert(AuthErrTxt.Reset_PasswordMismatchHeader, AuthErrTxt.Reset_PasswordMismatchBody);
+      customAlert(ResetMsg.PasswordMismatchHeader, ResetMsg.PasswordMismatchBody);
       return;
     }
 
     if (newPassword.length < 6) {
-      customAlert(AuthErrTxt.Reset_WeakPasswordHeader, AuthErrTxt.Reset_WeakPasswordBody);
+      customAlert(ResetMsg.WeakPasswordHeader, ResetMsg.WeakPasswordBody);
       return;
     }
 
     setIsLoading(true);
 
     setTimeout(() => {
-      customAlert(AuthErrTxt.Reset_SuccessHeader, AuthErrTxt.Reset_SuccessBody, [
+      customAlert(ResetMsg.SuccessHeader, ResetMsg.SuccessBody, [
         { text: 'OK', onPress: () => router.replace(AUTH_ROUTES.LOGIN) }
       ]);
       setIsLoading(false);

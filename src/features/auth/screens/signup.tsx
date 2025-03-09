@@ -61,8 +61,8 @@ export default function SignUpScreen() {
         <>
           <UserInput 
             placeholder={Const_AuthInfoText.InputName} 
-            value={userData.name}  
-            onChangeText={(text) => updateField('name', text)}  
+            value={userData.name}   
+            onChangeText={(text) => updateField('name', text)}   //TODO FeldArt Parameter als Enum statt string für Clean Code`?
           />
 
           <UserInput

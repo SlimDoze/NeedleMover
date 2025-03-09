@@ -31,12 +31,14 @@ export default function TeamsLayout() {
         options={{ 
           title: 'Create Team',
           presentation: 'modal',
+          headerShown: false
         }} 
       />
       <Stack.Screen 
         name="join" 
         options={{ 
           title: 'Join Team',
+          headerShown: false
         }} 
       />
       {/* Add this to hide the [id] header */}

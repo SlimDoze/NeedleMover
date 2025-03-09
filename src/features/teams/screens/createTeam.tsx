@@ -1,29 +1,22 @@
 // app/(teams)/create.tsx
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  ScrollView, 
-  StyleSheet 
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { AppColors } from '@/common/constants/AppColors';
-import { Platform } from 'react-native';
 import { styles } from '../_constants/createTeamStyleSheet';
+import {Team_Routes } from '../_constants/routes'
+import { ComponentCaptions } from '../_constants/componentCaptions';
 
 export default function CreateTeamScreen() {
   const [teamName, setTeamName] = useState('');
   const [teamDescription, setTeamDescription] = useState('');
   const router = useRouter();
-
+  
   const handleCreateTeam = () => {
     // Implement team creation logic here
     // After creating the team, navigate to the team home
-    router.replace('../(teams)/selection');
+    router.replace(Team_Routes.Selection);
   };
 
   return (
@@ -31,13 +24,13 @@ export default function CreateTeamScreen() {
       <StatusBar style="dark" />
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
-          <Text style={styles.title}>Create a New Team</Text>
-          <Text style={styles.subtitle}>Set up your music collaboration team</Text>
+          <Text style={styles.title}>{ComponentCaptions.createTeam.title}</Text>
+          <Text style={styles.subtitle}>{ComponentCaptions.createTeam.subtitle}</Text>
         </View>
         
         <View style={styles.formCard}>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Team Name</Text>
+            <Text style={styles.label}>{ComponentCaptions.createTeam.teamNamelabel}</Text>
             <TextInput
               style={styles.input}
               placeholder="Enter team name"
@@ -47,7 +40,7 @@ export default function CreateTeamScreen() {
           </View>
           
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Description</Text>
+            <Text style={styles.label}>{ComponentCaptions.createTeam.descriptionLabel}</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="Describe your team and its goals"
@@ -64,14 +57,14 @@ export default function CreateTeamScreen() {
             style={[styles.button, styles.cancelButton]}
             onPress={() => router.back()}
           >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
+            <Text style={styles.cancelButtonText}>{ComponentCaptions.createTeam.cancelButtonText}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity
             style={[styles.button, styles.createButton]}
             onPress={handleCreateTeam}
           >
-            <Text style={styles.createButtonText}>Create Team</Text>
+            <Text style={styles.createButtonText}>{ComponentCaptions.createTeam.createTeamLabel}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

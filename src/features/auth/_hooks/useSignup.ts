@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "expo-router";
 import { TEAM_ROUTES } from "../_constants/routes";
 import { customAlert } from "@/common/lib/altert";
-import { AuthErrTxt } from "../_constants/AuthErrorText";
+import { SignupMsg } from "../_constants/AuthErrorText";
 
 // Benutzerdatenschnittstelle
 interface UserSignupData {
@@ -48,11 +48,11 @@ export function useSignUp() {
 
   const validateFirstStep = () => {
     if (!userData.name.trim()) {
-      customAlert(AuthErrTxt.SignUp_ValidationErrHeader, AuthErrTxt.SignUp_EnterName);
+      customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterNameErr);
       return false;
     }
     if (!userData.handle.trim()) {
-      customAlert(AuthErrTxt.SignUp_ValidationErrHeader, AuthErrTxt.SignUp_EnterHandle);
+      customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterHandleErr);
       return false;
     }
     return true;
@@ -60,19 +60,19 @@ export function useSignUp() {
 
   const validateSecondStep = () => {
     if (!userData.email.trim()) {
-      customAlert(AuthErrTxt.SignUp_ValidationErrHeader, AuthErrTxt.SignUp_EnterEmail);
+      customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterEmailErr);
       return false;
     }
     if (!validateEmail(userData.email)) {
-      customAlert(AuthErrTxt.SignUp_ValidationErrHeader, AuthErrTxt.SignUp_EnterValidMail);
+      customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterValidMailEr);
       return false;
     }
     if (!userData.password.trim()) {
-      customAlert(AuthErrTxt.SignUp_ValidationErrHeader, AuthErrTxt.SignUp_EnterPassword);
+      customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterPasswordErr);
       return false;
     }
     if (!validatePassword(userData.password)) {
-      customAlert(AuthErrTxt.SignUp_ValidationErrHeader, AuthErrTxt.SignUp_PasswordCharacterLenght);
+      customAlert(SignupMsg.ValidationErrHeader, SignupMsg.PasswordCharErr);
       return false;
     }
     return true;
@@ -105,7 +105,7 @@ export function useSignUp() {
           console.log('Registrierungsdaten:', userData);
           
           // Nach erfolgreicher Registrierung zur Team-Auswahl navigieren
-          customAlert(AuthErrTxt.SignUp_SuceessHeader, AuthErrTxt.SignUp_SuccessBody, [
+          customAlert(SignupMsg.SuceessHeader, SignupMsg.SuccessBody, [
             {
               text: 'OK',
               onPress: () => router.replace(TEAM_ROUTES.SELECTION)
@@ -117,7 +117,7 @@ export function useSignUp() {
       }
     } catch (error) {
       console.error("Fehler beim Sign-Up:", error);
-      customAlert( AuthErrTxt.SignUp_ErrorHeader,AuthErrTxt.SignUp_ErrorBody);
+      customAlert( SignupMsg.ErrorHeader,SignupMsg.ErrorBody);
       setIsLoading(false);
     }
   };

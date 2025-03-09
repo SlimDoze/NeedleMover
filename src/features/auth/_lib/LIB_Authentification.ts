@@ -1,4 +1,4 @@
-import { AuthErrTxt } from "../_constants/AuthErrorText";
+import { AuthAlertMsg } from "../_constants/AuthErrorText";
 import { customAlert } from "@/common/lib/altert";
 
 export interface UserSignupData {
@@ -29,11 +29,11 @@ export const createSignupFormManager = () => {
 
   const validateFirstStep = (data: Pick<UserSignupData, 'name' | 'handle'>) => {
     if (!data.name.trim()) {
-      customAlert(AuthErrTxt.SignUp_ValidationErrHeader, AuthErrTxt.SignUp_EnterName);
+      customAlert(AuthAlertMsg.SignUp_ValidationErrHeader, AuthAlertMsg.SignUp_EnterName);
       return false;
     }
     if (!data.handle.trim()) {
-      customAlert(AuthErrTxt.SignUp_ValidationErrHeader, AuthErrTxt.SignUp_EnterHandle);
+      customAlert(AuthAlertMsg.SignUp_ValidationErrHeader, AuthAlertMsg.SignUp_EnterHandle);
       return false;
     }
     return true;
@@ -41,19 +41,19 @@ export const createSignupFormManager = () => {
 
   const validateSecondStep = (data: Pick<UserSignupData, 'email' | 'password'>) => {
     if (!data.email.trim()) {
-      customAlert(AuthErrTxt.SignUp_ValidationErrHeader, AuthErrTxt.SignUp_EnterEmail);
+      customAlert(AuthAlertMsg.SignUp_ValidationErrHeader, AuthAlertMsg.SignUp_EnterEmail);
       return false;
     }
     if (!validateEmail(data.email)) {
-      customAlert(AuthErrTxt.SignUp_ValidationErrHeader, AuthErrTxt.SignUp_EnterValidMail);
+      customAlert(AuthAlertMsg.SignUp_ValidationErrHeader, AuthAlertMsg.SignUp_EnterValidMail);
       return false;
     }
     if (!data.password.trim()) {
-      customAlert(AuthErrTxt.SignUp_ValidationErrHeader, AuthErrTxt.SignUp_EnterPassword);
+      customAlert(AuthAlertMsg.SignUp_ValidationErrHeader, AuthAlertMsg.SignUp_EnterPassword);
       return false;
     }
     if (!validatePassword(data.password)) {
-      customAlert(AuthErrTxt.SignUp_ValidationErrHeader, AuthErrTxt.SignUp_PasswordCharacterLenght);
+      customAlert(AuthAlertMsg.SignUp_ValidationErrHeader, AuthAlertMsg.SignUp_PasswordCharacterLenght);
       return false;
     }
     return true;

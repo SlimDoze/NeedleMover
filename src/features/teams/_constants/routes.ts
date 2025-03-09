@@ -1,9 +1,9 @@
-export const TEAMS_ROUTES = 
+import { RelativePathString } from "expo-router"
+
+export const Team_Routes: { Selection: RelativePathString; Create: RelativePathString; JoinTeam: RelativePathString; Createteam: RelativePathString} =
     {
-        
+        Selection:  "./selection",
+        Create: "./create",
+        Createteam: "./createTeam",
+        JoinTeam: "./joinTeam"
     }
-
-
-export const AuthRoutes = {
-
-}

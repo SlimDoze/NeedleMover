@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "expo-router";
 import { AUTH_ROUTES, TEAM_ROUTES } from "../_constants/routes";
 import { customAlert } from "@/common/lib/altert";
-import { AuthErrTxt } from "../_constants/AuthErrorText";
+import { LoginMsg } from "../_constants/AuthErrorText";
 
 export function useLogin() {
   const router = useRouter();
@@ -26,7 +26,7 @@ export function useLogin() {
         router.replace(TEAM_ROUTES.SELECTION);
       }, 1000);
     } else {
-      customAlert(AuthErrTxt.Login_ErrHeader, AuthErrTxt.Login_ErrBody);
+      customAlert(LoginMsg.ErrorHeader, LoginMsg.ErrorBody);
     }
   };
 
