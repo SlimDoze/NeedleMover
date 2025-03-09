@@ -11,16 +11,6 @@ import { styles } from "../_constants/signUpStylesheet";
 import { UseSignUp } from "../_hooks/useSignup";
 import { formStyles, webFormStyles } from "../_constants/formStyle";
 
-
-
-
-
-
-
-
-
-
-
 export default function SignUpScreen() {
   const router = useRouter();
   const {
