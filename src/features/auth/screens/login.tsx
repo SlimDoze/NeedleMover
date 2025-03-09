@@ -2,10 +2,10 @@ import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import UserInput from "@/src/features/auth/_components/UserInput";
-import { Const_AuthInfoText } from "../_constants/AuthInfoText";
+import { AuthInfoText } from "../_constants/AuthInfoText";
 import { styles } from "../_constants/LoginStylesheet";
-import { useLogin } from "../_hooks/useLogin";
-import { Const_Image } from "@/common/constants/CONST_Image";
+import { UseLogin } from "../_hooks/useLogin";
+import { CommonImages } from "@/common/constants/CONST_Image";
 import { View, Text, TouchableOpacity} from "react-native";
 import BackButton from "@/common/components/backButton";
 import ProfilePicture from "@/common/components/userAvatar";
@@ -24,7 +24,7 @@ const LoginScreen: React.FC = () => {
     handleLogin,
     handleGoBack,
     navigateToResetPassword,
-  } = useLogin();
+  } = UseLogin();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -32,21 +32,21 @@ const LoginScreen: React.FC = () => {
       
       <BackButton onPress={handleGoBack} />
       
-      <Text style={styles.Title}>{Const_AuthInfoText.NeedleMover}</Text>
+      <Text style={styles.Title}>{AuthInfoText.NeedleMover}</Text>
       
       <ProfilePicture 
-        source={Const_Image.userAvatar} 
+        source={CommonImages.userAvatar} 
         onPress={() => console.log("Profile picture clicked")} 
       />
       
       <UserInput
-        placeholder={Const_AuthInfoText.InputEmail}
+        placeholder={AuthInfoText.InputEmail}
         value={emailValue}
         onChangeText={setEmail}
       />
       
       <UserInput
-        placeholder={Const_AuthInfoText.InputPassword}
+        placeholder={AuthInfoText.InputPassword}
         value={passwordValue}
         onChangeText={setPassword}
         secureTextEntry
@@ -62,7 +62,7 @@ const LoginScreen: React.FC = () => {
       </View>
       
       <ToggleSwitch
-        label={Const_AuthInfoText.RememberMe}
+        label={AuthInfoText.RememberMe}
         value={!!isRememberMe}
         onValueChange={setRememberMe}
         containerStyle={styles.switchContainer}
@@ -70,7 +70,7 @@ const LoginScreen: React.FC = () => {
       />
       
       <TouchableOpacity onPress={navigateToResetPassword}>
-        <Text style={styles.forgotPasswordText}>{Const_AuthInfoText.forgotPassword}</Text>
+        <Text style={styles.forgotPasswordText}>{AuthInfoText.forgotPassword}</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );

@@ -2,13 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Text,TouchableOpacity, Image, Dimensions, Animated, ScrollView, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Feather, Ionicons } from '@expo/vector-icons';
-import { AppColors } from '@/common/constants/AppColors';
+import { Feather } from '@expo/vector-icons';
 import { styles } from '../_constants/selectionStyleSheet';
-import { Team_Routes } from '../_constants/routes';
 import { mockTeams } from '../_components/MockTeams';
 import { ComponentCaptions } from '../_constants/componentCaptions';
 import TeamCard from '../_components/TeamCard';
+
 const { width, height } = Dimensions.get("window");
 const CARD_HEIGHT = height * 0.5;
 

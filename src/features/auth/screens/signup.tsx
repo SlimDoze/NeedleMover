@@ -3,14 +3,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import UserInput from "@/src/features/auth/_components/UserInput";
-import { Const_AuthInfoText } from "../_constants/AuthInfoText";
-import { View, Text, Button, TouchableOpacity, Image, Dimensions, Switch, ActivityIndicator  } from "react-native";
+import { AuthInfoText } from "../_constants/AuthInfoText";
+import { View, Text, Button, TouchableOpacity, Image, Dimensions, Switch, ActivityIndicator, Platform  } from "react-native";
 import { AntDesign } from '@expo/vector-icons';
 import { AppColors } from "@/common/constants/AppColors";
 import { styles } from "../_constants/signUpStylesheet";
-import { useSignUp } from "../_hooks/useSignup";
-
-const { width } = Dimensions.get("window");
+import { UseSignUp } from "../_hooks/useSignup";
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -22,7 +20,7 @@ export default function SignUpScreen() {
     nextStep,
     prevStep,
     handleSignUp
-  } = useSignUp();
+  } = UseSignUp();
   
   const handleUserAvatarClick = () => {
     console.log("Profilbild angeklickt");
@@ -47,7 +45,7 @@ export default function SignUpScreen() {
         <AntDesign name="arrowleft" size={24} color="black" />
       </TouchableOpacity>
       
-      <Text style={styles.Title}>{Const_AuthInfoText.NeedleMover}</Text>
+      <Text style={styles.Title}>{AuthInfoText.NeedleMover}</Text>
 
       <TouchableOpacity onPress={handleUserAvatarClick}>
         <Image 
@@ -59,21 +57,39 @@ export default function SignUpScreen() {
       {/* Erster Schritt: Name und Handle */}
       {formStep === 1 && (
         <>
-          <UserInput 
-            placeholder={Const_AuthInfoText.InputName} 
-            value={userData.name}   
-            onChangeText={(text) => updateField('name', text)}   //TODO FeldArt Parameter als Enum statt string für Clean Code`?
-          />
+          {Platform.OS === 'web' ? (
+            <form>
+              <UserInput 
+                placeholder={AuthInfoText.InputName} 
+                value={userData.name}   
+                onChangeText={(text) => updateField('name', text)}
+              />
 
-          <UserInput
-            placeholder={Const_AuthInfoText.InputHandle}
-            value={userData.handle}  
-            onChangeText={(text) => updateField('handle', text)}  
-          />
+              <UserInput
+                placeholder={AuthInfoText.InputHandle}
+                value={userData.handle}  
+                onChangeText={(text) => updateField('handle', text)}
+              />
+            </form>
+          ) : (
+            <>
+              <UserInput 
+                placeholder={AuthInfoText.InputName} 
+                value={userData.name}   
+                onChangeText={(text) => updateField('name', text)}
+              />
+
+              <UserInput
+                placeholder={AuthInfoText.InputHandle}
+                value={userData.handle}  
+                onChangeText={(text) => updateField('handle', text)}
+              />
+            </>
+          )}
 
           <View style={styles.Button}>
             <Button 
-              title={Const_AuthInfoText.Continue} 
+              title={AuthInfoText.Continue} 
               onPress={nextStep} 
             />
           </View>
@@ -83,32 +99,51 @@ export default function SignUpScreen() {
       {/* Zweiter Schritt: E-Mail, Passwort und Auto-Login */}
       {formStep === 2 && (
         <>
-          <UserInput 
-            placeholder={Const_AuthInfoText.InputEmail} 
-            value={userData.email}  
-            onChangeText={(text) => updateField('email', text)}  
-          />
+          {Platform.OS === 'web' ? (
+            <form>
+              <UserInput 
+                placeholder={AuthInfoText.InputEmail} 
+                value={userData.email}  
+                onChangeText={(text) => updateField('email', text)}
+              />
 
-          <UserInput
-            placeholder={Const_AuthInfoText.InputPassword}
-            value={userData.password}  
-            onChangeText={(text) => updateField('password', text)}
-            secureTextEntry
-          />
+              <UserInput
+                placeholder={AuthInfoText.InputPassword}
+                value={userData.password}  
+                onChangeText={(text) => updateField('password', text)}
+                secureTextEntry
+              />
+            </form>
+          ) : (
+            <>
+              <UserInput 
+                placeholder={AuthInfoText.InputEmail} 
+                value={userData.email}  
+                onChangeText={(text) => updateField('email', text)}
+              />
+
+              <UserInput
+                placeholder={AuthInfoText.InputPassword}
+                value={userData.password}  
+                onChangeText={(text) => updateField('password', text)}
+                secureTextEntry
+              />
+            </>
+          )}
 
           <View style={styles.Button}>
             {isLoading ? (
               <ActivityIndicator size="large" color={AppColors.primary} />
             ) : (
               <Button 
-                title={Const_AuthInfoText.Register} 
+                title={AuthInfoText.Register} 
                 onPress={handleSignUp} 
               />
             )}
           </View>
 
           <View style={styles.switchContainer}>
-            <Text style={styles.switchText}>{Const_AuthInfoText.StayLoggedIn}</Text>
+            <Text style={styles.switchText}>{AuthInfoText.StayLoggedIn}</Text>
             <Switch
               value={userData.stayLoggedIn}
               onValueChange={(value) => updateField('stayLoggedIn', value)}

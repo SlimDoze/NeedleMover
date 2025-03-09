@@ -1,12 +1,12 @@
 import { RelativePathString } from "expo-router";
 
-export const AUTH_ROUTES: {LOGIN: RelativePathString; RESET_PASSWORD: RelativePathString} = {
-    LOGIN: "../screens/login",
-    RESET_PASSWORD: "../screens/reset",
+export const Auth_Routes: {Login: RelativePathString; ResetPassword: RelativePathString} = {
+    Login: "../screens/login",
+    ResetPassword: "../screens/reset",
   };
   
 
   
-  export const TEAM_ROUTES: { SELECTION: RelativePathString } = {
-    SELECTION: "../../teams/screens/selection",
+  export const Team_Routes: { Selection: RelativePathString } = {
+    Selection: "../../teams/screens/selection",
   };

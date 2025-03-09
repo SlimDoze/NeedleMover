@@ -1,10 +1,10 @@
 // src/features/auth/_hooks/useSignUp.ts
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { TEAM_ROUTES } from "../_constants/routes";
-import { customAlert } from "@/common/lib/alert";
+import { Team_Routes } from "../_constants/routes";
+import { CustomAlert } from "@/common/lib/alert";
 import { SignupMsg } from "../_constants/AuthErrorText";
-import { validateEmail,validatePassword, validateRequired } from "../_lib/AuthValidation";
+import { ValidateEmail,ValidatePassword, ValidateRequired } from "../_lib/AuthValidation";
 
 
 // User data interface
@@ -16,7 +16,7 @@ interface UserSignupData {
   stayLoggedIn: boolean;
 }
 
-export function useSignUp() {
+export function UseSignUp() {
   const router = useRouter();
   
   const initialState: UserSignupData = {
@@ -31,63 +31,63 @@ export function useSignUp() {
   const [userData, setUserData] = useState<UserSignupData>(initialState);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const updateField = (field: keyof UserSignupData, value: string | boolean) => {
+  const UpdateField = (field: keyof UserSignupData, value: string | boolean) => {
     setUserData(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const validateFirstStep = () => {
-    if (!validateRequired(userData.name)) {
-      customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterNameErr);
+  const ValidateFirstStep = () => {
+    if (!ValidateRequired(userData.name)) {
+      CustomAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterNameErr);
       return false;
     }
-    if (!validateRequired(userData.handle)) {
-      customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterHandleErr);
-      return false;
-    }
-    return true;
-  };
-
-  const validateSecondStep = () => {
-    if (!validateRequired(userData.email)) {
-      customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterEmailErr);
-      return false;
-    }
-    if (!validateEmail(userData.email)) {
-      customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterValidMailEr);
-      return false;
-    }
-    if (!validateRequired(userData.password)) {
-      customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterPasswordErr);
-      return false;
-    }
-    if (!validatePassword(userData.password)) {
-      customAlert(SignupMsg.ValidationErrHeader, SignupMsg.PasswordCharErr);
+    if (!ValidateRequired(userData.handle)) {
+      CustomAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterHandleErr);
       return false;
     }
     return true;
   };
 
-  const nextStep = () => {
-    if (formStep === 1 && validateFirstStep()) {
+  const ValidateSecondStep = () => {
+    if (!ValidateRequired(userData.email)) {
+      CustomAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterEmailErr);
+      return false;
+    }
+    if (!ValidateEmail(userData.email)) {
+      CustomAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterValidMailEr);
+      return false;
+    }
+    if (!ValidateRequired(userData.password)) {
+      CustomAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterPasswordErr);
+      return false;
+    }
+    if (!ValidatePassword(userData.password)) {
+      CustomAlert(SignupMsg.ValidationErrHeader, SignupMsg.PasswordCharErr);
+      return false;
+    }
+    return true;
+  };
+
+  const NextStep = () => {
+    if (formStep === 1 && ValidateFirstStep()) {
       setFormStep(2);
     }
   };
 
-  const prevStep = () => {
+  const PrevStep = () => {
     if (formStep > 1) {
       setFormStep(prev => prev - 1);
     }
   };
 
-  const handleSignUp = async () => {
+  const HandleSignUp = async () => {
     try {
       console.log("Starting Sign-Up with data:", userData);
-      console.log("Email validation:", validateEmail(userData.email));
+      console.log("Email validation:", ValidateEmail(userData.email));
       
-      const isValid = validateSecondStep();
+      const isValid = ValidateSecondStep();
       console.log("Validation result:", isValid);
       
       if (isValid) {
@@ -120,10 +120,10 @@ export function useSignUp() {
         setTimeout(() => {
           console.log('Registration data:', userData);
           
-          customAlert(SignupMsg.SuceessHeader, SignupMsg.SuccessBody, [
+          CustomAlert(SignupMsg.SuceessHeader, SignupMsg.SuccessBody, [
             {
               text: 'OK',
-              onPress: () => router.replace(TEAM_ROUTES.SELECTION)
+              onPress: () => router.replace(Team_Routes.Selection)
             }
           ]);
           
@@ -132,7 +132,7 @@ export function useSignUp() {
       }
     } catch (error) {
       console.error("Error during Sign-Up:", error);
-      customAlert(SignupMsg.ErrorHeader, SignupMsg.ErrorBody);
+      CustomAlert(SignupMsg.ErrorHeader, SignupMsg.ErrorBody);
       setIsLoading(false);
     }
   };
@@ -141,9 +141,9 @@ export function useSignUp() {
     formStep,
     userData,
     isLoading,
-    updateField,
-    nextStep,
-    prevStep,
-    handleSignUp
+    updateField: UpdateField,
+    nextStep: NextStep,
+    prevStep: PrevStep,
+    handleSignUp: HandleSignUp
   };
 }

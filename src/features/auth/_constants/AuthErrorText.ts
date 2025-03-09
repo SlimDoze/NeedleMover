@@ -5,7 +5,7 @@ export const SignupMsg = {
     ErrorHeader: "Error",
     ErrorBody: "An Error occured",
     
-    ValidationErrHeader: "Validation Erro",
+    ValidationErrHeader: "Validation Error",
     EnterNameErr: "Please enter your Name",
     EnterHandleErr: "Please enter your Handle",
     EnterEmailErr: "Please enter your E-Mail",
@@ -27,12 +27,12 @@ export const ResetMsg = {
     EmailSentBody: "Check your Email inbox for further instructions to reste your password",
 
     InvalidCodeHeader: "Invalid  Code",
-    InvalidCodeBody: "PLease enter the six digit code, that has been sent to yourn email",
+    InvalidCodeBody: "Please enter the six digit code, that has been sent to yourn email",
 
     PasswordMismatchHeader: "Passwords do not match",
-    PasswordMismatchBody: "Passwords neet to match",
+    PasswordMismatchBody: "Passwords need to match",
 
-    WeakPasswordHeader: "Week Password",
+    WeakPasswordHeader: "Weak Password",
     WeakPasswordBody: "The Password must be at least six digits long",
 
     SuccessHeader: "Success",

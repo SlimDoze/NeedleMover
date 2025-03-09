@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { View, TextInput, StyleSheet, Platform } from "react-native";
+import { View, TextInput, StyleSheet, Platform, TextInputProps } from "react-native";
 
-interface CustomInputProps {
+interface CustomInputProps extends TextInputProps {
   placeholder: string;
   value?: string;
   onChangeText?: (text: string) => void;
   secureTextEntry?: boolean;
-  style?: object; 
+  style?: object;
 }
 
 const UserInput: React.FC<CustomInputProps> = ({
@@ -15,6 +15,7 @@ const UserInput: React.FC<CustomInputProps> = ({
   onChangeText,
   secureTextEntry = false,
   style,
+  ...restProps
 }) => {
   const [inputValue, setInputValue] = useState(value || "");
 
@@ -32,6 +33,14 @@ const UserInput: React.FC<CustomInputProps> = ({
         onChangeText={handleTextChange}
         secureTextEntry={secureTextEntry}
         autoCapitalize="none"
+        autoCorrect={false}
+        // Web-specific accessibility attributes
+        aria-label={placeholder}
+        {...(Platform.OS === 'web' ? {
+          type: secureTextEntry ? 'password' : 'text',
+          autoComplete: secureTextEntry ? 'new-password' : 'off',
+        } : {})}
+        {...restProps}
       />
     </View>
   );

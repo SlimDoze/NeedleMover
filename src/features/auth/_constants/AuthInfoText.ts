@@ -1,5 +1,5 @@
 // Buttons/UI/Text in COmponents is not Split by InfoText its a //TODO
-export const Const_AuthInfoText = {
+export const AuthInfoText = {
   InputName: "Enter your Name",
   InputHandle: "Enter your Handle",
   InputEmail: "Enter your Email",
@@ -23,6 +23,6 @@ export const Const_AuthInfoText = {
   ResetPassword: "Reset Password",
   CreateNewPassword: "Create a new password for your account",
   EnterVerificationCode: "Enter the 6-digit verification code, sent to: {email}",
-  AuthErrHeader:"Hinweis",
-  AuthErrBody:"Bitte E-Mail und Passwort eingeben",
+  AuthErrHeader:"Hint",
+  AuthErrBody:"Please enter Email and Password",
 };

@@ -1,13 +1,13 @@
 // src/features/auth/_hooks/useReset.ts
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { customAlert } from "@/common/lib/alert";
+import { CustomAlert } from "@/common/lib/alert";
 import { ResetMsg } from "../_constants/AuthErrorText";
-import { AUTH_ROUTES } from "../_constants/routes";
-import { validateEmail,validateMatch,validatePassword,validateRequired } from "../_lib/AuthValidation";
+import { Auth_Routes } from "../_constants/routes";
+import { ValidateEmail,ValidateMatch,ValidatePassword,ValidateRequired } from "../_lib/AuthValidation";
 
 
-export function useResetPassword() {
+export function UseResetPassword() {
   const router = useRouter();
   const [step, setStep] = useState<number>(1);
   const [email, setEmail] = useState<string>("");
@@ -17,8 +17,8 @@ export function useResetPassword() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleEmailSubmit = async () => {
-    if (!validateEmail(email)) {
-      customAlert(ResetMsg.InvalidEmailHeader, ResetMsg.InvalidEmailErr);
+    if (!ValidateEmail(email)) {
+      CustomAlert(ResetMsg.InvalidEmailHeader, ResetMsg.InvalidEmailErr);
       return;
     }
 
@@ -45,7 +45,7 @@ export function useResetPassword() {
       
       // Temporary simulation for development
       setTimeout(() => {
-        customAlert(
+        CustomAlert(
           ResetMsg.EmailSentHeader, ResetMsg.EmailSentBody,
           [{ text: 'OK', onPress: () => setStep(2) }]
         );
@@ -53,27 +53,27 @@ export function useResetPassword() {
       }, 1000);
     } catch (error) {
       console.error("Error requesting password reset:", error);
-      customAlert("Error", "An unexpected error occurred. Please try again.");
+      CustomAlert("Error", "An unexpected error occurred. Please try again.");
       setIsLoading(false);
     }
   };
 
   const checkVerificationCode = () => {
-    if (validateRequired(verificationCode) && verificationCode.length === 6) {
+    if (ValidateRequired(verificationCode) && verificationCode.length === 6) {
       setStep(3);
     } else {
-      customAlert(ResetMsg.InvalidCodeHeader, ResetMsg.InvalidCodeHeader);
+      CustomAlert(ResetMsg.InvalidCodeHeader, ResetMsg.InvalidCodeHeader);
     }
   };
 
   const handleUpdatePassword = async () => {
-    if (!validateMatch(newPassword, confirmPassword)) {
-      customAlert(ResetMsg.PasswordMismatchHeader, ResetMsg.PasswordMismatchBody);
+    if (!ValidateMatch(newPassword, confirmPassword)) {
+      CustomAlert(ResetMsg.PasswordMismatchHeader, ResetMsg.PasswordMismatchBody);
       return;
     }
 
-    if (!validatePassword(newPassword)) {
-      customAlert(ResetMsg.WeakPasswordHeader, ResetMsg.WeakPasswordBody);
+    if (!ValidatePassword(newPassword)) {
+      CustomAlert(ResetMsg.WeakPasswordHeader, ResetMsg.WeakPasswordBody);
       return;
     }
 
@@ -100,14 +100,14 @@ export function useResetPassword() {
       
       // Temporary simulation for development
       setTimeout(() => {
-        customAlert(ResetMsg.SuccessHeader, ResetMsg.SuccessBody, [
-          { text: 'OK', onPress: () => router.replace(AUTH_ROUTES.LOGIN) }
+        CustomAlert(ResetMsg.SuccessHeader, ResetMsg.SuccessBody, [
+          { text: 'OK', onPress: () => router.replace(Auth_Routes.Login) }
         ]);
         setIsLoading(false);
       }, 1000);
     } catch (error) {
       console.error("Error resetting password:", error);
-      customAlert("Error", "An unexpected error occurred. Please try again.");
+      CustomAlert("Error", "An unexpected error occurred. Please try again.");
       setIsLoading(false);
     }
   };

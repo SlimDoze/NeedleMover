@@ -1,25 +1,25 @@
 // src/features/auth/_hooks/useLogin.ts
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { AUTH_ROUTES, TEAM_ROUTES } from "../_constants/routes";
-import { customAlert } from "@/common/lib/alert";
+import { Auth_Routes, Team_Routes } from "../_constants/routes";
+import { CustomAlert } from "@/common/lib/alert";
 import { LoginMsg } from "../_constants/AuthErrorText";
 
-export function useLogin() {
+export function UseLogin() {
   const router = useRouter();
   const [emailValue, setEmail] = useState<string>("");
   const [passwordValue, setPassword] = useState<string>("");
   const [isRememberMe, setRememberMe] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, SetIsLoading] = useState<boolean>(false);
 
-  const handleLogin = async () => {
+  const HandleLogin = async () => {
     if (!emailValue.trim() || !passwordValue.trim()) {
-      customAlert(LoginMsg.ErrorHeader, LoginMsg.ErrorBody);
+      CustomAlert(LoginMsg.ErrorHeader, LoginMsg.ErrorBody);
       return;
     }
 
     try {
-      setIsLoading(true);
+      SetIsLoading(true);
       
       // This is where you would make your API call
       // Example structure for future implementation:
@@ -48,23 +48,23 @@ export function useLogin() {
       });
       
       setTimeout(() => {
-        setIsLoading(false);
-        router.replace(TEAM_ROUTES.SELECTION);
+        SetIsLoading(false);
+        router.replace(Team_Routes.Selection);
       }, 1000);
       
     } catch (error) {
-      setIsLoading(false);
+      SetIsLoading(false);
       console.error("Login error:", error);
-      customAlert("Login Error", "An unexpected error occurred. Please try again.");
+      CustomAlert("Login Error", "An unexpected error occurred. Please try again.");
     }
   };
 
-  const handleGoBack = () => {
+  const HandleGoBack = () => {
     router.back();
   };
 
-  const navigateToResetPassword = () => {
-    router.push(AUTH_ROUTES.RESET_PASSWORD);
+  const NavigateToResetPassword = () => {
+    router.push(Auth_Routes.ResetPassword);
   };
 
   return {
@@ -75,8 +75,8 @@ export function useLogin() {
     isRememberMe,
     setRememberMe,
     isLoading,
-    handleLogin,
-    handleGoBack,
-    navigateToResetPassword,
+    handleLogin: HandleLogin,
+    handleGoBack: HandleGoBack,
+    navigateToResetPassword: NavigateToResetPassword,
   };
 }

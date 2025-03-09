@@ -7,7 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Feather } from '@expo/vector-icons';
 import { AppColors } from '@/common/constants/AppColors';
 import { styles } from "../../_constants/createSpaceStyleSheet";
-import { customAlert } from '@/common/lib/alert';
+import { CustomAlert } from '@/common/lib/alert';
 import { ComponentCaptions } from '../../_constants/componentCaptions';
 
 export default function CreateSpaceScreen() {
@@ -18,7 +18,7 @@ export default function CreateSpaceScreen() {
 
   const handleCreateSpace = () => {
     if (!spaceName.trim()) {
-      customAlert('Error', 'Please enter a space name');
+      CustomAlert('Error', 'Please enter a space name');
       return;
     }
 
@@ -30,7 +30,7 @@ export default function CreateSpaceScreen() {
     });
 
     // After creating the space, navigate back to the team details
-    customAlert('Success', 'Space created successfully!', [
+    CustomAlert('Success', 'Space created successfully!', [
       {
         text: 'OK',
         onPress: () => router.back()

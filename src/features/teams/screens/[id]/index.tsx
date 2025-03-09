@@ -1,14 +1,6 @@
 // app/(teams)/[id]/index.tsx
 import React from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  ScrollView,
-  Image,
-  Platform
-} from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Image, } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';

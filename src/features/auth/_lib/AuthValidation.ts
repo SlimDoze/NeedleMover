@@ -1,15 +1,15 @@
-export const validateEmail = (email: string): boolean => {
+export const ValidateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
   
-  export const validatePassword = (password: string): boolean => {
+  export const ValidatePassword = (password: string): boolean => {
     return password.length >= 6;
   };
   
-  export const validateRequired = (value: string): boolean => {
+  export const ValidateRequired = (value: string): boolean => {
     return value.trim().length > 0;
   };
-  export const validateMatch = (value: string, confirmValue: string): boolean => {
+  export const ValidateMatch = (value: string, confirmValue: string): boolean => {
     return value === confirmValue;
   };

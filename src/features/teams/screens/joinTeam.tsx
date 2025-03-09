@@ -8,7 +8,7 @@ import { styles } from '../../teams/_constants/joinTeamStyleSheet';
 import { Team_Routes } from '../_constants/routes';
 import { JoinTeamMsg } from '../_constants/TeamAlertMsg';
 import { ComponentCaptions } from '../_constants/componentCaptions';
-import { customAlert } from '@/common/lib/alert';
+import { CustomAlert } from '@/common/lib/alert';
 
 export default function JoinTeamScreen() {
   const [inviteCode, setInviteCode] = useState('');
@@ -16,7 +16,7 @@ export default function JoinTeamScreen() {
 
   const handleJoinTeam = () => {
     if (!inviteCode.trim()) {
-      customAlert(JoinTeamMsg.ErrorHeader, JoinTeamMsg.ErrorNoInviteCode);
+      CustomAlert(JoinTeamMsg.ErrorHeader, JoinTeamMsg.ErrorNoInviteCode);
       return;
     }
 
@@ -25,7 +25,7 @@ export default function JoinTeamScreen() {
     console.log('Joining team with code:', inviteCode);
     
     // For now, simulate successful join and navigate to the team selection
-    customAlert(JoinTeamMsg.SucessHeader, JoinTeamMsg.SuccessBody, [
+    CustomAlert(JoinTeamMsg.SucessHeader, JoinTeamMsg.SuccessBody, [
       {
         text: 'OK',
         onPress: () => router.replace(Team_Routes.Selection)
