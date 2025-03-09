@@ -1,20 +1,14 @@
 // app/(teams)/[id]/create-space.tsx
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  ScrollView,
-  StyleSheet,
-  Alert
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Feather } from '@expo/vector-icons';
 import { AppColors } from '@/common/constants/AppColors';
 import { styles } from "../../_constants/createSpaceStyleSheet";
+import { customAlert } from '@/common/lib/alert';
+import { ComponentCaptions } from '../../_constants/componentCaptions';
 
 export default function CreateSpaceScreen() {
   const { id: teamId } = useLocalSearchParams();
@@ -24,7 +18,7 @@ export default function CreateSpaceScreen() {
 
   const handleCreateSpace = () => {
     if (!spaceName.trim()) {
-      Alert.alert('Error', 'Please enter a space name');
+      customAlert('Error', 'Please enter a space name');
       return;
     }
 
@@ -36,7 +30,7 @@ export default function CreateSpaceScreen() {
     });
 
     // After creating the space, navigate back to the team details
-    Alert.alert('Success', 'Space created successfully!', [
+    customAlert('Success', 'Space created successfully!', [
       {
         text: 'OK',
         onPress: () => router.back()
@@ -49,13 +43,13 @@ export default function CreateSpaceScreen() {
       <StatusBar style="dark" />
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
-          <Text style={styles.title}>Create a New Space</Text>
-          <Text style={styles.subtitle}>Set up a workspace for your music release</Text>
+          <Text style={styles.title}>{ComponentCaptions.createWorkspace.title}</Text>
+          <Text style={styles.subtitle}>{ComponentCaptions.createWorkspace.subtitle}</Text>
         </View>
         
         <View style={styles.formCard}>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Space Name</Text>
+            <Text style={styles.label}>{ComponentCaptions.createWorkspace.spaceNameLabel}</Text>
             <TextInput
               style={styles.input}
               placeholder="Enter space name"
@@ -65,7 +59,7 @@ export default function CreateSpaceScreen() {
           </View>
           
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Space Type</Text>
+            <Text style={styles.label}>{ComponentCaptions.createWorkspace.spaceTypeLabel}</Text>
             <View style={styles.typeContainer}>
               <TouchableOpacity 
                 style={[
@@ -84,10 +78,10 @@ export default function CreateSpaceScreen() {
                   styles.typeName,
                   spaceType === 'single' && styles.typeNameSelected
                 ]}>
-                  Single Release
+                  {ComponentCaptions.createWorkspace.singleReleaseLabel}
                 </Text>
                 <Text style={styles.typeDescription}>
-                  For releasing a single track
+                {ComponentCaptions.createWorkspace.singleReleaseDescription}
                 </Text>
               </TouchableOpacity>
               
@@ -108,10 +102,10 @@ export default function CreateSpaceScreen() {
                   styles.typeName,
                   spaceType === 'multi' && styles.typeNameSelected
                 ]}>
-                  Multi-Track Release
+                  {ComponentCaptions.createWorkspace.multiReleaseLabel}
                 </Text>
                 <Text style={styles.typeDescription}>
-                  For EP, album, or mixtape
+                {ComponentCaptions.createWorkspace.multiReleaseDescription}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -123,14 +117,14 @@ export default function CreateSpaceScreen() {
             style={[styles.button, styles.cancelButton]}
             onPress={() => router.back()}
           >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
+            <Text style={styles.cancelButtonText}>{ComponentCaptions.createWorkspace.cancelButton}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity
             style={[styles.button, styles.createButton]}
             onPress={handleCreateSpace}
           >
-            <Text style={styles.createButtonText}>Create Space</Text>
+            <Text style={styles.createButtonText}>{ComponentCaptions.createWorkspace.createButton}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

@@ -1,4 +1,4 @@
-// src/features/auth/_hooks/useLogin.tsx
+// src/features/auth/_hooks/useLogin.ts
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { AUTH_ROUTES, TEAM_ROUTES } from "../_constants/routes";
@@ -12,21 +12,50 @@ export function useLogin() {
   const [isRememberMe, setRememberMe] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleLogin = () => {
-    if (emailValue.trim() && passwordValue.trim()) {
+  const handleLogin = async () => {
+    if (!emailValue.trim() || !passwordValue.trim()) {
+      customAlert(LoginMsg.ErrorHeader, LoginMsg.ErrorBody);
+      return;
+    }
+
+    try {
       setIsLoading(true);
-
+      
+      // This is where you would make your API call
+      // Example structure for future implementation:
+      /*
+      const response = await authService.login({
+        email: emailValue,
+        password: passwordValue
+      });
+      
+      if (response.success) {
+        // Store tokens, user info, etc.
+        if (isRememberMe) {
+          // Persist auth state
+        }
+        router.replace(TEAM_ROUTES.SELECTION);
+      } else {
+        customAlert('Login Failed', response.message);
+      }
+      */
+      
+      // Temporary simulation for development
+      console.log("Login attempt with:", {
+        email: emailValue,
+        password: "[REDACTED]",
+        rememberMe: isRememberMe,
+      });
+      
       setTimeout(() => {
-        console.log("Login Versuch mit:", {
-          email: emailValue,
-          rememberMe: isRememberMe,
-        });
-
         setIsLoading(false);
         router.replace(TEAM_ROUTES.SELECTION);
       }, 1000);
-    } else {
-      customAlert(LoginMsg.ErrorHeader, LoginMsg.ErrorBody);
+      
+    } catch (error) {
+      setIsLoading(false);
+      console.error("Login error:", error);
+      customAlert("Login Error", "An unexpected error occurred. Please try again.");
     }
   };
 

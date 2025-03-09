@@ -1,20 +1,13 @@
 // app/(teams)/[id]/roadmap.tsx
 import React from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  ScrollView,
-  Alert,
-  Platform
-} from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Alert, } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Feather } from '@expo/vector-icons';
 import { AppColors } from '@/common/constants/AppColors';
 import { styles } from '../../_constants/roadmapStyleSheet';
+import { ComponentCaptions } from '../../_constants/componentCaptions';
 
 // Mock data for roadmap items
 const mockRoadmapItems = [
@@ -56,8 +49,8 @@ export default function TeamRoadmapScreen() {
       
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
-          <Text style={styles.title}>Team Roadmap</Text>
-          <Text style={styles.subtitle}>Track your team's goals and milestones</Text>
+          <Text style={styles.title}>{ComponentCaptions.roadmap.title}</Text>
+          <Text style={styles.subtitle}>{ComponentCaptions.roadmap.subtitle}</Text>
         </View>
         
         <View style={styles.actionsContainer}>
@@ -66,7 +59,7 @@ export default function TeamRoadmapScreen() {
             onPress={handleAddGoal}
           >
             <Feather name="plus" size={20} color="white" />
-            <Text style={styles.addButtonText}>Add Goal</Text>
+            <Text style={styles.addButtonText}>{ComponentCaptions.roadmap.addButtonText}</Text>
           </TouchableOpacity>
         </View>
         
@@ -103,9 +96,7 @@ export default function TeamRoadmapScreen() {
         </View>
         
         <View style={styles.emptyState}>
-          <Text style={styles.emptyStateText}>
-            Add more goals to track your team's progress
-          </Text>
+          <Text style={styles.emptyStateText}>{ComponentCaptions.roadmap.emptyStateText}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

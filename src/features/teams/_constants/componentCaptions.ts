@@ -30,5 +30,26 @@ export const ComponentCaptions =
         descriptionLabel: "Description",
         cancelButtonText: "Cancel",
         createTeamLabel: "Create Team"
+    },
+    roadmap: {
+        title: "Team Roadmap",
+        subtitle: "Track your team's goals and milestones",
+        addButtonText: "Add Goal",
+        emptyStateText: "Add more goals to track your team's progress",
+    },
+    createWorkspace: {
+        title: "Create a New Space",
+        subtitle: "Set up a workspace for your music release",
+        spaceNameLabel: "Space Name",
+        spaceTypeLabel: "Space Type",
+        singleReleaseLabel: "Single Release",
+        singleReleaseDescription: "For releasing a single track",
+        multiReleaseLabel: "Multi-Track Release",
+        multiReleaseDescription: "For EP, album, or mixtape",
+        cancelButton: "Cancel",
+        createButton: "Create Space"
+    },
+    index: {
+        
     }
   }

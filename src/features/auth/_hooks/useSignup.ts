@@ -1,11 +1,13 @@
-// src/features/auth/_hooks/useSignup.tsx
+// src/features/auth/_hooks/useSignUp.ts
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { TEAM_ROUTES } from "../_constants/routes";
 import { customAlert } from "@/common/lib/alert";
 import { SignupMsg } from "../_constants/AuthErrorText";
+import { validateEmail,validatePassword, validateRequired } from "../_lib/AuthValidation";
 
-// Benutzerdatenschnittstelle
+
+// User data interface
 interface UserSignupData {
   name: string;
   handle: string;
@@ -36,22 +38,12 @@ export function useSignUp() {
     }));
   };
 
-  // Einfache Validierungsfunktionen
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validatePassword = (password: string): boolean => {
-    return password.length >= 6;
-  };
-
   const validateFirstStep = () => {
-    if (!userData.name.trim()) {
+    if (!validateRequired(userData.name)) {
       customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterNameErr);
       return false;
     }
-    if (!userData.handle.trim()) {
+    if (!validateRequired(userData.handle)) {
       customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterHandleErr);
       return false;
     }
@@ -59,7 +51,7 @@ export function useSignUp() {
   };
 
   const validateSecondStep = () => {
-    if (!userData.email.trim()) {
+    if (!validateRequired(userData.email)) {
       customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterEmailErr);
       return false;
     }
@@ -67,7 +59,7 @@ export function useSignUp() {
       customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterValidMailEr);
       return false;
     }
-    if (!userData.password.trim()) {
+    if (!validateRequired(userData.password)) {
       customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterPasswordErr);
       return false;
     }
@@ -90,21 +82,44 @@ export function useSignUp() {
     }
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     try {
-      console.log("Starte Sign-Up mit Daten:", userData);
-      console.log("E-Mail-Validierung:", validateEmail(userData.email));
+      console.log("Starting Sign-Up with data:", userData);
+      console.log("Email validation:", validateEmail(userData.email));
       
       const isValid = validateSecondStep();
-      console.log("Validierungsergebnis:", isValid);
+      console.log("Validation result:", isValid);
       
       if (isValid) {
         setIsLoading(true);
         
+        // This is where you would make your API call
+        // Example structure for future implementation:
+        /*
+        const response = await authService.signup({
+          name: userData.name,
+          handle: userData.handle,
+          email: userData.email,
+          password: userData.password
+        });
+        
+        if (response.success) {
+          // Store tokens, user info, etc.
+          if (userData.stayLoggedIn) {
+            // Persist auth state
+          }
+          customAlert(SignupMsg.SuceessHeader, SignupMsg.SuccessBody, [
+            { text: 'OK', onPress: () => router.replace(TEAM_ROUTES.SELECTION) }
+          ]);
+        } else {
+          customAlert(SignupMsg.ErrorHeader, response.message || SignupMsg.ErrorBody);
+        }
+        */
+        
+        // Temporary simulation for development
         setTimeout(() => {
-          console.log('Registrierungsdaten:', userData);
+          console.log('Registration data:', userData);
           
-          // Nach erfolgreicher Registrierung zur Team-Auswahl navigieren
           customAlert(SignupMsg.SuceessHeader, SignupMsg.SuccessBody, [
             {
               text: 'OK',
@@ -116,8 +131,8 @@ export function useSignUp() {
         }, 1500);
       }
     } catch (error) {
-      console.error("Fehler beim Sign-Up:", error);
-      customAlert( SignupMsg.ErrorHeader,SignupMsg.ErrorBody);
+      console.error("Error during Sign-Up:", error);
+      customAlert(SignupMsg.ErrorHeader, SignupMsg.ErrorBody);
       setIsLoading(false);
     }
   };
