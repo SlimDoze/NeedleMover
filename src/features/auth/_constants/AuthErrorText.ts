@@ -1,40 +1,40 @@
 export const SignupMsg = {
-    SuceessHeader: "Erfolg",
-    SuccessBody: "Registirerung abgeschlossen",
+    SuceessHeader: "Success",
+    SuccessBody: "Registration complete",
 
-    ErrorHeader: "Fehler",
-    ErrorBody: "Ein Fehler ist aufgetreten",
+    ErrorHeader: "Error",
+    ErrorBody: "An Error occured",
     
-    ValidationErrHeader: "Validierungsfehler",
-    EnterNameErr: "Bitte gib deinen Namen ein",
-    EnterHandleErr: "Bitte gib dein Handle ein",
-    EnterEmailErr: "Bitte gib deine E-Mail ein",
-    EnterValidMailEr: "Bitte gib eine gültige E-Mail ein",
-    EnterPasswordErr: "Bitte gib ein Passwort ein",
-    PasswordCharErr: "Das Passwort muss mindestens 6 Zeichen lang sein"
+    ValidationErrHeader: "Validation Erro",
+    EnterNameErr: "Please enter your Name",
+    EnterHandleErr: "Please enter your Handle",
+    EnterEmailErr: "Please enter your E-Mail",
+    EnterValidMailEr: "Please enter a valid E-Mail",
+    EnterPasswordErr: "Please enter a Password",
+    PasswordCharErr: "The password must be at least six characters long"
 }
 
 export const LoginMsg = {
-    ErrorHeader: "Hinweis", 
-    ErrorBody: "Bitte E-Mail und Passwort eingeben",
+    ErrorHeader: "Hint", 
+    ErrorBody: "Please enter Email and Password",
 }
 
 export const ResetMsg = {
-    InvalidEmailHeader: "Ungültige E-Mail",
-    InvalidEmailErr: "Bitte gib eine gültige E-Mail-Adresse ein",
+    InvalidEmailHeader: "Invalid Email",
+    InvalidEmailErr: "please enter a valid Email",
 
-    EmailSentHeader: "Reset-E-Mail gesendet",
-    EmailSentBody: "Überprüfe deine E-Mails für Anweisungen zum Zurücksetzen deines Passworts",
+    EmailSentHeader: "Reset Email sent",
+    EmailSentBody: "Check your Email inbox for further instructions to reste your password",
 
-    InvalidCodeHeader: "Ungültiger Code",
-    InvalidCodeBody: "Bitte gib den 6-stelligen Code ein, der an deine E-Mail gesendet wurde",
+    InvalidCodeHeader: "Invalid  Code",
+    InvalidCodeBody: "PLease enter the six digit code, that has been sent to yourn email",
 
-    PasswordMismatchHeader: "Passwörter stimmen nicht überein",
-    PasswordMismatchBody: "Die Passwörter müssen übereinstimmen",
+    PasswordMismatchHeader: "Passwords do not match",
+    PasswordMismatchBody: "Passwords neet to match",
 
-    WeakPasswordHeader: "Schwaches Passwort",
-    WeakPasswordBody: "Das Passwort muss mindestens 6 Zeichen lang sein",
+    WeakPasswordHeader: "Week Password",
+    WeakPasswordBody: "The Password must be at least six digits long",
 
-    SuccessHeader: "Erfolg",
-    SuccessBody: "Dein Passwort wurde zurückgesetzt",
+    SuccessHeader: "Success",
+    SuccessBody: "The password has been reset",
 }

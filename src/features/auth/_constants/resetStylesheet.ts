@@ -63,4 +63,3 @@ export const styles = StyleSheet.create({
       zIndex: 10,
     },
   });
-export default function DummyComponent() { return null; }

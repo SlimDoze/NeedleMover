@@ -1,5 +1,5 @@
-import { AuthAlertMsg } from "../_constants/AuthErrorText";
-import { customAlert } from "@/common/lib/altert";
+import { SignupMsg } from "../_constants/AuthErrorText";
+import { customAlert } from "@/common/lib/alert";
 
 export interface UserSignupData {
   name: string;
@@ -29,11 +29,11 @@ export const createSignupFormManager = () => {
 
   const validateFirstStep = (data: Pick<UserSignupData, 'name' | 'handle'>) => {
     if (!data.name.trim()) {
-      customAlert(AuthAlertMsg.SignUp_ValidationErrHeader, AuthAlertMsg.SignUp_EnterName);
+      customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterNameErr);
       return false;
     }
     if (!data.handle.trim()) {
-      customAlert(AuthAlertMsg.SignUp_ValidationErrHeader, AuthAlertMsg.SignUp_EnterHandle);
+      customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterHandleErr);
       return false;
     }
     return true;
@@ -41,19 +41,19 @@ export const createSignupFormManager = () => {
 
   const validateSecondStep = (data: Pick<UserSignupData, 'email' | 'password'>) => {
     if (!data.email.trim()) {
-      customAlert(AuthAlertMsg.SignUp_ValidationErrHeader, AuthAlertMsg.SignUp_EnterEmail);
+      customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterEmailErr);
       return false;
     }
     if (!validateEmail(data.email)) {
-      customAlert(AuthAlertMsg.SignUp_ValidationErrHeader, AuthAlertMsg.SignUp_EnterValidMail);
+      customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterValidMailEr);
       return false;
     }
     if (!data.password.trim()) {
-      customAlert(AuthAlertMsg.SignUp_ValidationErrHeader, AuthAlertMsg.SignUp_EnterPassword);
+      customAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterPasswordErr);
       return false;
     }
     if (!validatePassword(data.password)) {
-      customAlert(AuthAlertMsg.SignUp_ValidationErrHeader, AuthAlertMsg.SignUp_PasswordCharacterLenght);
+      customAlert(SignupMsg.ValidationErrHeader, SignupMsg.PasswordCharErr);
       return false;
     }
     return true;
@@ -65,4 +65,4 @@ export const createSignupFormManager = () => {
     validateSecondStep,
   };
 };
-export default function DummyComponent() { return null; }
+export default function Component() { return null; }

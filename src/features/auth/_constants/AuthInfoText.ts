@@ -26,4 +26,3 @@ export const Const_AuthInfoText = {
   AuthErrHeader:"Hinweis",
   AuthErrBody:"Bitte E-Mail und Passwort eingeben",
 };
-export default function DummyComponent() { return null; }

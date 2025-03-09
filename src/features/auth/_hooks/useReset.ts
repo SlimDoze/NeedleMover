@@ -1,7 +1,7 @@
 // src/features/auth/_hooks/useReset.tsx
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { customAlert } from "@/common/lib/altert";
+import { customAlert } from "@/common/lib/alert";
 import { ResetMsg } from "../_constants/AuthErrorText";
 import { AUTH_ROUTES } from "../_constants/routes";
 
@@ -93,4 +93,3 @@ export function useResetPassword() {
     handleGoBack,
   };
 }
-export default function DummyComponent() { return null; }

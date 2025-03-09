@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { TEAM_ROUTES } from "../_constants/routes";
-import { customAlert } from "@/common/lib/altert";
+import { customAlert } from "@/common/lib/alert";
 import { SignupMsg } from "../_constants/AuthErrorText";
 
 // Benutzerdatenschnittstelle
@@ -132,4 +132,3 @@ export function useSignUp() {
     handleSignUp
   };
 }
-export default function DummyComponent() { return null; }

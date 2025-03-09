@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { AUTH_ROUTES, TEAM_ROUTES } from "../_constants/routes";
-import { customAlert } from "@/common/lib/altert";
+import { customAlert } from "@/common/lib/alert";
 import { LoginMsg } from "../_constants/AuthErrorText";
 
 export function useLogin() {
@@ -51,4 +51,3 @@ export function useLogin() {
     navigateToResetPassword,
   };
 }
-export default function DummyComponent() { return null; }
