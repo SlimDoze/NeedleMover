@@ -6,8 +6,8 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { styles } from '../../teams/_constants/joinTeamStyleSheet';
 import { Team_Routes } from '../_constants/routes';
-import { JoinTeamMsg } from '../_constants/TeamAlertMsg'
-import { ComponentCaptions } from '../_constants/componentCaptions'
+import { JoinTeamMsg } from '../_constants/TeamAlertMsg';
+import { ComponentCaptions } from '../_constants/componentCaptions';
 
 export default function JoinTeamScreen() {
   const [inviteCode, setInviteCode] = useState('');
@@ -36,42 +36,44 @@ export default function JoinTeamScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
       <View style={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.title}>{ComponentCaptions.joinTeam.title}</Text>
-          <Text style={styles.subtitle}>{ComponentCaptions.joinTeam.subtitle}</Text>
-        </View>
-        
-        <View style={styles.formCard}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>{ComponentCaptions.joinTeam.helperText}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter invite code"
-              value={inviteCode}
-              onChangeText={setInviteCode}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            <Text style={styles.helperText}>
-            {ComponentCaptions.joinTeam.subtitle}
-            </Text>
+        <View style={styles.formContainer}>
+          <View style={styles.header}>
+            <Text style={styles.title}>{ComponentCaptions.joinTeam.title}</Text>
+            <Text style={styles.subtitle}>{ComponentCaptions.joinTeam.subtitle}</Text>
           </View>
-        </View>
-        
-        <View style={styles.buttonsContainer}>
-          <TouchableOpacity
-            style={[styles.button, styles.cancelButton]}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.cancelButtonText}>{ComponentCaptions.joinTeam.cancelButtonText}</Text>
-          </TouchableOpacity>
           
-          <TouchableOpacity
-            style={[styles.button, styles.joinButton]}
-            onPress={handleJoinTeam}
-          >
-            <Text style={styles.joinButtonText}>{ComponentCaptions.joinTeam.joinButtonText}</Text>
-          </TouchableOpacity>
+          <View style={styles.formCard}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>{ComponentCaptions.joinTeam.label}</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter invite code"
+                value={inviteCode}
+                onChangeText={setInviteCode}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <Text style={styles.helperText}>
+                {ComponentCaptions.joinTeam.helperText}
+              </Text>
+            </View>
+          </View>
+          
+          <View style={styles.buttonsContainer}>
+            <TouchableOpacity
+              style={[styles.button, styles.cancelButton]}
+              onPress={() => router.back()}
+            >
+              <Text style={styles.cancelButtonText}>{ComponentCaptions.joinTeam.cancelButtonText}</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.button, styles.joinButton]}
+              onPress={handleJoinTeam}
+            >
+              <Text style={styles.joinButtonText}>{ComponentCaptions.joinTeam.joinButtonText}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </SafeAreaView>

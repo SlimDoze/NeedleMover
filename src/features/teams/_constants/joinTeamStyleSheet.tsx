@@ -10,6 +10,12 @@ export const styles = StyleSheet.create({
       flex: 1,
       padding: 20,
       justifyContent: 'center',
+      alignItems: 'center',
+    },
+    formContainer: {
+      width: '100%',
+      maxWidth: 1500,
+      padding: Platform.OS === 'web' ? 30 : 0,
     },
     header: {
       marginBottom: 24,

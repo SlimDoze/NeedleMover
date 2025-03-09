@@ -27,7 +27,7 @@ export default function TeamsLayout() {
         }} 
       />
       <Stack.Screen 
-        name="create" 
+        name="createTeam" 
         options={{ 
           title: 'Create Team',
           presentation: 'modal',
@@ -35,8 +35,9 @@ export default function TeamsLayout() {
         }} 
       />
       <Stack.Screen 
-        name="join" 
+        name="joinTeam" 
         options={{ 
+          presentation: 'modal',
           title: 'Join Team',
           headerShown: false
         }} 
