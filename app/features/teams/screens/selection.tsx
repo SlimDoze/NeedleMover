@@ -8,7 +8,7 @@ import { styles } from '../_constants/selectionStyleSheet';
 import { ComponentCaptions } from '../_constants/componentCaptions';
 import TeamCard from '../_components/TeamCard';
 import { useTeams } from '../_hooks/useTeams';
-import { useAuth } from '@/common/lib/authContext';
+import { useAuth } from '@/lib/authContext';
 import { AppColors } from '@/common/constants/AppColors';
 
 const { height } = Dimensions.get("window");

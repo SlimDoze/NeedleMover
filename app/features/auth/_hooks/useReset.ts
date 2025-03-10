@@ -5,7 +5,7 @@ import { CustomAlert } from "@/common/lib/alert";
 import { ResetMsg } from "../_constants/AuthErrorText";
 import { Auth_Routes } from "../_constants/routes";
 import { ValidateEmail, ValidateMatch, ValidatePassword, ValidateRequired } from "../_lib/AuthValidation";
-import { AuthService } from "@/common/lib/auth";
+import { AuthService } from "@/lib/auth";
 
 export function UseResetPassword() {
   const router = useRouter();

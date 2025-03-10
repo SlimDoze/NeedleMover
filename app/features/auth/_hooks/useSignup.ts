@@ -5,7 +5,7 @@ import { Team_Routes } from "../_constants/routes";
 import { CustomAlert } from "@/common/lib/alert";
 import { SignupMsg } from "../_constants/AuthErrorText";
 import { ValidateEmail, ValidatePassword, ValidateRequired } from "../_lib/AuthValidation";
-import { AuthService, UserSignupData } from "@/common/lib/auth";
+import { AuthService, UserSignupData } from "@/lib/auth";
 
 // User data interface
 interface UserSignupState {

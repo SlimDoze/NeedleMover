@@ -1,5 +1,3 @@
-
-// app/lib/auth.ts
 import { supabase } from './supabase';
 import { CustomAlert } from '@/common/lib/alert';
 

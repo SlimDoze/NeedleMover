@@ -2,8 +2,8 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { CustomAlert } from "@/common/lib/alert";
-import { TeamService, TeamCreateData } from "@/common/lib/teamService"
-import { useAuth } from "@/common/lib/authContext";
+import { TeamService, TeamCreateData } from "@/lib/teamService"
+import { useAuth } from "@/lib/authContext";
 import { Team_Routes } from "../_constants/routes";
 
 export function useCreateTeam() {

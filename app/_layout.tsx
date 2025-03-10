@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { Slot, SplashScreen, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { AuthProvider, useAuth } from '@/common/lib/authContext';
+import { AuthProvider, useAuth } from '@/lib/authContext';
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();

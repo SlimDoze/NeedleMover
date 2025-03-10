@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import { Auth_Routes, Team_Routes } from "../_constants/routes";
 import { CustomAlert } from "@/common/lib/alert";
 import { LoginMsg } from "../_constants/AuthErrorText";
-import { AuthService } from "@/common/lib/auth";
+import { AuthService } from "@/lib/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export function UseLogin() {

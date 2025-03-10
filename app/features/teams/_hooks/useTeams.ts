@@ -1,7 +1,7 @@
 // app/features/teams/_hooks/useTeams.ts
 import { useState, useEffect } from "react";
-import { useAuth } from "@/common/lib/authContext";
-import { TeamService, Team } from "@/common/lib/teamService";
+import { useAuth } from "@/lib/authContext";
+import { TeamService, Team } from "@/lib/teamService";
 
 export function useTeams() {
   const { user } = useAuth();
