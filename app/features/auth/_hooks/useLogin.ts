@@ -1,9 +1,11 @@
-// src/features/auth/_hooks/useLogin.ts
+// app/features/auth/_hooks/useLogin.ts
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { Auth_Routes, Team_Routes } from "../_constants/routes";
 import { CustomAlert } from "@/common/lib/alert";
 import { LoginMsg } from "../_constants/AuthErrorText";
+import { AuthService } from "@/common/lib/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export function UseLogin() {
   const router = useRouter();
@@ -21,37 +23,29 @@ export function UseLogin() {
     try {
       SetIsLoading(true);
       
-      // This is where you would make your API call
-      // Example structure for future implementation:
-      /*
-      const response = await authService.login({
+      // Call the AuthService to log in the user
+      const response = await AuthService.login({
         email: emailValue,
         password: passwordValue
       });
       
+      SetIsLoading(false);
+      
       if (response.success) {
-        // Store tokens, user info, etc.
+        // If the user selected "Remember Me", store their email
         if (isRememberMe) {
-          // Persist auth state
+          await AsyncStorage.setItem('rememberedEmail', emailValue);
+        } else {
+          // If "Remember Me" is not selected, clear any saved email
+          await AsyncStorage.removeItem('rememberedEmail');
         }
-        router.replace(TEAM_ROUTES.SELECTION);
-      } else {
-        customAlert('Login Failed', response.message);
-      }
-      */
-      
-      // Temporary simulation for development
-      console.log("Login attempt with:", {
-        email: emailValue,
-        password: passwordValue,
-        rememberMe: isRememberMe,
-      });
-      
-      setTimeout(() => {
-        SetIsLoading(false);
+        
+        // Navigate to the team selection screen
         router.replace(Team_Routes.Selection);
-      }, 1000);
-      
+      } else {
+        // Handle login error
+        CustomAlert("Login Error", response.message || "Invalid email or password");
+      }
     } catch (error) {
       SetIsLoading(false);
       console.error("Login error:", error);
@@ -67,6 +61,21 @@ export function UseLogin() {
     router.push(Auth_Routes.ResetPassword);
   };
 
+  // Load remembered email when component mounts
+  const loadRememberedEmail = async () => {
+    try {
+      const savedEmail = await AsyncStorage.getItem('rememberedEmail');
+      if (savedEmail) {
+        setEmail(savedEmail);
+        setRememberMe(true);
+      }
+    } catch (error) {
+      console.error("Error loading remembered email:", error);
+    }
+  };
+
+  // Call this function from useEffect in the login screen component
+
   return {
     emailValue,
     setEmail,
@@ -78,5 +87,6 @@ export function UseLogin() {
     handleLogin: HandleLogin,
     handleGoBack: HandleGoBack,
     navigateToResetPassword: NavigateToResetPassword,
+    loadRememberedEmail
   };
 }

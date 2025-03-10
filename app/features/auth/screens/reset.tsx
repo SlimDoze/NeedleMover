@@ -7,8 +7,8 @@ import { UseResetPassword } from "../_hooks/useReset";
 import { styles } from "../_constants/resetStylesheet";
 import { formStyles, webFormStyles } from "../_constants/formStyle";
 import { AuthInfoText } from "../_constants/AuthInfoText";
-import { CommonImages } from "@/common/constants/CONST_Image";
-import UserInput from "@/src/features/auth/_components/UserInput";
+import { CommonImages } from "@/common/constants/CONST_Image"
+import UserInput from "../_components/UserInput";
 
 export default function ResetPasswordFlow() {
   const {

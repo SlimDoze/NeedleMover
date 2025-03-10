@@ -1,11 +1,11 @@
-// src/features/auth/_hooks/useReset.ts
+// app/features/auth/_hooks/useReset.ts
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { CustomAlert } from "@/common/lib/alert";
 import { ResetMsg } from "../_constants/AuthErrorText";
 import { Auth_Routes } from "../_constants/routes";
-import { ValidateEmail,ValidateMatch,ValidatePassword,ValidateRequired } from "../_lib/AuthValidation";
-
+import { ValidateEmail, ValidateMatch, ValidatePassword, ValidateRequired } from "../_lib/AuthValidation";
+import { AuthService } from "@/common/lib/auth";
 
 export function UseResetPassword() {
   const router = useRouter();
@@ -23,34 +23,22 @@ export function UseResetPassword() {
     }
 
     try {
-      // Simulating sending reset email
       setIsLoading(true);
       
-      // This is where you would make your API call
-      // Example structure for future implementation:
-      /*
-      const response = await authService.requestPasswordReset({
-        email: email
-      });
+      // Call the AuthService to request a password reset
+      const response = await AuthService.requestPasswordReset(email);
+      
+      setIsLoading(false);
       
       if (response.success) {
-        customAlert(
-          ResetMsg.EmailSentHeader, ResetMsg.EmailSentBody,
+        CustomAlert(
+          ResetMsg.EmailSentHeader, 
+          ResetMsg.EmailSentBody,
           [{ text: 'OK', onPress: () => setStep(2) }]
         );
       } else {
-        customAlert("Error", response.message || "Failed to send reset email");
+        CustomAlert("Error", response.message || "Failed to send reset email");
       }
-      */
-      
-      // Temporary simulation for development
-      setTimeout(() => {
-        CustomAlert(
-          ResetMsg.EmailSentHeader, ResetMsg.EmailSentBody,
-          [{ text: 'OK', onPress: () => setStep(2) }]
-        );
-        setIsLoading(false);
-      }, 1000);
     } catch (error) {
       console.error("Error requesting password reset:", error);
       CustomAlert("Error", "An unexpected error occurred. Please try again.");
@@ -62,7 +50,7 @@ export function UseResetPassword() {
     if (ValidateRequired(verificationCode) && verificationCode.length === 6) {
       setStep(3);
     } else {
-      CustomAlert(ResetMsg.InvalidCodeHeader, ResetMsg.InvalidCodeHeader);
+      CustomAlert(ResetMsg.InvalidCodeHeader, ResetMsg.InvalidCodeBody);
     }
   };
 
@@ -80,31 +68,18 @@ export function UseResetPassword() {
     try {
       setIsLoading(true);
 
-      // This is where you would make your API call
-      // Example structure for future implementation:
-      /*
-      const response = await authService.resetPassword({
-        email: email,
-        code: verificationCode,
-        newPassword: newPassword
-      });
+      // Call the AuthService to reset the password
+      const response = await AuthService.resetPassword(newPassword);
+      
+      setIsLoading(false);
       
       if (response.success) {
-        customAlert(ResetMsg.SuccessHeader, ResetMsg.SuccessBody, [
-          { text: 'OK', onPress: () => router.replace(AUTH_ROUTES.LOGIN) }
-        ]);
-      } else {
-        customAlert("Error", response.message || "Failed to reset password");
-      }
-      */
-      
-      // Temporary simulation for development
-      setTimeout(() => {
         CustomAlert(ResetMsg.SuccessHeader, ResetMsg.SuccessBody, [
           { text: 'OK', onPress: () => router.replace(Auth_Routes.Login) }
         ]);
-        setIsLoading(false);
-      }, 1000);
+      } else {
+        CustomAlert("Error", response.message || "Failed to reset password");
+      }
     } catch (error) {
       console.error("Error resetting password:", error);
       CustomAlert("Error", "An unexpected error occurred. Please try again.");

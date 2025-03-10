@@ -1,37 +1,22 @@
-// app/(teams)/join.tsx
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+// app/features/teams/screens/joinTeam.tsx
+import React from 'react';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { styles } from '../../teams/_constants/joinTeamStyleSheet';
-import { Team_Routes } from '../_constants/routes';
-import { JoinTeamMsg } from '../_constants/TeamAlertMsg';
+import { styles } from '../_constants/joinTeamStyleSheet';
 import { ComponentCaptions } from '../_constants/componentCaptions';
-import { CustomAlert } from '@/common/lib/alert';
+import { useJoinTeam } from '../_hooks/useJoinTeam';
+import { AppColors } from '@/common/constants/AppColors';
 
 export default function JoinTeamScreen() {
-  const [inviteCode, setInviteCode] = useState('');
   const router = useRouter();
-
-  const handleJoinTeam = () => {
-    if (!inviteCode.trim()) {
-      CustomAlert(JoinTeamMsg.ErrorHeader, JoinTeamMsg.ErrorNoInviteCode);
-      return;
-    }
-
-    // Implement team joining logic here
-    // This would typically validate the code against your backend
-    console.log('Joining team with code:', inviteCode);
-    
-    // For now, simulate successful join and navigate to the team selection
-    CustomAlert(JoinTeamMsg.SucessHeader, JoinTeamMsg.SuccessBody, [
-      {
-        text: 'OK',
-        onPress: () => router.replace(Team_Routes.Selection)
-      }
-    ]);
-  };
+  const { 
+    inviteCode, 
+    setInviteCode, 
+    isLoading, 
+    handleJoinTeam 
+  } = useJoinTeam();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -51,7 +36,7 @@ export default function JoinTeamScreen() {
                 placeholder="Enter invite code"
                 value={inviteCode}
                 onChangeText={setInviteCode}
-                autoCapitalize="none"
+                autoCapitalize="characters"
                 autoCorrect={false}
               />
               <Text style={styles.helperText}>
@@ -64,6 +49,7 @@ export default function JoinTeamScreen() {
             <TouchableOpacity
               style={[styles.button, styles.cancelButton]}
               onPress={() => router.back()}
+              disabled={isLoading}
             >
               <Text style={styles.cancelButtonText}>{ComponentCaptions.joinTeam.cancelButtonText}</Text>
             </TouchableOpacity>
@@ -71,8 +57,13 @@ export default function JoinTeamScreen() {
             <TouchableOpacity
               style={[styles.button, styles.joinButton]}
               onPress={handleJoinTeam}
+              disabled={isLoading}
             >
-              <Text style={styles.joinButtonText}>{ComponentCaptions.joinTeam.joinButtonText}</Text>
+              {isLoading ? (
+                <ActivityIndicator size="small" color={AppColors.text.light} />
+              ) : (
+                <Text style={styles.joinButtonText}>{ComponentCaptions.joinTeam.joinButtonText}</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>

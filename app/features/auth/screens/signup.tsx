@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
-import UserInput from "@/src/features/auth/_components/UserInput";
+import UserInput from "@/app/features/auth/_components/UserInput";
 import { AuthInfoText } from "../_constants/AuthInfoText";
 import { View, Text, Button, TouchableOpacity, Image, Dimensions, Switch, ActivityIndicator, Platform  } from "react-native";
 import { AntDesign } from '@expo/vector-icons';

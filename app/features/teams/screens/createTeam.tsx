@@ -1,23 +1,25 @@
-// app/(teams)/create.tsx
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+// app/features/teams/screens/createTeam.tsx
+import React from 'react';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { styles } from '../_constants/createTeamStyleSheet';
 import { Team_Routes } from '../_constants/routes';
 import { ComponentCaptions } from '../_constants/componentCaptions';
+import { useCreateTeam } from '../_hooks/useCreateTeam';
+import { AppColors } from '@/common/constants/AppColors';
 
 export default function CreateTeamScreen() {
-  const [teamName, setTeamName] = useState('');
-  const [teamDescription, setTeamDescription] = useState('');
   const router = useRouter();
-  
-  const handleCreateTeam = () => {
-    // Implement team creation logic here
-    // After creating the team, navigate to the team home
-    router.replace(Team_Routes.Selection);
-  };
+  const {
+    teamName,
+    setTeamName,
+    teamDescription,
+    setTeamDescription,
+    isLoading,
+    handleCreateTeam
+  } = useCreateTeam();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -57,6 +59,7 @@ export default function CreateTeamScreen() {
             <TouchableOpacity
               style={[styles.button, styles.cancelButton]}
               onPress={() => router.back()}
+              disabled={isLoading}
             >
               <Text style={styles.cancelButtonText}>{ComponentCaptions.createTeam.cancelButtonText}</Text>
             </TouchableOpacity>
@@ -64,8 +67,13 @@ export default function CreateTeamScreen() {
             <TouchableOpacity
               style={[styles.button, styles.createButton]}
               onPress={handleCreateTeam}
+              disabled={isLoading}
             >
-              <Text style={styles.createButtonText}>{ComponentCaptions.createTeam.createTeamLabel}</Text>
+              {isLoading ? (
+                <ActivityIndicator size="small" color={AppColors.text.light} />
+              ) : (
+                <Text style={styles.createButtonText}>{ComponentCaptions.createTeam.createTeamLabel}</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>

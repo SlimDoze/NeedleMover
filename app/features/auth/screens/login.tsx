@@ -1,7 +1,8 @@
+// app/features/auth/screens/login.tsx
 import React, { useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import UserInput from "@/src/features/auth/_components/UserInput";
+import UserInput from "@/app/features/auth/_components/UserInput";
 import { AuthInfoText } from "../_constants/AuthInfoText";
 import { styles } from "../_constants/LoginStylesheet";
 import { formStyles, webFormStyles } from "../_constants/formStyle";
@@ -25,9 +26,15 @@ const LoginScreen: React.FC = () => {
     handleLogin,
     handleGoBack,
     navigateToResetPassword,
+    loadRememberedEmail
   } = UseLogin();
 
-  // Füge CSS-Stil für Web-Formulare hinzu
+  // Load remembered email on component mount
+  useEffect(() => {
+    loadRememberedEmail();
+  }, []);
+
+  // Add CSS style for web forms
   useEffect(() => {
     if (Platform.OS === 'web') {
       const style = document.createElement('style');
@@ -54,7 +61,10 @@ const LoginScreen: React.FC = () => {
       />
       
       {Platform.OS === 'web' ? (
-        <form className="web-form-container">
+        <form className="web-form-container" onSubmit={(e) => {
+          e.preventDefault();
+          handleLogin();
+        }}>
           <UserInput
             placeholder={AuthInfoText.InputEmail}
             value={emailValue}
@@ -96,7 +106,7 @@ const LoginScreen: React.FC = () => {
       
       <ToggleSwitch
         label={AuthInfoText.RememberMe}
-        value={!!isRememberMe}
+        value={isRememberMe}
         onValueChange={setRememberMe}
         containerStyle={styles.switchContainer}
         labelStyle={styles.switchText}
