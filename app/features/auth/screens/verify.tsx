@@ -1,11 +1,8 @@
 import React, { useEffect } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { CustomAlert } from '@/common/lib/alert';
-import { AppColors } from '@/common/constants/AppColors';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
 
 export default function VerifyScreen() {
   const router = useRouter();
@@ -22,17 +19,17 @@ export default function VerifyScreen() {
 
           if (error) {
             CustomAlert('Verification Failed', error.message);
-            router.replace('/');
+            router.replace('/login');
           } else {
             CustomAlert('Success', 'Email verified successfully');
-            router.replace('/features/teams/screens/selection');
+            router.replace('/teams/selection');
           }
         } catch (err) {
           CustomAlert('Error', 'An unexpected error occurred');
-          router.replace('/');
+          router.replace('/login');
         }
       } else {
-        router.replace('/');
+        router.replace('/login');
       }
     };
 
@@ -40,30 +37,9 @@ export default function VerifyScreen() {
   }, [token, type]);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
-      <View style={styles.content}>
-        <ActivityIndicator size="large" color={AppColors.primary} />
-        <Text style={styles.text}>Verifying your email...</Text>
-      </View>
-    </SafeAreaView>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <ActivityIndicator size="large" />
+      <Text>Verifying your email...</Text>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: AppColors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  content: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    marginTop: 20,
-    fontSize: 16,
-    color: AppColors.text.dark,
-  },
-});

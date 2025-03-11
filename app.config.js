@@ -36,6 +36,7 @@ export default {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#ffffff"
       },
+      schemea: "needlemover",
       package: "com.yourcompany.needlemover"
     },
     web: {

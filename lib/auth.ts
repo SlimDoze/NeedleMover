@@ -39,13 +39,13 @@ export class AuthService {
         password,
         options: {
           data: {
-            // Store additional user info to be used after confirmation
             pending_profile: {
               name,
               handle
             }
           },
-          emailRedirectTo: 'needlemover://verify'
+          // Use the deep link URL
+          // emailRedirectTo: 'needlemover://verify'
         }
       });
 
