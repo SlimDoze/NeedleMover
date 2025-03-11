@@ -24,7 +24,7 @@ export interface AuthResponse {
 export class AuthService {
   /**
    * Signs up a new user with email and password
-   * Also creates a profile in the profiles table
+   * Creates a pending user without immediate profile creation
    */
   static async signUp({ 
     email, 
@@ -33,10 +33,20 @@ export class AuthService {
     handle 
   }: UserSignupData): Promise<AuthResponse> {
     try {
-      // Create auth user
+      // Signup with email confirmation enabled
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            // Store additional user info to be used after confirmation
+            pending_profile: {
+              name,
+              handle
+            }
+          },
+          emailRedirectTo: 'needlemover://verify'
+        }
       });
 
       if (authError) {
@@ -47,36 +57,17 @@ export class AuthService {
         };
       }
 
-      if (!authData.user?.id) {
+      if (!authData.user) {
         return {
           success: false,
-          message: 'Account created but waiting for email confirmation',
-        };
-      }
-
-      // Create profile record - requires RLS policies in Supabase
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id: authData.user.id,
-        name,
-        handle,
-        email,
-        created_at: new Date(),
-      });
-
-      if (profileError) {
-        console.error('Profile creation error:', profileError);
-        // We should ideally delete the auth user if profile creation fails
-        // but for simplicity, we'll just return an error
-        return {
-          success: false,
-          message: 'Account created but profile setup failed',
+          message: 'Please check your email to confirm signup',
         };
       }
 
       return {
         success: true,
-        message: 'Account created successfully',
-        data: authData,
+        message: 'Signup successful. Please check your email to confirm.',
+        data: authData
       };
     } catch (error) {
       console.error('Signup error:', error);
@@ -156,7 +147,7 @@ export class AuthService {
   static async requestPasswordReset(email: string): Promise<AuthResponse> {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'yourapp://reset-password', // Deep link to your app's reset password screen
+        redirectTo: 'yourapp://reset-password',
       });
 
       if (error) {

@@ -22,6 +22,16 @@ export default {
       bundleIdentifier: "com.yourcompany.needlemover"
     },
     android: {
+      intentFilters: [
+        {
+          action: 'VIEW',
+          autoVerify: true,
+          data: {
+            scheme: 'needlemover',
+            host: 'verify'
+          }
+        }
+      ],
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#ffffff"
