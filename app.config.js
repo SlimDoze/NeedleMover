@@ -1,53 +1,32 @@
-const dotenv = require('dotenv');
-dotenv.config();
+import 'dotenv/config';
 
 export default {
   expo: {
-    name: "Needle Mover",
+    name: "NeedleMover",
     slug: "needle-mover",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/icon.png",
-    userInterfaceStyle: "light",
-    splash: {
-      image: "./assets/splash.png",
-      resizeMode: "contain",
-      backgroundColor: "#ffffff"
+    scheme: "needlemover",
+    extra: {
+      supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
+      supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
     },
-    assetBundlePatterns: [
-      "**/*"
-    ],
+    eas: {
+      "projectId": "b7586997-b6a6-405b-b517-f148f8f9f266"
+    },
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.yourcompany.needlemover"
+      bundleIdentifier: "com.musictech.needlemover",
     },
     android: {
-      intentFilters: [
-        {
-          action: 'VIEW',
-          autoVerify: true,
-          data: {
-            scheme: 'needlemover',
-            host: 'verify'
-          }
-        }
-      ],
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
-        backgroundColor: "#ffffff"
+        backgroundColor: "#ffffff",
       },
-      schemea: "needlemover",
-      package: "com.yourcompany.needlemover"
+      package: "com.musictech.needlemover",
     },
     web: {
-      favicon: "./assets/favicon.png"
-    },
-    plugins: [
-      "expo-router"
-    ],
-    extra: {
-      supabaseUrl: process.env.SUPABASE_URL,
-      supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
+      favicon: "./assets/favicon.png",
     },
   },
 };

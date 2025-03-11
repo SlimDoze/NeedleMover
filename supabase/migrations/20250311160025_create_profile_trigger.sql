@@ -1,4 +1,4 @@
--- Create function to handle profile creation after email confirmation
+-- Function to create profile after email confirmation
 CREATE OR REPLACE FUNCTION public.create_profile_for_user()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -6,31 +6,17 @@ DECLARE
   new_name TEXT;
   new_handle TEXT;
 BEGIN
-  -- Check if the user's email has been confirmed
+  -- Check if user has confirmed their email
   IF NEW.email_confirmed_at IS NOT NULL THEN
-    -- Extract pending profile details from user metadata
-    pending_profile := NEW.raw_user_meta_data->>'pending_profile';
-    
-    -- Safely extract name and handle
-    new_name := COALESCE(
-      (pending_profile->>'name')::text, 
-      NEW.email
-    );
-    
-    new_handle := COALESCE(
-      (pending_profile->>'handle')::text, 
-      REGEXP_REPLACE(NEW.email, '@.*', '')
-    );
+    -- Extract pending profile metadata safely
+    pending_profile := NEW.raw_user_meta_data->'pending_profile';
 
-    -- Insert profile, handling potential conflicts
-    INSERT INTO public.profiles (
-      id, 
-      email, 
-      name, 
-      handle, 
-      created_at,
-      avatar_url
-    )
+    -- Assign default values if missing
+    new_name := COALESCE(pending_profile->>'name', NEW.email);
+    new_handle := COALESCE(pending_profile->>'handle', REGEXP_REPLACE(NEW.email, '@.*', ''));
+
+    -- Insert profile, handling conflicts by skipping existing entries
+    INSERT INTO public.profiles (id, email, name, handle, created_at, avatar_url)
     VALUES (
       NEW.id,
       NEW.email,
@@ -41,17 +27,17 @@ BEGIN
     )
     ON CONFLICT (id) DO NOTHING;
 
-    -- Optional: Clear the pending profile metadata
+    -- Remove pending_profile metadata safely
     UPDATE auth.users 
-    SET raw_user_meta_data = raw_user_meta_data - 'pending_profile'
+    SET raw_user_meta_data = jsonb_set(raw_user_meta_data, '{pending_profile}', 'null', true)
     WHERE id = NEW.id;
   END IF;
-  
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Create trigger to fire after email confirmation
+-- Trigger to execute function after email confirmation
 CREATE OR REPLACE TRIGGER create_profile_after_confirmation
 AFTER UPDATE ON auth.users
 FOR EACH ROW

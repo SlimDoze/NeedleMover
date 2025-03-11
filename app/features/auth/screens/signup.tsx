@@ -8,7 +8,7 @@ import { View, Text, Button, TouchableOpacity, Image, Dimensions, Switch, Activi
 import { AntDesign } from '@expo/vector-icons';
 import { AppColors } from "@/common/constants/AppColors";
 import { styles } from "../_constants/signUpStylesheet";
-import { UseSignUp } from "../_hooks/useSignup";
+import { UseSignUp } from "../_hooks/useSignup"  ;
 import { formStyles, webFormStyles } from "../_constants/formStyle";
 
 export default function SignUpScreen() {
@@ -20,7 +20,8 @@ export default function SignUpScreen() {
     updateField,
     nextStep,
     prevStep,
-    handleSignUp
+    handleSignUp,
+    handleResendEmail
   } = UseSignUp();
   
   // Füge CSS-Stil für Web-Formulare hinzu
@@ -165,6 +166,25 @@ export default function SignUpScreen() {
               onValueChange={(value) => updateField('stayLoggedIn', value)}
             />
           </View>
+
+
+          <View style={styles.Button}>
+  {isLoading ? (
+    <ActivityIndicator size="large" color={AppColors.primary} />
+  ) : (
+    <>
+      <Button 
+        title={AuthInfoText.Register} 
+        onPress={handleSignUp} 
+      />
+      
+      <TouchableOpacity onPress={handleResendEmail} style={styles.resendButton}>
+        <Text style={styles.resendButtonText}>Resend Confirmation Email</Text>
+      </TouchableOpacity>
+    </>
+  )}
+</View>
+
         </>
       )}
     </SafeAreaView>

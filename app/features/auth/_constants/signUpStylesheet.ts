@@ -1,4 +1,5 @@
 import { StyleSheet, Dimensions } from "react-native";
+import { AppColors } from "@/common/constants/AppColors";
 
 const { width } = Dimensions.get("window");
 
@@ -42,4 +43,16 @@ export const styles = StyleSheet.create({
       left: 20,
       zIndex: 10,
     },
+    resendButton: {
+      marginTop: 10,
+      padding: 10,
+      alignItems: "center",
+    },
+    resendButtonText: {
+      color: AppColors.primary,
+      fontSize: 16,
+      fontWeight: "bold",
+      textDecorationLine: "underline",
+    }
+    
   });

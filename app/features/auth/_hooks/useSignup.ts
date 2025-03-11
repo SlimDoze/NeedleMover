@@ -1,4 +1,3 @@
-// app/features/auth/_hooks/useSignup.ts
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { Team_Routes } from "../_constants/routes";
@@ -104,12 +103,8 @@ export function UseSignUp() {
         
         if (response.success) {
           // Handle successful registration
-          CustomAlert(SignupMsg.SuceessHeader, SignupMsg.SuccessBody, [
-            {
-              text: 'OK',
-              onPress: () => router.replace(Team_Routes.Selection)
-            }
-          ]);
+          CustomAlert(SignupMsg.SuceessHeader, response.message || "Signup successful!");
+          router.replace(Team_Routes.Selection);
         } else {
           // Handle registration error
           CustomAlert(SignupMsg.ErrorHeader, response.message || SignupMsg.ErrorBody);
@@ -122,6 +117,27 @@ export function UseSignUp() {
     }
   };
 
+  const HandleResendEmail = async () => {
+    try {
+      if (!userData.email) {
+        CustomAlert(SignupMsg.ErrorHeader, "Please enter your email first.");
+        return;
+      }
+  
+      setIsLoading(true);
+      
+      const response = await AuthService.resendConfirmationEmail(userData.email);
+      
+      setIsLoading(false);
+      
+      CustomAlert(SignupMsg.SuceessHeader, response.message || "A new confirmation email has been sent.");
+    } catch (error) {
+      console.error("Error resending confirmation email:", error);
+      setIsLoading(false);
+      CustomAlert(SignupMsg.ErrorHeader, "Failed to resend confirmation email.");
+    }
+  };
+  
   return {
     formStep,
     userData,
@@ -129,6 +145,7 @@ export function UseSignUp() {
     updateField: UpdateField,
     nextStep: NextStep,
     prevStep: PrevStep,
-    handleSignUp: HandleSignUp
+    handleSignUp: HandleSignUp,
+    handleResendEmail: HandleResendEmail,
   };
 }
