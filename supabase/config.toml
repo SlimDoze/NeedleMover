@@ -103,54 +103,52 @@ file_size_limit = "50MiB"
 
 [auth]
 enabled = true
-# The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
-# in emails.
-site_url = "http://127.0.0.1:3000"
-# A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
+# Die Basis-URL deiner Website. Wird als Erlaubnisliste für Weiterleitungen verwendet und für die Erstellung von URLs in E-Mails.
+site_url = "http://localhost:3000"
 additional_redirect_urls = ["https://127.0.0.1:3000"]
-# How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
+# Gültigkeitsdauer der Tokens in Sekunden. Standard ist 3600 (1 Stunde), Maximum 604.800 (1 Woche).
 jwt_expiry = 3600
-# If disabled, the refresh token will never expire.
+# Wenn deaktiviert, läuft der Refresh-Token nie ab.
 enable_refresh_token_rotation = true
-# Allows refresh tokens to be reused after expiry, up to the specified interval in seconds.
-# Requires enable_refresh_token_rotation = true.
+# Erlaubt die Wiederverwendung von Refresh-Tokens nach Ablauf, bis zum angegebenen Intervall in Sekunden.
+# Erfordert enable_refresh_token_rotation = true.
 refresh_token_reuse_interval = 10
-# Allow/disallow new user signups to your project.
+# Zulassen/Verbieten neuer Benutzerregistrierungen in deinem Projekt.
 enable_signup = true
-# Allow/disallow anonymous sign-ins to your project.
+# Zulassen/Verbieten anonymer Anmeldungen in deinem Projekt.
 enable_anonymous_sign_ins = false
-# Allow/disallow testing manual linking of accounts
+# Zulassen/Verbieten des Testens der manuellen Verknüpfung von Konten.
 enable_manual_linking = false
-# Passwords shorter than this value will be rejected as weak. Minimum 6, recommended 8 or more.
+# Passwörter kürzer als dieser Wert werden als schwach abgelehnt. Minimum 6, empfohlen 8 oder mehr.
 minimum_password_length = 6
-# Passwords that do not meet the following requirements will be rejected as weak. Supported values
-# are: `letters_digits`, `lower_upper_letters_digits`, `lower_upper_letters_digits_symbols`
+# Passwörter, die die folgenden Anforderungen nicht erfüllen, werden als schwach abgelehnt. Unterstützte Werte
+# sind: `letters_digits`, `lower_upper_letters_digits`, `lower_upper_letters_digits_symbols`
 password_requirements = ""
 
-# Configure one of the supported captcha providers: `hcaptcha`, `turnstile`.
+# Konfiguriere einen der unterstützten Captcha-Anbieter: `hcaptcha`, `turnstile`.
 # [auth.captcha]
 # enabled = true
 # provider = "hcaptcha"
 # secret = ""
 
 [auth.email]
-# Allow/disallow new user signups via email to your project.
+# Zulassen/Verbieten neuer Benutzerregistrierungen via E-Mail in deinem Projekt.
 enable_signup = true
-# If enabled, a user will be required to confirm any email change on both the old, and new email
-# addresses. If disabled, only the new email is required to confirm.
+# Wenn aktiviert, muss ein Benutzer jede E-Mail-Änderung sowohl an der alten als auch an der neuen E-Mail
+# bestätigen. Wenn deaktiviert, muss nur die neue E-Mail bestätigt werden.
 double_confirm_changes = true
-# If enabled, users need to confirm their email address before signing in.
+# Wenn aktiviert, müssen Benutzer ihre E-Mail-Adresse bestätigen, bevor sie sich anmelden können.
 enable_confirmations = true
-# If enabled, users will need to reauthenticate or have logged in recently to change their password.
+# Wenn aktiviert, müssen sich Benutzer erneut authentifizieren oder kürzlich angemeldet sein, um ihr Passwort zu ändern.
 secure_password_change = false
-# Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
-max_frequency = "1s"
-# Number of characters used in the email OTP.
+# Kontrolliert die Mindestzeit, die vergehen muss, bevor eine weitere Registrierungsbestätigung oder Passwort-Reset-E-Mail gesendet wird.
+max_frequency = "1m0s"
+# Anzahl der Zeichen im E-Mail-OTP.
 otp_length = 6
-# Number of seconds before the email OTP expires (defaults to 1 hour).
-otp_expiry = 3600
+# Anzahl der Sekunden, bevor das E-Mail-OTP abläuft (Standard 1 Stunde).
+otp_expiry = 86400
 
-# Use a production-ready SMTP server
+# Verwende einen produktionsreifen SMTP-Server
 # [auth.email.smtp]
 # enabled = true
 # host = "smtp.sendgrid.net"
@@ -160,56 +158,56 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# Uncomment to customize email template
+# Auskommentieren, um E-Mail-Vorlagen anzupassen
 # [auth.email.template.invite]
 # subject = "You have been invited"
 # content_path = "./supabase/templates/invite.html"
 
 [auth.sms]
-# Allow/disallow new user signups via SMS to your project.
+# Zulassen/Verbieten neuer Benutzerregistrierungen via SMS in deinem Projekt.
 enable_signup = false
-# If enabled, users need to confirm their phone number before signing in.
+# Wenn aktiviert, müssen Benutzer ihre Telefonnummer bestätigen, bevor sie sich anmelden können.
 enable_confirmations = false
-# Template for sending OTP to users
+# Vorlage für das Senden von OTP an Benutzer
 template = "Your code is {{ .Code }}"
-# Controls the minimum amount of time that must pass before sending another sms otp.
+# Kontrolliert die Mindestzeit, die vergehen muss, bevor ein weiteres SMS-OTP gesendet wird.
 max_frequency = "5s"
 
-# Use pre-defined map of phone number to OTP for testing.
+# Verwende vordefinierte Zuordnung von Telefonnummer zu OTP für Tests.
 # [auth.sms.test_otp]
 # 4152127777 = "123456"
 
-# Configure logged in session timeouts.
+# Konfiguriere Timeouts für angemeldete Sitzungen.
 # [auth.sessions]
-# Force log out after the specified duration.
+# Erzwinge Abmeldung nach der angegebenen Dauer.
 # timebox = "24h"
-# Force log out if the user has been inactive longer than the specified duration.
+# Erzwinge Abmeldung, wenn der Benutzer länger als die angegebene Dauer inaktiv war.
 # inactivity_timeout = "8h"
 
-# This hook runs before a token is issued and allows you to add additional claims based on the authentication method used.
+# Dieser Hook wird ausgeführt, bevor ein Token ausgestellt wird, und ermöglicht es dir, zusätzliche Claims basierend auf der verwendeten Authentifizierungsmethode hinzuzufügen.
 # [auth.hook.custom_access_token]
 # enabled = true
 # uri = "pg-functions://<database>/<schema>/<hook_name>"
 
-# Configure one of the supported SMS providers: `twilio`, `twilio_verify`, `messagebird`, `textlocal`, `vonage`.
+# Konfiguriere einen der unterstützten SMS-Anbieter: `twilio`, `twilio_verify`, `messagebird`, `textlocal`, `vonage`.
 [auth.sms.twilio]
 enabled = false
 account_sid = ""
 message_service_sid = ""
-# DO NOT commit your Twilio auth token to git. Use environment variable substitution instead:
+# Commit deinen Twilio-Auth-Token NICHT an Git. Verwende stattdessen die Substitution von Umgebungsvariablen:
 auth_token = "env(SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN)"
 
-# Multi-factor-authentication is available to Supabase Pro plan.
+# Multi-Faktor-Authentifizierung ist im Supabase Pro-Plan verfügbar.
 [auth.mfa]
-# Control how many MFA factors can be enrolled at once per user.
+# Kontrolliere, wie viele MFA-Faktoren gleichzeitig pro Benutzer registriert werden können.
 max_enrolled_factors = 10
 
-# Control MFA via App Authenticator (TOTP)
+# Kontrolliere MFA via App Authenticator (TOTP)
 [auth.mfa.totp]
-enroll_enabled = false
-verify_enabled = false
+enroll_enabled = true
+verify_enabled = true
 
-# Configure MFA via Phone Messaging
+# Konfiguriere MFA via Telefonnachrichten
 [auth.mfa.phone]
 enroll_enabled = false
 verify_enabled = false
@@ -217,39 +215,39 @@ otp_length = 6
 template = "Your code is {{ .Code }}"
 max_frequency = "5s"
 
-# Configure MFA via WebAuthn
+# Konfiguriere MFA via WebAuthn
 # [auth.mfa.web_authn]
 # enroll_enabled = true
 # verify_enabled = true
 
-# Use an external OAuth provider. The full list of providers are: `apple`, `azure`, `bitbucket`,
+# Verwende einen externen OAuth-Anbieter. Die vollständige Liste der Anbieter ist: `apple`, `azure`, `bitbucket`,
 # `discord`, `facebook`, `github`, `gitlab`, `google`, `keycloak`, `linkedin_oidc`, `notion`, `twitch`,
 # `twitter`, `slack`, `spotify`, `workos`, `zoom`.
 [auth.external.apple]
 enabled = false
 client_id = ""
-# DO NOT commit your OAuth provider secret to git. Use environment variable substitution instead:
+# Commit dein OAuth-Provider-Secret NICHT an Git. Verwende stattdessen die Substitution von Umgebungsvariablen:
 secret = "env(SUPABASE_AUTH_EXTERNAL_APPLE_SECRET)"
-# Overrides the default auth redirectUrl.
+# Überschreibt die Standard-Auth-RedirectUrl.
 redirect_uri = ""
-# Overrides the default auth provider URL. Used to support self-hosted gitlab, single-tenant Azure,
-# or any other third-party OIDC providers.
+# Überschreibt die Standard-Auth-Provider-URL. Wird verwendet, um selbstgehostetes GitLab, Single-Tenant Azure
+# oder andere Drittanbieter-OIDC-Provider zu unterstützen.
 url = ""
-# If enabled, the nonce check will be skipped. Required for local sign in with Google auth.
+# Wenn aktiviert, wird die Nonce-Prüfung übersprungen. Erforderlich für lokale Anmeldung mit Google-Auth.
 skip_nonce_check = false
 
-# Use Firebase Auth as a third-party provider alongside Supabase Auth.
+# Verwende Firebase Auth als Drittanbieter neben Supabase Auth.
 [auth.third_party.firebase]
 enabled = false
 # project_id = "my-firebase-project"
 
-# Use Auth0 as a third-party provider alongside Supabase Auth.
+# Verwende Auth0 als Drittanbieter neben Supabase Auth.
 [auth.third_party.auth0]
 enabled = false
 # tenant = "my-auth0-tenant"
 # tenant_region = "us"
 
-# Use AWS Cognito (Amplify) as a third-party provider alongside Supabase Auth.
+# Verwende AWS Cognito (Amplify) als Drittanbieter neben Supabase Auth.
 [auth.third_party.aws_cognito]
 enabled = false
 # user_pool_id = "my-user-pool-id"
@@ -257,39 +255,39 @@ enabled = false
 
 [edge_runtime]
 enabled = true
-# Configure one of the supported request policies: `oneshot`, `per_worker`.
-# Use `oneshot` for hot reload, or `per_worker` for load testing.
+# Konfiguriere eine der unterstützten Anforderungsrichtlinien: `oneshot`, `per_worker`.
+# Verwende `oneshot` für Hot-Reload oder `per_worker` für Lasttests.
 policy = "oneshot"
-# Port to attach the Chrome inspector for debugging edge functions.
+# Port zum Anhängen des Chrome-Inspectors für das Debugging von Edge-Funktionen.
 inspector_port = 8083
 
-# Use these configurations to customize your Edge Function.
+# Verwende diese Konfigurationen, um deine Edge-Funktion anzupassen.
 # [functions.MY_FUNCTION_NAME]
 # enabled = true
 # verify_jwt = true
 # import_map = "./functions/MY_FUNCTION_NAME/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+# Auskommentieren, um einen benutzerdefinierten Dateipfad zum Einstiegspunkt anzugeben.
+# Unterstützte Dateierweiterungen sind: .ts, .js, .mjs, .jsx, .tsx
 # entrypoint = "./functions/MY_FUNCTION_NAME/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
+# Gibt statische Dateien an, die mit der Funktion gebündelt werden sollen. Unterstützt Glob-Muster.
+# Wenn du zum Beispiel statische HTML-Seiten in deiner Funktion bereitstellen möchtest:
 # static_files = [ "./functions/MY_FUNCTION_NAME/*.html" ]
 
 [analytics]
 enabled = true
 port = 54327
-# Configure one of the supported backends: `postgres`, `bigquery`.
+# Konfiguriere einen der unterstützten Backends: `postgres`, `bigquery`.
 backend = "postgres"
 
-# Experimental features may be deprecated any time
+# Experimentelle Funktionen können jederzeit veraltet sein
 [experimental]
-# Configures Postgres storage engine to use OrioleDB (S3)
+# Konfiguriert die Postgres-Speicher-Engine zur Verwendung von OrioleDB (S3)
 orioledb_version = ""
-# Configures S3 bucket URL, eg. <bucket_name>.s3-<region>.amazonaws.com
+# Konfiguriert die S3-Bucket-URL, z.B. <bucket_name>.s3-<region>.amazonaws.com
 s3_host = "env(S3_HOST)"
-# Configures S3 bucket region, eg. us-east-1
+# Konfiguriert die S3-Bucket-Region, z.B. us-east-1
 s3_region = "env(S3_REGION)"
-# Configures AWS_ACCESS_KEY_ID for S3 bucket
+# Konfiguriert AWS_ACCESS_KEY_ID für den S3-Bucket
 s3_access_key = "env(S3_ACCESS_KEY)"
-# Configures AWS_SECRET_ACCESS_KEY for S3 bucket
+# Konfiguriert AWS_SECRET_ACCESS_KEY für den S3-Bucket
 s3_secret_key = "env(S3_SECRET_KEY)"

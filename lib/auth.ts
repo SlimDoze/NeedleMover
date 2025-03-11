@@ -108,7 +108,7 @@ export class AuthService {
         };
       }
 
-      return {
+      return { 
         success: true,
         message: 'Logged in successfully',
         data,
