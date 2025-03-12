@@ -3,6 +3,8 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { AuthService } from './auth';
 import { supabase } from './supabase';
 import * as SplashScreen from 'expo-splash-screen';
+import { router } from 'expo-router';
+import { CustomAlert } from '@/common/lib/alert';
 
 // Keep the splash screen visible while we check authentication
 SplashScreen.preventAutoHideAsync();
@@ -67,17 +69,42 @@ export const AuthProvider = ({ children }: AuthProviderProps): React.ReactElemen
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        console.log("Auth state changed:", event);
+        
+        if (event === 'SIGNED_IN') {
           if (session?.user) {
             setUser(session.user);
             const userProfile = await AuthService.getUserProfile(session.user.id);
-            setProfile(userProfile);
+            
+            if (userProfile) {
+              setProfile(userProfile);
+              // If user is confirmed and has a profile, navigate to teams
+              router.replace('/features/teams/screens/selection');
+            }
           }
+          setIsLoading(false);
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
           setProfile(null);
+          setIsLoading(false);
+        } else if (event === 'USER_UPDATED') {
+          if (session?.user) {
+            setUser(session.user);
+            const userProfile = await AuthService.getUserProfile(session.user.id);
+            
+            // If the user's email was just confirmed
+            if (session.user.confirmed_at && userProfile) {
+              setProfile(userProfile);
+              // Navigate to teams selection after email confirmation
+              router.replace('/features/teams/screens/selection');
+            } else {
+              setProfile(userProfile);
+            }
+          }
+          setIsLoading(false);
+        } else {
+          setIsLoading(false);
         }
-        setIsLoading(false);
       }
     );
 
@@ -94,7 +121,6 @@ export const AuthProvider = ({ children }: AuthProviderProps): React.ReactElemen
         console.error('Error checking user session:', error);
       } finally {
         setIsLoading(false);
-        SplashScreen.hideAsync(); // Hide splash screen once auth check is complete
       }
     };
 
@@ -102,7 +128,9 @@ export const AuthProvider = ({ children }: AuthProviderProps): React.ReactElemen
 
     // Clean up subscription
     return () => {
-      authListener.subscription.unsubscribe();
+      if (authListener && authListener.subscription) {
+        authListener.subscription.unsubscribe();
+      }
     };
   }, []);
 

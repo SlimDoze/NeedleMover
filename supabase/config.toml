@@ -104,11 +104,11 @@ file_size_limit = "50MiB"
 [auth]
 enabled = true
 # Die Basis-URL deiner Website. Wird als Erlaubnisliste für Weiterleitungen verwendet und für die Erstellung von URLs in E-Mails.
-  site_url = "needlemover://verify"
+ site_url = "http://localhost:3000"
   additional_redirect_urls = [
-  "needlemover://verify",
   "http://localhost:3000",
   "https://localhost:3000"
+  # Remove the needlemover://verify entries here
 ]
 # Gültigkeitsdauer der Tokens in Sekunden. Standard ist 3600 (1 Stunde), Maximum 604.800 (1 Woche).
 jwt_expiry = 3600

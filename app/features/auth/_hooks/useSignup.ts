@@ -29,6 +29,7 @@ export function UseSignUp() {
   const [formStep, setFormStep] = useState<number>(1);
   const [userData, setUserData] = useState<UserSignupState>(initialState);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showConfirmationMsg, setShowConfirmationMsg] = useState<boolean>(false);
 
   const UpdateField = (field: keyof UserSignupState, value: string | boolean) => {
     setUserData(prev => ({
@@ -78,6 +79,8 @@ export function UseSignUp() {
   const PrevStep = () => {
     if (formStep > 1) {
       setFormStep(prev => prev - 1);
+    } else {
+      router.back();
     }
   };
 
@@ -102,9 +105,13 @@ export function UseSignUp() {
         setIsLoading(false);
         
         if (response.success) {
-          // Handle successful registration
-          CustomAlert(SignupMsg.SuceessHeader, response.message || "Signup successful!");
-          router.replace(Team_Routes.Selection);
+          // Show confirmation message
+          CustomAlert(
+            SignupMsg.SuceessHeader, 
+            "Registration started. Please check your email to confirm your account.", 
+            [{ text: "OK" }]
+          );
+          setShowConfirmationMsg(true);
         } else {
           // Handle registration error
           CustomAlert(SignupMsg.ErrorHeader, response.message || SignupMsg.ErrorBody);
@@ -142,6 +149,7 @@ export function UseSignUp() {
     formStep,
     userData,
     isLoading,
+    showConfirmationMsg,
     updateField: UpdateField,
     nextStep: NextStep,
     prevStep: PrevStep,

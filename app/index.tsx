@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { 
   View, 
   Text, 
@@ -8,45 +8,18 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
-import { Linking } from 'react-native';
-
 import { AppColors } from '@/common/constants/AppColors';
 
 export default function AuthSelectionScreen() {
   const router = useRouter();
 
   const navigateToSignUp = () => {
-    router.push('../features/auth/screens/signup');
+    router.push('/features/auth/screens/signup');
   };
   
   const navigateToLogin = () => {
-    router.push('../features/auth/screens/login');
+    router.push('/features/auth/screens/login');
   };
-
-  useEffect(() => {
-    const handleDeepLink = (event: { url: string }) => {
-      const { url } = event;
-      if (url) {
-        const parsedUrl = new URL(url);
-        const path = parsedUrl.pathname.replace("/", ""); // Extract "verify"
-        const token = parsedUrl.searchParams.get("token");
-
-        if (path === "verify" && token) {
-          router.push(`/verify?token=${token}`); // Navigate to the Verify screen
-        }
-      }
-    };
-
-    // Listen for deep links when the app is already open
-    const subscription = Linking.addEventListener("url", handleDeepLink);
-
-    // Handle deep links that open the app from a closed state
-    Linking.getInitialURL().then((url) => {
-      if (url) handleDeepLink({ url });
-    });
-
-    return () => subscription.remove();
-  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -54,6 +27,7 @@ export default function AuthSelectionScreen() {
       
       <View style={styles.titleContainer}>
         <Text style={styles.title}>Needle Mover</Text>
+        <Text style={styles.subtitle}>Music collaboration made simple</Text>
       </View>
 
       <View style={styles.buttonContainer}>
@@ -92,6 +66,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: AppColors.text.dark,
     marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 18,
+    color: AppColors.text.muted,
   },
   buttonContainer: {
     width: '100%',

@@ -24,7 +24,6 @@ export interface AuthResponse {
 export class AuthService {
   /**
    * Signs up a new user with email and password
-   * Waits until the email is confirmed before proceeding
    */
   static async signUp({ 
     email, 
@@ -55,29 +54,9 @@ export class AuthService {
         };
       }
 
-      if (!authData.user) {
-        return {
-          success: false,
-          message: 'Please check your email to confirm signup',
-        };
-      }
-
-      console.log("User created, waiting for email confirmation...");
-
-      // Wait for email confirmation (polling every 3 seconds)
-      const userId = authData.user.id;
-      const isConfirmed = await AuthService.waitForEmailConfirmation(userId);
-
-      if (!isConfirmed) {
-        return {
-          success: false,
-          message: 'Email confirmation required. Please check your inbox.',
-        };
-      }
-
       return {
         success: true,
-        message: 'Signup successful! Email verified.',
+        message: 'Please check your email to confirm your account.',
         data: authData
       };
     } catch (error) {
@@ -90,37 +69,20 @@ export class AuthService {
   }
 
   /**
-   * Waits for email confirmation
+   * Retrieves the current user
    */
-  static async waitForEmailConfirmation(userId: string, maxAttempts = 10, interval = 3000): Promise<boolean> {
-    let attempts = 0;
-
-    return new Promise((resolve) => {
-      const checkEmailConfirmed = async () => {
-        attempts++;
-
-        const { data, error } = await supabase.auth.getUser();
-        if (error || !data?.user) {
-          console.error('Error fetching user:', error);
-          clearInterval(intervalId);
-          return resolve(false);
-        }
-
-        if (data.user.confirmed_at) {
-          console.log("User email confirmed!");
-          clearInterval(intervalId);
-          return resolve(true);
-        }
-
-        if (attempts >= maxAttempts) {
-          console.warn("Max attempts reached. Email confirmation still pending.");
-          clearInterval(intervalId);
-          return resolve(false);
-        }
-      };
-
-      const intervalId = setInterval(checkEmailConfirmed, interval);
-    });
+  static async getCurrentUser(): Promise<any> {
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) {
+        console.error("Get user error:", error);
+        return null;
+      }
+      return data.user;
+    } catch (error) {
+      console.error("Unexpected error fetching user:", error);
+      return null;
+    }
   }
 
   /**
@@ -160,6 +122,34 @@ export class AuthService {
     } catch (error) {
       console.error("Unexpected error fetching user profile:", error);
       return null;
+    }
+  }
+
+  /**
+   * Logs out the current user
+   */
+  static async logout(): Promise<AuthResponse> {
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Logout error:', error);
+        return {
+          success: false,
+          message: error.message || 'Failed to sign out',
+        };
+      }
+      
+      return {
+        success: true,
+        message: 'Signed out successfully',
+      };
+    } catch (error) {
+      console.error('Logout error:', error);
+      return {
+        success: false,
+        message: 'An unexpected error occurred during logout',
+      };
     }
   }
 
@@ -229,4 +219,55 @@ export class AuthService {
     }
   }
   
+  static async requestPasswordReset(email: string): Promise<AuthResponse> {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+
+      if (error) {
+        console.error("Password reset request error:", error);
+        return {
+          success: false,
+          message: error.message || "Failed to send reset email",
+        };
+      }
+
+      return {
+        success: true,
+        message: "Password reset instructions have been sent to your email",
+      };
+    } catch (error) {
+      console.error("Unexpected error requesting password reset:", error);
+      return {
+        success: false,
+        message: "An unexpected error occurred",
+      };
+    }
+  }
+
+  static async resetPassword(newPassword: string): Promise<AuthResponse> {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) {
+        console.error("Password reset error:", error);
+        return {
+          success: false,
+          message: error.message || "Failed to reset password",
+        };
+      }
+
+      return {
+        success: true,
+        message: "Password has been reset successfully",
+      };
+    } catch (error) {
+      console.error("Unexpected error resetting password:", error);
+      return {
+        success: false,
+        message: "An unexpected error occurred",
+      };
+    }
+  }
 }

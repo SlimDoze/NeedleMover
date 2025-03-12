@@ -1,6 +1,6 @@
 // app/_layout.tsx
 import React, { useEffect } from 'react';
-import { Slot, SplashScreen, router } from 'expo-router';
+import { Slot, SplashScreen } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '@/lib/authContext';
 
@@ -17,17 +17,6 @@ function RootLayoutNav() {
       SplashScreen.hideAsync();
     }
   }, [isLoading]);
-
-  // You can add routing logic here based on authentication status
-  // For example, redirect to login if user is not authenticated
-  useEffect(() => {
-    if (!isLoading) {
-      // If user is not authenticated and not on an auth screen, redirect to auth
-      if (!user && !router.canGoBack()) {
-        router.replace('/');
-      }
-    }
-  }, [isLoading, user]);
 
   // Show nothing while loading
   if (isLoading) {
