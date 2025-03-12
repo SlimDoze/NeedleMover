@@ -14,44 +14,48 @@ export function UseLogin() {
   const [isRememberMe, setRememberMe] = useState<boolean>(false);
   const [isLoading, SetIsLoading] = useState<boolean>(false);
 
-  const HandleLogin = async () => {
-    if (!emailValue.trim() || !passwordValue.trim()) {
-      CustomAlert(LoginMsg.ErrorHeader, LoginMsg.ErrorBody);
-      return;
-    }
+  // Im UseLogin.ts
+const HandleLogin = async () => {
+  if (!emailValue.trim() || !passwordValue.trim()) {
+    CustomAlert(LoginMsg.ErrorHeader, LoginMsg.ErrorBody);
+    return;
+  }
 
-    try {
-      SetIsLoading(true);
-      
-      // Call the AuthService to log in the user
-      const response = await AuthService.login({
-        email: emailValue,
-        password: passwordValue
-      });
-      
-      SetIsLoading(false);
-      
-      if (response.success) {
-        // If the user selected "Remember Me", store their email
-        if (isRememberMe) {
-          await AsyncStorage.setItem('rememberedEmail', emailValue);
-        } else {
-          // If "Remember Me" is not selected, clear any saved email
-          await AsyncStorage.removeItem('rememberedEmail');
-        }
-        
-        // Navigate to the team selection screen
-        router.replace(Team_Routes.Selection);
+  try {
+    SetIsLoading(true);
+    
+    // Speichere den "Stay logged in"-Status
+    await sessionStorage.setPersistSession(isRememberMe);
+    
+    // Call the AuthService to log in the user
+    const response = await AuthService.login({
+      email: emailValue,
+      password: passwordValue
+    });
+    
+    SetIsLoading(false);
+    
+    if (response.success) {
+      // Wenn der Nutzer "Remember Me" ausgewählt hat, speichere die E-Mail
+      if (isRememberMe) {
+        await AsyncStorage.setItem('rememberedEmail', emailValue);
       } else {
-        // Handle login error
-        CustomAlert("Login Error", response.message || "Invalid email or password");
+        // Wenn "Remember Me" nicht ausgewählt ist, lösche gespeicherte E-Mail
+        await AsyncStorage.removeItem('rememberedEmail');
       }
-    } catch (error) {
-      SetIsLoading(false);
-      console.error("Login error:", error);
-      CustomAlert("Login Error", "An unexpected error occurred. Please try again.");
+      
+      // Navigiere zur Team-Auswahl
+      router.replace(Team_Routes.Selection);
+    } else {
+      // Behandle Login-Fehler
+      CustomAlert("Login Error", response.message || "Invalid email or password");
     }
-  };
+  } catch (error) {
+    SetIsLoading(false);
+    console.error("Login error:", error);
+    CustomAlert("Login Error", "An unexpected error occurred. Please try again.");
+  }
+};
 
   const HandleGoBack = () => {
     router.back();

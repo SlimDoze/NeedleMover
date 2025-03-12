@@ -10,6 +10,7 @@ import TeamCard from '../_components/TeamCard';
 import { useTeams } from '../_hooks/useTeams';
 import { useAuth } from '@/lib/authContext';
 import { AppColors } from '@/common/constants/AppColors';
+import LogoutButton from '@/common/components/logoutButton';
 
 const { height } = Dimensions.get("window");
 const CARD_HEIGHT = height * 0.5;
@@ -50,21 +51,23 @@ export default function TeamSelectionScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerTitleContainer}>
-          <Text style={styles.title}>{ComponentCaptions.teamSelection.header.title}</Text>
-        </View>
-        <TouchableOpacity style={styles.profileButton}>
-          <Image 
-            source={
-              profile?.avatar_url 
-                ? { uri: profile.avatar_url } 
-                : require("@/assets/images/userAvatar.png")
-            } 
-            style={styles.profileImage} 
-          />
-        </TouchableOpacity>
-      </View>
+     // In deiner Header-Komponente
+<View style={styles.header}>
+  <View style={styles.headerTitleContainer}>
+    <Text style={styles.title}>{ComponentCaptions.teamSelection.header.title}</Text>
+  </View>
+  <TouchableOpacity style={styles.profileButton}>
+    <Image 
+      source={
+        profile?.avatar_url 
+          ? { uri: profile.avatar_url } 
+          : require("@/assets/images/userAvatar.png")
+      } 
+      style={styles.profileImage} 
+    />
+  </TouchableOpacity>
+  <LogoutButton variant="icon" style={styles.logoutButton} />
+</View>
 
       <Animated.ScrollView
         style={styles.scrollView}

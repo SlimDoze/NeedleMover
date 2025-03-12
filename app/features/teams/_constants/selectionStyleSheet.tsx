@@ -180,4 +180,10 @@ export const styles = StyleSheet.create({
       fontSize: 16,
       fontWeight: 'bold',
     },
+  logoutButton: {
+    position: 'absolute',
+    right: 20,
+    top: 15,
+    zIndex: 10,
+},
   });

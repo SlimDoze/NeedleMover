@@ -4,7 +4,6 @@ import { AuthService } from './auth';
 import { supabase } from './supabase';
 import * as SplashScreen from 'expo-splash-screen';
 import { router } from 'expo-router';
-import { CustomAlert } from '@/common/lib/alert';
 
 // Keep the splash screen visible while we check authentication
 SplashScreen.preventAutoHideAsync();

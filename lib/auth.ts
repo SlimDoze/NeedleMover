@@ -67,64 +67,6 @@ export class AuthService {
       };
     }
   }
-
-  /**
-   * Retrieves the current user
-   */
-  static async getCurrentUser(): Promise<any> {
-    try {
-      const { data, error } = await supabase.auth.getUser();
-      if (error) {
-        console.error("Get user error:", error);
-        return null;
-      }
-      return data.user;
-    } catch (error) {
-      console.error("Unexpected error fetching user:", error);
-      return null;
-    }
-  }
-
-  /**
-   * Retrieves the current session
-   */
-  static async getSession(): Promise<any> {
-    try {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error("Get session error:", error);
-        return null;
-      }
-      return data.session;
-    } catch (error) {
-      console.error("Unexpected error fetching session:", error);
-      return null;
-    }
-  }
-
-  /**
-   * Retrieves the user's profile from the profiles table
-   */
-  static async getUserProfile(userId: string): Promise<any> {
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (error) {
-        console.error("Get profile error:", error);
-        return null;
-      }
-
-      return data;
-    } catch (error) {
-      console.error("Unexpected error fetching user profile:", error);
-      return null;
-    }
-  }
-
   /**
    * Logs out the current user
    */
@@ -270,4 +212,89 @@ export class AuthService {
       };
     }
   }
+   /**
+   * Retrieves the current user
+   */
+  static async getCurrentUser(): Promise<any> {
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) {
+        console.error("Get user error:", error);
+        return null;
+      }
+      return data.user;
+    } catch (error) {
+      console.error("Unexpected error fetching user:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Retrieves the current session
+   */
+  static async getSession(): Promise<any> {
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Get session error:", error);
+        return null;
+      }
+      return data.session;
+    } catch (error) {
+      console.error("Unexpected error fetching session:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Retrieves the user's profile from the profiles table
+   */
+  static async getUserProfile(userId: string): Promise<any> {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (error) {
+        console.error("Get profile error:", error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Unexpected error fetching user profile:", error);
+      return null;
+    }
+  }
+ /**
+ * Sucht ein Profil anhand der E-Mail-Adresse
+ */
+static async getProfileByEmail(email: string): Promise<any> {
+  try {
+    // E-Mail-Adresse validieren
+    if (!email || typeof email !== 'string') {
+      console.error("Invalid email format");
+      return null;
+    }
+
+    // Alternative Abfrage: Suche mit ilike für case-insensitive Suche
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .ilike("email", email)
+      .maybeSingle(); // maybeSingle statt single
+
+    if (error) {
+      console.error("Get profile by email error:", error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Unexpected error fetching profile by email:", error);
+    return null;
+  }
+}
 }

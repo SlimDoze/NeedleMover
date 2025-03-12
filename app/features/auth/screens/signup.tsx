@@ -10,6 +10,7 @@ import { AppColors } from "@/common/constants/AppColors";
 import { styles } from "../_constants/signUpStylesheet";
 import { UseSignUp } from "../_hooks/useSignup";
 import { formStyles, webFormStyles } from "../_constants/formStyle";
+import ToggleSwitch from "@/common/components/toggleSwitch";
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function SignUpScreen() {
     userData,
     isLoading,
     showConfirmationMsg,
+    isPolling,
     updateField,
     nextStep,
     prevStep,
@@ -53,27 +55,38 @@ export default function SignUpScreen() {
         <View style={emailConfirmStyles.container}>
           <AntDesign name="mail" size={64} color={AppColors.primary} style={emailConfirmStyles.icon} />
           
-          <Text style={emailConfirmStyles.title}>Check Your Email</Text>
+          <Text style={emailConfirmStyles.title}>Überprüfe deine E-Mail</Text>
           
           <Text style={emailConfirmStyles.message}>
-            We've sent a confirmation email to <Text style={emailConfirmStyles.email}>{userData.email}</Text>.
-            Please check your inbox and click the link to verify your email address.
+            Wir haben eine Bestätigungs-E-Mail an <Text style={emailConfirmStyles.email}>{userData.email}</Text> gesendet.
+            Bitte überprüfe deinen Posteingang und klicke auf den Link, um deine E-Mail-Adresse zu bestätigen.
           </Text>
           
           <View style={emailConfirmStyles.infoBox}>
             <Text style={emailConfirmStyles.infoText}>
-              After confirming your email, you'll be automatically redirected to the app.
+              {isPolling ? 
+                "Warte auf Bestätigung... Du wirst automatisch weitergeleitet, sobald du den Link in der E-Mail angeklickt hast." :
+                "Nach der Bestätigung deiner E-Mail wirst du automatisch weitergeleitet."
+              }
             </Text>
+            {isPolling && (
+              <ActivityIndicator 
+                size="small" 
+                color={AppColors.primary} 
+                style={{ marginTop: 10 }} 
+              />
+            )}
           </View>
           
           <TouchableOpacity 
             style={emailConfirmStyles.resendButton}
             onPress={handleResendEmail}
+            disabled={isLoading}
           >
             {isLoading ? (
               <ActivityIndicator size="small" color="white" />
             ) : (
-              <Text style={emailConfirmStyles.resendButtonText}>Resend Confirmation Email</Text>
+              <Text style={emailConfirmStyles.resendButtonText}>Bestätigungs-E-Mail erneut senden</Text>
             )}
           </TouchableOpacity>
           
@@ -81,7 +94,7 @@ export default function SignUpScreen() {
             style={emailConfirmStyles.backButton}
             onPress={() => router.replace('/')}
           >
-            <Text style={emailConfirmStyles.backButtonText}>Back to Home</Text>
+            <Text style={emailConfirmStyles.backButtonText}>Zurück zum Start</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -184,6 +197,14 @@ export default function SignUpScreen() {
               />
             </View>
           )}
+          
+          <ToggleSwitch
+            label={AuthInfoText.StayLoggedIn}
+            value={userData.stayLoggedIn}
+            onValueChange={(value) => updateField('stayLoggedIn', value)}
+            containerStyle={styles.switchContainer}
+            labelStyle={styles.switchText}
+          />
 
           <View style={styles.Button}>
             {isLoading ? (
