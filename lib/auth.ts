@@ -20,6 +20,7 @@ export interface AuthResponse {
 
 export class AuthService {
   
+  // [Function] Validates and Logs user in
   static async login({ email, password }: UserCredentials): Promise<AuthResponse> {
     try {
       // [API Call] Einloggen mit Passwort
@@ -59,10 +60,10 @@ export class AuthService {
     }
   }
 
+// [Function] Validates and Signs user uo
   static async signUp({ email, password, name, handle }: UserSignupProfileDetails): Promise<AuthResponse> {
     try {
       // [API Call] Registrieren der Nutzerdaten
-      // [API Call] Funktion erwartet Type "SignUpWithPasswordCredentials" 
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -100,6 +101,7 @@ export class AuthService {
     }
   }
   
+  // [Function] Validates and logs user out
   static async logout(): Promise<AuthResponse> {
     try {
       // [API Call] Ausloggen des Nutzers
@@ -128,7 +130,7 @@ export class AuthService {
     }
   }
 
-
+// [Function] Resends Email Adress
   static async resendConfirmationEmail(email: string): Promise<AuthResponse> {
     try {
       // [API Call] Resend Email
@@ -160,6 +162,7 @@ export class AuthService {
     }
   }
   
+  // [Function] Requests Password Reset Mail
   static async requestPasswordReset(email: string): Promise<AuthResponse> {
     try {
       // [API Call] Passwort zurücksetzen
@@ -188,6 +191,7 @@ export class AuthService {
     }
   }
 
+  // [Function] Resets Password
   static async resetPassword(newPassword: string): Promise<AuthResponse> {
     try {
       // [API Call] Nutzer-Passwort updaten
@@ -218,6 +222,7 @@ export class AuthService {
     }
   }
   
+  // [Function] Gets User of current Session
   static async getCurrentUser(): Promise<any> {
     try {
       // [API Call] Einloggen mit Passwort
@@ -237,6 +242,7 @@ export class AuthService {
     }
   }
 
+  // [Function] Get's current session
   static async getSession(): Promise<any> {
     try {
       // [API Call] Session wird geholt
@@ -256,7 +262,8 @@ export class AuthService {
     }
   }
 
-  static async getUserProfilebyUserID(userId: string): Promise<any> {
+  // [Function] Get's public/profiles by User ID
+  static async getProfilebyUserID(userId: string): Promise<any> {
     try {
       // [API Call] Datensatz aus public/profile Dabelle => Basiert auf UserID
       const { data, error } = await supabase
@@ -279,7 +286,8 @@ export class AuthService {
     }
   }
   
-static async getUserProfileByEmail(email: string): Promise<any> {
+  // [Function] Get's public/profile by Email
+static async getProfileByEmail(email: string): Promise<any> {
   try {
     // [Validation] Email Adress
     if (!email || typeof email !== 'string') {

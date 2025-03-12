@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
             setUser(session.user);
 
             // [Get] public/profiles => sets local rec var
-            const userProfile = await AuthService.getUserProfilebyUserID(session.user.id);
+            const userProfile = await AuthService.getProfilebyUserID(session.user.id);
             
             // [Validated] public/Profile Rec
             if (userProfile) {
@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
             setUser(session.user);
 
             // [API Call] Get public/profiles
-            const userProfile = await AuthService.getUserProfilebyUserID(session.user.id);
+            const userProfile = await AuthService.getProfilebyUserID(session.user.id);
             
             // [Check] Is User Confirmed + profile created
             if (session.user.confirmed_at && userProfile) {
@@ -113,7 +113,7 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
           setUser(session.user);
 
           // [API Call] Retrieves public/profiles
-          const userProfile = await AuthService.getUserProfilebyUserID(session.user.id);
+          const userProfile = await AuthService.getProfilebyUserID(session.user.id);
           setProfile(userProfile);
         }
       } catch (error) {
@@ -125,7 +125,7 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
   
     checkUser();
 
-    // [Clean uo] Subscription
+    // [Clean up] Subscriptions
     return () => {
       if (authListener && authListener.subscription) {
         authListener.subscription.unsubscribe();
@@ -133,6 +133,7 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
     };
   }, []);
 
+  // [Function] Refreshed session profile from db (public/profile)
   const refreshUser = async (): Promise<void> => {
     try {
       // [API Call] Retrieve User via Session
@@ -144,7 +145,7 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
       if (currentUser?.id) {
 
         // [API Call] retrieve public/profiles   
-        const userProfile = await AuthService.getUserProfilebyUserID(currentUser.id);
+        const userProfile = await AuthService.getProfilebyUserID(currentUser.id);
         setProfile(userProfile);
       } else {
         setProfile(null);
@@ -156,6 +157,7 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
     }
   };
 
+  // [Function] Signed User out of Session
   const signOut = async (): Promise<void> => {
     // [API Call] Logout session
     await AuthService.logout();

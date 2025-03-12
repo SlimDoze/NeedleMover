@@ -47,8 +47,8 @@ export function UseSignUp() {
     };
   }, []);
 
-  // [Ausstieg] Polling läuft, oder Email leer
-  const startProfilePolling = () => {
+  // [Function] Start Polling for Email Confirm 
+  const startConfirmMailPolling = () => {
     if (isPolling || !userData.email) return;
     
     console.log("Starting profile polling for email:", userData.email);
@@ -58,18 +58,19 @@ export function UseSignUp() {
     pollingIntervalRef.current = setInterval(checkProfileCreated, 3000);
   };
 
+  // [Function] Validates the creation of public/profile Record
   const checkProfileCreated = async () => {
     try {
       console.log("Checking for profile with email:", userData.email);
       
       // Sucht nach Profil über E-Mail adresse
-      const profile = await AuthService.getUserProfileByEmail(userData.email);
+      const profile = await AuthService.getProfileByEmail(userData.email);
       
 
       // Profil gefunden => Stop Polling, Nav. zur Selection
       if (profile) {
         console.log("Profile found, redirecting to team selection");
-        stopProfilePolling();
+        stopConfirmMailPolling();
         
         router.replace(Team_Routes.Selection);
       } else {
@@ -80,7 +81,8 @@ export function UseSignUp() {
     }
   };
 
-  const stopProfilePolling = () => {
+  // [Function] Stops Polling for Email Confirmation
+  const stopConfirmMailPolling = () => {
     // Setzt sich auf aktives intervall
     if (pollingIntervalRef.current) {
       // Stoppt aktives Intervall
@@ -100,6 +102,7 @@ export function UseSignUp() {
     }));
   };
 
+  // [Function] Validates First Form Step
   const ValidateFirstStep = () => {
     // Name eingegeben?
     if (!ValidateRequired(userData.name)) {
@@ -114,6 +117,7 @@ export function UseSignUp() {
     return true;
   };
 
+  // [Function] Validates Second Form Step
   const ValidateSecondStep = () => {
     // Email eingegeben?
     if (!ValidateRequired(userData.email)) {
@@ -138,12 +142,14 @@ export function UseSignUp() {
     return true;
   };
 
+  // [Function] Moves the Form Step forward
   const NextStep = () => {
     if (formStep === 1 && ValidateFirstStep()) {
       setFormStep(2);
     }
   };
 
+  // [Function] Moves the Form Step back
   const PrevStep = () => {
     if (formStep > 1) {
       setFormStep(prev => prev - 1);
@@ -151,7 +157,7 @@ export function UseSignUp() {
       router.back();
     }
   };
-
+  // [Function] Executes Sign-Up DB Logic
   const HandleSignUp = async () => {
     try {
       console.log("Starting Sign-Up with data:", userData);
@@ -184,7 +190,7 @@ export function UseSignUp() {
            );
           setIsConfirmMailSent(true);
           // [Start] Polling für Profil-Check
-          startProfilePolling();
+          startConfirmMailPolling();
         } else {
           // [Handle] Registrierungs Fehler
           CustomAlert(SignupMsg.ErrorHeader, response.message || SignupMsg.ErrorBody);
@@ -210,7 +216,7 @@ export function UseSignUp() {
       setIsLoading(false);
       
       CustomAlert(SignupMsg.SuceessHeader, response.message || "A new confirmation email has been sent.");
-      startProfilePolling();
+      startConfirmMailPolling();
     } 
     catch (error) {
       console.error("Error resending confirmation email:", error);

@@ -5,50 +5,53 @@ import Constants from 'expo-constants';
 // Benutzerdefinierter SessionStorage-Handler, der den "Stay logged in"-Status berücksichtigt
 // Benutzerdefinierter SessionStorage-Handler mit robusterer Implementierung
 class SessionStorage {
-  private persistSession: boolean = false;
+  private isPersistent: boolean = false;
   private isInitialized: boolean = false;
   private cache: Map<string, string> = new Map();
 
   constructor() {
     // Wir laden den Status asynchron, aber beginnen standardmäßig mit false
-    this.persistSession = false;
+    this.isPersistent = false;
     this.isInitialized = false;
-    this.initializeAsync();
+    this.initialize();
   }
-
-  private async initializeAsync() {
+// [OOP] Initiiert Klassen Instanz
+  private async initialize() {
     try {
       await this.loadPersistState();
       this.isInitialized = true;
-      console.log("SessionStorage initialized, persistSession =", this.persistSession);
+      console.log("SessionStorage initialized, persistSession =", this.isPersistent);
     } catch (error) {
       console.error("Failed to initialize SessionStorage:", error);
-      this.persistSession = false;
+      this.isPersistent = false;
       this.isInitialized = true;
     }
   }
-
+  
+  // [Native] Ruft Persistenz Zustand aus AsyncStorage ab
   async loadPersistState() {
     try {
       const shouldPersist = await AsyncStorage.getItem('persistSession');
-      this.persistSession = shouldPersist === 'true';
-      console.log("Loaded persist state:", this.persistSession);
+      this.isPersistent = shouldPersist === 'true';
+      console.log("Loaded persist state:", this.isPersistent);
     } catch (error) {
       console.error("Error loading persistence state:", error);
-      this.persistSession = false;
+      this.isPersistent = false;
     }
   }
 
+  // [Native] Setzt den Persistenzzustand => speichert ihn im AsyncStorage
   async setPersistSession(persist: boolean) {
     try {
       console.log("Setting persist session to:", persist);
-      this.persistSession = persist;
+      this.isPersistent = persist;
       await AsyncStorage.setItem('persistSession', persist ? 'true' : 'false');
     } catch (error) {
       console.error("Error setting persistence state:", error);
     }
   }
 
+  // [Native] Überprüft, ob ein Schlüssel ein Authentifizierungs-Token ist
   isAuthToken(key: string): boolean {
     return key.includes('supabase.auth.token') || 
            key.includes('sb-') || 
@@ -56,6 +59,8 @@ class SessionStorage {
            key.includes('refresh_token');
   }
 
+  // [Native] Ruft einen Wert aus dem AsyncStorage oder dem Cache ab
+  // [Native] Wenn der Wert ein Auth-Token ist und isPersistent auf false gesetzt ist, wird der Wert nur im Cache gespeichert.
   async getItem(key: string): Promise<string | null> {
     try {
       // Warte auf Initialisierung, wenn noch nicht abgeschlossen
@@ -65,7 +70,7 @@ class SessionStorage {
       }
 
       // Bei Auth-Tokens prüfen, ob persistiert werden soll
-      if (!this.persistSession && this.isAuthToken(key)) {
+      if (!this.isPersistent && this.isAuthToken(key)) {
         console.log("Not persisting session, returning null for:", key);
         return null;
       }
@@ -90,6 +95,7 @@ class SessionStorage {
     }
   }
 
+// [Native] Speichert einen Wert im AsyncStorage und im Cache
   async setItem(key: string, value: string): Promise<void> {
     try {
       // Warte auf Initialisierung, wenn noch nicht abgeschlossen
@@ -99,7 +105,7 @@ class SessionStorage {
       }
 
       // Bei Auth-Tokens prüfen, ob persistiert werden soll
-      if (!this.persistSession && this.isAuthToken(key)) {
+      if (!this.isPersistent && this.isAuthToken(key)) {
         console.log("Not persisting session, skipping setItem for:", key);
         // Temporär im Cache speichern, aber nicht in AsyncStorage
         this.cache.set(key, value);
@@ -114,6 +120,7 @@ class SessionStorage {
     }
   }
 
+  // [Native] Entfernt einen Wert aus dem AsyncStorage und dem Cache
   async removeItem(key: string): Promise<void> {
     try {
       // Aus Cache und AsyncStorage entfernen
@@ -124,6 +131,7 @@ class SessionStorage {
     }
   }
 
+  // [Native] // Wartet, bis die Initialisierung abgeschlossen ist
   private waitForInitialization(): Promise<void> {
     return new Promise((resolve) => {
       const checkInit = () => {
@@ -137,7 +145,7 @@ class SessionStorage {
     });
   }
 
-  // Hilfsmethode zum Löschen aller Auth-Token-Einträge
+  // [Native] Hilfsmethode zum Löschen aller Auth-Token-Einträge
   async clearAuthTokens(): Promise<void> {
     try {
       // Liste aller Schlüssel holen
@@ -162,18 +170,19 @@ class SessionStorage {
   }
 }
 
+// Instanziiert die Session Storage Klasse
 const sessionStorage = new SessionStorage();
 
-// Get environment variables from Expo Constants
+// Umgebungsvariablen holen via Expo Constants
 const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl;
 const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey;
 
-// Validate that we have the required values before creating the client
+// [Validate] Benötigte Werte müssen existieren, befor Client erstellt werden kann
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error("Missing Supabase configuration. Please check your app.config.js and .env file.");
 }
 
-// Create Supabase client
+// [Export] Erstellt Supabase Client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: sessionStorage,
@@ -189,5 +198,5 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 });
 
-// Export the sessionStorage für direkte Nutzung
+// Exportiert den Session Storage für direkte Nutzung
 export { sessionStorage };
