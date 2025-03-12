@@ -13,12 +13,13 @@ import { formStyles, webFormStyles } from "../_constants/formStyle";
 import ToggleSwitch from "@/common/components/toggleSwitch";
 
 export default function SignUpScreen() {
+  // [router] Steuert Navigation innerhalb der App
   const router = useRouter();
   const {
     formStep,
     userData,
     isLoading,
-    showConfirmationMsg,
+    isConfirmMailSent,
     isPolling,
     updateField,
     nextStep,
@@ -27,15 +28,16 @@ export default function SignUpScreen() {
     handleResendEmail
   } = UseSignUp();
   
-  // Add CSS style for web forms
+  // [Form CSS] Webkompaitbilität für gewährleistet
+  // return Function wird beim unmount ausgeführt
   useEffect(() => {
     if (Platform.OS === 'web') {
-      // Add style to document once
+      // Custom CSS Stil für Web
       const style = document.createElement('style');
       style.textContent = webFormStyles;
       document.head.appendChild(style);
       
-      // Clean up on unmount
+      // [CSS Form] Eigenständiges entfernen aus Head, beim unmounten
       return () => {
         document.head.removeChild(style);
       };
@@ -47,7 +49,7 @@ export default function SignUpScreen() {
   };
 
   // If confirmation message is showing, display a different UI
-  if (showConfirmationMsg) {
+  if (isConfirmMailSent) {
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar style="dark" />
@@ -64,12 +66,17 @@ export default function SignUpScreen() {
           
           <View style={emailConfirmStyles.infoBox}>
             <Text style={emailConfirmStyles.infoText}>
+
               {isPolling ? 
+              // Wenn isPolling true ist, wird diese Nachricht angezeigt
                 "Warte auf Bestätigung... Du wirst automatisch weitergeleitet, sobald du den Link in der E-Mail angeklickt hast." :
+              // Wenn isPolling false ist, wird diese Nachricht angezeigt
                 "Nach der Bestätigung deiner E-Mail wirst du automatisch weitergeleitet."
-              }
-            </Text>
+              }</Text>
+
+              
             {isPolling && (
+            // Wenn isPolling true ist, wird der ActivityIndicator angezeigt
               <ActivityIndicator 
                 size="small" 
                 color={AppColors.primary} 
@@ -81,11 +88,15 @@ export default function SignUpScreen() {
           <TouchableOpacity 
             style={emailConfirmStyles.resendButton}
             onPress={handleResendEmail}
-            disabled={isLoading}
+            disabled={isLoading} // Button wird deaktiviert, wenn isLoading true ist
           >
+
+
             {isLoading ? (
+              // Wenn isLoading true ist, wird der ActivityIndicator angezeigt
               <ActivityIndicator size="small" color="white" />
             ) : (
+              // Wenn isLoading false ist, wird der Text angezeigt
               <Text style={emailConfirmStyles.resendButtonText}>Bestätigungs-E-Mail erneut senden</Text>
             )}
           </TouchableOpacity>

@@ -1,15 +1,14 @@
-// app/lib/authContext.tsx
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { AuthService } from './auth';
 import { supabase } from './supabase';
 import * as SplashScreen from 'expo-splash-screen';
 import { router } from 'expo-router';
 
-// Keep the splash screen visible while we check authentication
+// [Ensures] Splashscren visible until Authentification complete
 SplashScreen.preventAutoHideAsync();
 
-// Define context types
-interface AuthContextType {
+// [Structure] AuthContext 
+interface AuthContext {
   user: any | null;
   profile: any | null;
   isLoading: boolean;
@@ -17,8 +16,13 @@ interface AuthContextType {
   refreshUser: () => Promise<void>;
 }
 
-// Create the auth context with default values
-const AuthContext = createContext<AuthContextType>({
+// [Structure] AuthProvider
+interface AuthProvider {
+  children: ReactNode;
+}
+
+// [Initialize] Empty AuthContext 
+const AuthContext = createContext<AuthContext>({
   user: null,
   profile: null,
   isLoading: true,
@@ -26,75 +30,66 @@ const AuthContext = createContext<AuthContextType>({
   refreshUser: async () => {},
 });
 
-// Define the props type explicitly
-interface AuthProviderProps {
-  children: ReactNode;
-}
+// [Export] Auth Provider Component
+export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => {
 
-// Export the provider component with explicit return type
-export const AuthProvider = ({ children }: AuthProviderProps): React.ReactElement => {
+  // [Initialize] React Hooks
   const [user, setUser] = useState<any | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Function to refresh user and profile data
-  const refreshUser = async (): Promise<void> => {
-    try {
-      setIsLoading(true);
-      const currentUser = await AuthService.getCurrentUser();
-      setUser(currentUser);
-
-      if (currentUser?.id) {
-        const userProfile = await AuthService.getUserProfile(currentUser.id);
-        setProfile(userProfile);
-      } else {
-        setProfile(null);
-      }
-    } catch (error) {
-      console.error('Error refreshing user:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Sign out function
-  const signOut = async (): Promise<void> => {
-    await AuthService.logout();
-    setUser(null);
-    setProfile(null);
-  };
-
-  // Subscribe to auth state changes when the component mounts
+  // [Subscribe] to auth state changes when the component mounts
   useEffect(() => {
+
+    // [API Call] Subscribes to AuthentificationState Change Listener
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log("Auth state changed:", event);
         
+
+        // [CASE] Signed In
         if (event === 'SIGNED_IN') {
+
+          // [Validates] User 
           if (session?.user) {
             setUser(session.user);
-            const userProfile = await AuthService.getUserProfile(session.user.id);
+
+            // [Get] public/profiles => sets local rec var
+            const userProfile = await AuthService.getUserProfilebyUserID(session.user.id);
             
+            // [Validated] public/Profile Rec
             if (userProfile) {
               setProfile(userProfile);
-              // If user is confirmed and has a profile, navigate to teams
+              // [Navigate] Team Screen (=User+Profile exists)
               router.replace('/features/teams/screens/selection');
             }
           }
           setIsLoading(false);
+
+
+          // [Case] Signed Out 
         } else if (event === 'SIGNED_OUT') {
+          // [Cleaning] Initializing the Session Objects
           setUser(null);
           setProfile(null);
           setIsLoading(false);
+
+
+          // [Case] User Updated
         } else if (event === 'USER_UPDATED') {
+          
+          // [Validates] User 
           if (session?.user) {
             setUser(session.user);
-            const userProfile = await AuthService.getUserProfile(session.user.id);
+
+            // [API Call] Get public/profiles
+            const userProfile = await AuthService.getUserProfilebyUserID(session.user.id);
             
-            // If the user's email was just confirmed
+            // [Check] Is User Confirmed + profile created
             if (session.user.confirmed_at && userProfile) {
               setProfile(userProfile);
-              // Navigate to teams selection after email confirmation
+
+              // [Navigate] Team Selection Screen
               router.replace('/features/teams/screens/selection');
             } else {
               setProfile(userProfile);
@@ -107,13 +102,18 @@ export const AuthProvider = ({ children }: AuthProviderProps): React.ReactElemen
       }
     );
 
-    // Check for existing session on mount
+    // [Checks] for existing Session, while mounting component
     const checkUser = async (): Promise<void> => {
       try {
+        // [API Call] Retrieves current session
         const session = await AuthService.getSession();
+
+        /// [Validate] User in Session
         if (session?.user) {
           setUser(session.user);
-          const userProfile = await AuthService.getUserProfile(session.user.id);
+
+          // [API Call] Retrieves public/profiles
+          const userProfile = await AuthService.getUserProfilebyUserID(session.user.id);
           setProfile(userProfile);
         }
       } catch (error) {
@@ -122,16 +122,46 @@ export const AuthProvider = ({ children }: AuthProviderProps): React.ReactElemen
         setIsLoading(false);
       }
     };
-
+  
     checkUser();
 
-    // Clean up subscription
+    // [Clean uo] Subscription
     return () => {
       if (authListener && authListener.subscription) {
         authListener.subscription.unsubscribe();
       }
     };
   }, []);
+
+  const refreshUser = async (): Promise<void> => {
+    try {
+      // [API Call] Retrieve User via Session
+      setIsLoading(true);
+      const currentUser = await AuthService.getCurrentUser();
+      setUser(currentUser);
+
+      // [Validate] user id
+      if (currentUser?.id) {
+
+        // [API Call] retrieve public/profiles   
+        const userProfile = await AuthService.getUserProfilebyUserID(currentUser.id);
+        setProfile(userProfile);
+      } else {
+        setProfile(null);
+      }
+    } catch (error) {
+      console.error('Error refreshing user:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const signOut = async (): Promise<void> => {
+    // [API Call] Logout session
+    await AuthService.logout();
+    setUser(null);
+    setProfile(null);
+  };
 
   // Use React.createElement instead of JSX syntax
   return React.createElement(
@@ -150,4 +180,4 @@ export const AuthProvider = ({ children }: AuthProviderProps): React.ReactElemen
 };
 
 // Create a hook for using the auth context
-export const useAuth = (): AuthContextType => useContext(AuthContext);
+export const useAuth = (): AuthContext => useContext(AuthContext);

@@ -1,102 +1,28 @@
 import { supabase } from './supabase';
-import { CustomAlert } from '@/common/lib/alert';
 
-// User types
+// [Struktur] Anmeldeinformationen eines Nutzers
 export interface UserCredentials {
   email: string;
   password: string;
 }
 
-export interface UserSignupData extends UserCredentials {
+// [Struktur] Anmeldeinformationen eines Nutzers
+export interface UserSignupProfileDetails extends UserCredentials {
   name: string;
   handle: string;
 }
-
+// [Struktur] Auth Response => Rückgabewert jeder Funktion
 export interface AuthResponse {
   success: boolean;
   message?: string;
   data?: any;
 }
 
-/**
- * Authentication service with methods for signup, login, logout, password reset
- */
 export class AuthService {
-  /**
-   * Signs up a new user with email and password
-   */
-  static async signUp({ 
-    email, 
-    password, 
-    name, 
-    handle 
-  }: UserSignupData): Promise<AuthResponse> {
-    try {
-      // Signup with email confirmation enabled
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            pending_profile: {
-              name,
-              handle
-            }
-          }
-        }
-      });
-
-      if (authError) {
-        console.error('Signup auth error:', authError);
-        return {
-          success: false,
-          message: authError.message || 'Failed to create account',
-        };
-      }
-
-      return {
-        success: true,
-        message: 'Please check your email to confirm your account.',
-        data: authData
-      };
-    } catch (error) {
-      console.error('Signup error:', error);
-      return {
-        success: false,
-        message: 'An unexpected error occurred during signup',
-      };
-    }
-  }
-  /**
-   * Logs out the current user
-   */
-  static async logout(): Promise<AuthResponse> {
-    try {
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        console.error('Logout error:', error);
-        return {
-          success: false,
-          message: error.message || 'Failed to sign out',
-        };
-      }
-      
-      return {
-        success: true,
-        message: 'Signed out successfully',
-      };
-    } catch (error) {
-      console.error('Logout error:', error);
-      return {
-        success: false,
-        message: 'An unexpected error occurred during logout',
-      };
-    }
-  }
-
+  
   static async login({ email, password }: UserCredentials): Promise<AuthResponse> {
     try {
+      // [API Call] Einloggen mit Passwort
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -110,7 +36,7 @@ export class AuthService {
         };
       }
 
-      // Check if user is confirmed
+      // [API Call] Nutzer holen => Ist Email comfirmed
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user?.confirmed_at) {
         return {
@@ -118,7 +44,7 @@ export class AuthService {
           message: 'Please verify your email before logging in',
         };
       }
-
+      // [When] Success
       return { 
         success: true,
         message: 'Logged in successfully',
@@ -133,13 +59,85 @@ export class AuthService {
     }
   }
 
+  static async signUp({ email, password, name, handle }: UserSignupProfileDetails): Promise<AuthResponse> {
+    try {
+      // [API Call] Registrieren der Nutzerdaten
+      // [API Call] Funktion erwartet Type "SignUpWithPasswordCredentials" 
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            pending_profile: {
+              name,
+              handle
+            }
+          }
+        }
+      });
+
+      // [Validation] API Rückgabe
+      if (authError) {
+        console.error('Signup auth error:', authError);
+        return {
+          success: false,
+          message: authError.message || 'Failed to create account',
+        };
+      }
+
+      // [When] Success
+      return {
+        success: true,
+        message: 'Please check your email to confirm your account.',
+        data: authData
+      };
+    } catch (error) {
+      console.error('Signup error:', error);
+      return {
+        success: false,
+        message: 'An unexpected error occurred during signup',
+      };
+    }
+  }
+  
+  static async logout(): Promise<AuthResponse> {
+    try {
+      // [API Call] Ausloggen des Nutzers
+      const { error } = await supabase.auth.signOut();
+      
+      // [Validation] API Rückgabe
+      if (error) {
+        console.error('Logout error:', error);
+        return {
+          success: false,
+          message: error.message || 'Failed to sign out',
+        };
+      }
+      
+      // [When] Success
+      return {
+        success: true,
+        message: 'Signed out successfully',
+      };
+    } catch (error) {
+      console.error('Logout error:', error);
+      return {
+        success: false,
+        message: 'An unexpected error occurred during logout',
+      };
+    }
+  }
+
+
   static async resendConfirmationEmail(email: string): Promise<AuthResponse> {
     try {
+      // [API Call] Resend Email
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email,
       });
   
+      // [Validation] API Rückgabe
       if (error) {
         console.error("Resend confirmation error:", error);
         return {
@@ -148,6 +146,7 @@ export class AuthService {
         };
       }
   
+      // [When] Success
       return {
         success: true,
         message: "A new confirmation email has been sent. Please check your inbox.",
@@ -163,8 +162,10 @@ export class AuthService {
   
   static async requestPasswordReset(email: string): Promise<AuthResponse> {
     try {
+      // [API Call] Passwort zurücksetzen
       const { error } = await supabase.auth.resetPasswordForEmail(email);
 
+      // [Validation] API Rückgabe
       if (error) {
         console.error("Password reset request error:", error);
         return {
@@ -173,6 +174,7 @@ export class AuthService {
         };
       }
 
+      // [When] Success
       return {
         success: true,
         message: "Password reset instructions have been sent to your email",
@@ -188,10 +190,12 @@ export class AuthService {
 
   static async resetPassword(newPassword: string): Promise<AuthResponse> {
     try {
+      // [API Call] Nutzer-Passwort updaten
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
 
+      // [Validation] API Rückgabe
       if (error) {
         console.error("Password reset error:", error);
         return {
@@ -200,6 +204,7 @@ export class AuthService {
         };
       }
 
+      // [When] Success
       return {
         success: true,
         message: "Password has been reset successfully",
@@ -212,16 +217,19 @@ export class AuthService {
       };
     }
   }
-   /**
-   * Retrieves the current user
-   */
+  
   static async getCurrentUser(): Promise<any> {
     try {
+      // [API Call] Einloggen mit Passwort
       const { data, error } = await supabase.auth.getUser();
+
+      // [Validation] API Rückgabe
       if (error) {
         console.error("Get user error:", error);
         return null;
       }
+
+      // [When] Success
       return data.user;
     } catch (error) {
       console.error("Unexpected error fetching user:", error);
@@ -229,16 +237,18 @@ export class AuthService {
     }
   }
 
-  /**
-   * Retrieves the current session
-   */
   static async getSession(): Promise<any> {
     try {
+      // [API Call] Session wird geholt
       const { data, error } = await supabase.auth.getSession();
+
+      // [Validation] API Rückgabe
       if (error) {
         console.error("Get session error:", error);
         return null;
       }
+
+      // [When] Success
       return data.session;
     } catch (error) {
       console.error("Unexpected error fetching session:", error);
@@ -246,34 +256,32 @@ export class AuthService {
     }
   }
 
-  /**
-   * Retrieves the user's profile from the profiles table
-   */
-  static async getUserProfile(userId: string): Promise<any> {
+  static async getUserProfilebyUserID(userId: string): Promise<any> {
     try {
+      // [API Call] Datensatz aus public/profile Dabelle => Basiert auf UserID
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", userId)
         .single();
 
+      // [Validation] API Rückgabe
       if (error) {
         console.error("Get profile error:", error);
         return null;
       }
 
+      // [When] Success
       return data;
     } catch (error) {
       console.error("Unexpected error fetching user profile:", error);
       return null;
     }
   }
- /**
- * Sucht ein Profil anhand der E-Mail-Adresse
- */
-static async getProfileByEmail(email: string): Promise<any> {
+  
+static async getUserProfileByEmail(email: string): Promise<any> {
   try {
-    // E-Mail-Adresse validieren
+    // [Validation] Email Adress
     if (!email || typeof email !== 'string') {
       console.error("Invalid email format");
       return null;
@@ -286,11 +294,13 @@ static async getProfileByEmail(email: string): Promise<any> {
       .ilike("email", email)
       .maybeSingle(); // maybeSingle statt single
 
+    // [Validation] API Rückgabe
     if (error) {
       console.error("Get profile by email error:", error);
       return null;
     }
 
+    // [When] Success
     return data;
   } catch (error) {
     console.error("Unexpected error fetching profile by email:", error);
