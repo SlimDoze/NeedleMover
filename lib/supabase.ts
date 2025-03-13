@@ -4,18 +4,19 @@ import Constants from 'expo-constants';
 
 // Benutzerdefinierter SessionStorage-Handler, der den "Stay logged in"-Status berücksichtigt
 // Benutzerdefinierter SessionStorage-Handler mit robusterer Implementierung
+
 class SessionStorage {
   private isPersistent: boolean = false;
   private isInitialized: boolean = false;
+  private initPromise: Promise<void>;
   private cache: Map<string, string> = new Map();
 
   constructor() {
-    // Wir laden den Status asynchron, aber beginnen standardmäßig mit false
-    this.isPersistent = false;
-    this.isInitialized = false;
-    this.initialize();
+    // Initialisieren der Klasse und speichern des Promise für spätere Verwendung
+    this.initPromise = this.initialize();
   }
-// [OOP] Initiiert Klassen Instanz
+
+  // Initialisierungsmethode, die ein Promise zurückgibt
   private async initialize() {
     try {
       await this.loadPersistState();
@@ -28,7 +29,7 @@ class SessionStorage {
     }
   }
   
-  // [Native] Ruft Persistenz Zustand aus AsyncStorage ab
+  // [Native] Lädt Persistenz-Status aus dem AsyncStorage
   async loadPersistState() {
     try {
       const shouldPersist = await AsyncStorage.getItem('persistSession');
@@ -40,9 +41,17 @@ class SessionStorage {
     }
   }
 
-  // [Native] Setzt den Persistenzzustand => speichert ihn im AsyncStorage
+  // [Native] Warten auf Initialisierung
+  private async waitForInitialization(): Promise<void> {
+    if (!this.isInitialized) {
+      await this.initPromise;
+    }
+  }
+
+  // Setzt den Persistenzzustand und speichert ihn im AsyncStorage
   async setPersistSession(persist: boolean) {
     try {
+      await this.waitForInitialization();
       console.log("Setting persist session to:", persist);
       this.isPersistent = persist;
       await AsyncStorage.setItem('persistSession', persist ? 'true' : 'false');
@@ -51,7 +60,7 @@ class SessionStorage {
     }
   }
 
-  // [Native] Überprüft, ob ein Schlüssel ein Authentifizierungs-Token ist
+  // Überprüft, ob ein Schlüssel ein Authentifizierungs-Token ist
   isAuthToken(key: string): boolean {
     return key.includes('supabase.auth.token') || 
            key.includes('sb-') || 
@@ -59,20 +68,16 @@ class SessionStorage {
            key.includes('refresh_token');
   }
 
-  // [Native] Ruft einen Wert aus dem AsyncStorage oder dem Cache ab
-  // [Native] Wenn der Wert ein Auth-Token ist und isPersistent auf false gesetzt ist, wird der Wert nur im Cache gespeichert.
+  // Ruft einen Wert aus dem AsyncStorage oder Cache ab
   async getItem(key: string): Promise<string | null> {
     try {
-      // Warte auf Initialisierung, wenn noch nicht abgeschlossen
-      if (!this.isInitialized) {
-        console.log("Waiting for initialization before getItem:", key);
-        await this.waitForInitialization();
-      }
+      // Warte auf die Initialisierung, bevor fortgefahren wird
+      await this.waitForInitialization();
 
       // Bei Auth-Tokens prüfen, ob persistiert werden soll
       if (!this.isPersistent && this.isAuthToken(key)) {
-        console.log("Not persisting session, returning null for:", key);
-        return null;
+        console.log("Not persisting session, using in-memory cache for:", key);
+        return this.cache.get(key) || null;
       }
 
       // Aus Cache lesen, falls vorhanden
@@ -95,19 +100,16 @@ class SessionStorage {
     }
   }
 
-// [Native] Speichert einen Wert im AsyncStorage und im Cache
+  // Speichert einen Wert im AsyncStorage und Cache
   async setItem(key: string, value: string): Promise<void> {
     try {
-      // Warte auf Initialisierung, wenn noch nicht abgeschlossen
-      if (!this.isInitialized) {
-        console.log("Waiting for initialization before setItem:", key);
-        await this.waitForInitialization();
-      }
+      // Warte auf die Initialisierung, bevor fortgefahren wird
+      await this.waitForInitialization();
 
       // Bei Auth-Tokens prüfen, ob persistiert werden soll
       if (!this.isPersistent && this.isAuthToken(key)) {
-        console.log("Not persisting session, skipping setItem for:", key);
-        // Temporär im Cache speichern, aber nicht in AsyncStorage
+        console.log("Not persisting session, storing in-memory only for:", key);
+        // Nur im Cache speichern, nicht in AsyncStorage
         this.cache.set(key, value);
         return;
       }
@@ -120,7 +122,7 @@ class SessionStorage {
     }
   }
 
-  // [Native] Entfernt einen Wert aus dem AsyncStorage und dem Cache
+  // Rest der Methoden bleiben unverändert...
   async removeItem(key: string): Promise<void> {
     try {
       // Aus Cache und AsyncStorage entfernen
@@ -131,21 +133,6 @@ class SessionStorage {
     }
   }
 
-  // [Native] // Wartet, bis die Initialisierung abgeschlossen ist
-  private waitForInitialization(): Promise<void> {
-    return new Promise((resolve) => {
-      const checkInit = () => {
-        if (this.isInitialized) {
-          resolve();
-        } else {
-          setTimeout(checkInit, 50);
-        }
-      };
-      checkInit();
-    });
-  }
-
-  // [Native] Hilfsmethode zum Löschen aller Auth-Token-Einträge
   async clearAuthTokens(): Promise<void> {
     try {
       // Liste aller Schlüssel holen
@@ -194,6 +181,12 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
+    }
+  },
+  // Retry-Strategie für bessere Stabilität bei schlechter Verbindung
+  realtime: {
+    params: {
+      eventsPerSecond: 10
     }
   }
 });
