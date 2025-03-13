@@ -1,85 +1,81 @@
-  import { serve } from 'https://deno.land/std@0.131.0/http/server.ts';
-  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+// supabase/functions/confirm-signup/index.ts
+import { serve } from 'https://deno.land/std@0.131.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-  /* +++++++++++++++++++++++++++++++++++++++++++
-      !!! Code wird in der Cloud ausgeführt, kommuniziert wird hier Richtung app!!!
+/* +++++++++++++++++++++++++++++++++++++++++++
+    !!! Code wird in der Cloud ausgeführt, kommuniziert wird hier Richtung app!!!
 
-        CORS = Cross-Origin Ressource Sharing
-        Erlaubt WebAnwendung auf externe Ressourcen zuzugreigen
-          > (Mail => EdgeFunction =>DB Confirm => Deeplink)
-    ++++++++++++++++++++++++++++++++++++++++++++*/
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*', // Erlaubt Anfragen von allen Ursprüngen (Anfrage soll von verschiedenen Domains aus ausgerufen werden)
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type', // Gibt die Erlaubten Header in der Anfrage an
-  };
+      CORS = Cross-Origin Ressource Sharing
+      Erlaubt WebAnwendung auf externe Ressourcen zuzugreigen
+        > (Mail => EdgeFunction =>DB Confirm => Deeplink)
+  ++++++++++++++++++++++++++++++++++++++++++++*/
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*', // Erlaubt Anfragen von allen Ursprüngen
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type', // Erlaubte Header
+};
 
-  serve(async (req: Request) => {
-    // CORS-Handling...
-  
-    try {
-      // URL-Parameter extrahieren
-      const url = new URL(req.url);
-      const token = url.searchParams.get('token');
-      const type = url.searchParams.get('type');
-      const email = url.searchParams.get('email');
-  
-      // Parameter validieren
-      if (!token || type !== 'signup' || !email) {
-        return new Response(JSON.stringify({ 
-          error: 'Invalid parameters. Required: token, type=signup, email' 
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
-        });
-      }
-  
-      // Supabase initialisieren
-      const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
-      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string;
-      const supabase = createClient(supabaseUrl, supabaseServiceKey);
-  
-      // OTP verifizieren (mit Email-Parameter)
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token,
-        type: 'signup',
-      });
-  
-      if (error) {
-        console.error('OTP Verification Error:', error);
-        return new Response(JSON.stringify({ error: error.message }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
-        });
-      }
-  
-      // Geräteerkennung und adaptive Weiterleitung
-      const isMobile = req.headers.get('user-agent')?.includes('Mobile') || 
-                       req.headers.get('user-agent')?.includes('Android') || 
-                       req.headers.get('user-agent')?.includes('iPhone');
-  
-      let redirectUrl;
-      if (isMobile) {
-        // Deep Link für mobile Geräte
-        redirectUrl = `needlemover://verify?token=${token}&type=${type}&email=${encodeURIComponent(email)}`;
-      } else {
-        // Web-Fallback
-        const siteUrl = Deno.env.get('SITE_URL') || 'http://localhost:3000';
-        redirectUrl = `${siteUrl}/auth-callback?token=${token}&type=${type}&email=${encodeURIComponent(email)}`;
-      }
-      
-      return Response.redirect(redirectUrl, 303);
-    } catch (error) {
-      console.error('Unexpected Error:', error);
-      return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+serve(async (req: Request) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      headers: corsHeaders,
+      status: 204,
+    });
+  }
+
+  try {
+    // URL-Parameter extrahieren
+    const url = new URL(req.url);
+    const token = url.searchParams.get('token');
+    const type = url.searchParams.get('type');
+    const email = url.searchParams.get('email');
+
+    // Parameter validieren
+    if (!token || type !== 'signup' || !email) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid parameters. Required: token, type=signup, email' 
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
+        status: 400,
       });
     }
-  });
 
-  export const config = {
-    name: 'confirm-signup',
-    regions: ['cdg1'],
-    runtime: 'edge',
-  };
+    // Geräteerkennung für adaptive Weiterleitung
+    const userAgent = req.headers.get('user-agent') || '';
+    const isMobile = userAgent.includes('Mobile') || 
+                     userAgent.includes('Android') || 
+                     userAgent.includes('iPhone');
+
+    // Deep Link URL erstellen
+    let redirectUrl = '';
+
+    // Mobile Deep Link mit dem NeedleMover Schema
+    if (isMobile) {
+      redirectUrl = `needlemover://verify?token=${token}&type=${type}&email=${encodeURIComponent(email)}`;
+      console.log("Mobile erkannt, Umleitung zu:", redirectUrl);
+    } 
+    // Fallback für Web - verwendet die SITE_URL aus den Umgebungsvariablen oder localhost
+    else {
+      const siteUrl = Deno.env.get('SITE_URL') || 'http://localhost:8081';
+      redirectUrl = `${siteUrl}/features/auth/screens/verify?token=${token}&type=${type}&email=${encodeURIComponent(email)}`;
+      console.log("Desktop erkannt, Umleitung zu:", redirectUrl);
+    }
+
+    // HTTP-Umleitung zurückgeben
+    return Response.redirect(redirectUrl, 303);
+
+  } catch (error) {
+    // Fehlerbehandlung
+    console.error('Unexpected Error:', error);
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+    });
+  }
+});
+
+export const config = {
+  name: 'confirm-signup',
+  regions: ['cdg1'],
+  runtime: 'edge',
+};
