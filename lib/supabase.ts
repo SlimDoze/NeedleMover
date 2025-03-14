@@ -8,20 +8,32 @@ import Constants from 'expo-constants';
 class SessionStorage {
   private isPersistent: boolean = false;
   private isInitialized: boolean = false;
-  private initPromise: Promise<void>;
+  // [FIX] Verwende Static Instance, um mehrfache parallele Initialisierungen zu vermeiden
+  private static initPromise: Promise<void> | null = null;
   private cache: Map<string, string> = new Map();
+  // [FIX] Verwende einen Prozess-Flag, um zu vermeiden, dass Log-Meldungen gespammt werden
+  private static loggedPaths = new Set<string>();
 
   constructor() {
     // Initialisieren der Klasse und speichern des Promise für spätere Verwendung
-    this.initPromise = this.initialize();
+    this.initializeOnce();
+  }
+
+  // [FIX] Singleton-Pattern für die Initialisierung implementieren
+  private initializeOnce() {
+    if (!SessionStorage.initPromise) {
+      SessionStorage.initPromise = this.initialize();
+    }
   }
 
   // Initialisierungsmethode, die ein Promise zurückgibt
   private async initialize() {
     try {
-      await this.loadPersistState();
-      this.isInitialized = true;
-      console.log("SessionStorage initialized, persistSession =", this.isPersistent);
+      if (!this.isInitialized) {
+        await this.loadPersistState();
+        this.isInitialized = true;
+        console.log("SessionStorage initialized, persistSession =", this.isPersistent);
+      }
     } catch (error) {
       console.error("Failed to initialize SessionStorage:", error);
       this.isPersistent = false;
@@ -43,8 +55,8 @@ class SessionStorage {
 
   // [Native] Warten auf Initialisierung
   private async waitForInitialization(): Promise<void> {
-    if (!this.isInitialized) {
-      await this.initPromise;
+    if (!this.isInitialized && SessionStorage.initPromise) {
+      await SessionStorage.initPromise;
     }
   }
 
@@ -68,6 +80,19 @@ class SessionStorage {
            key.includes('refresh_token');
   }
 
+  // [FIX] Log-Begrenzung hinzufügen um Spam zu vermeiden
+  private logOnce(path: string, message: string) {
+    if (!SessionStorage.loggedPaths.has(path)) {
+      console.log(message);
+      SessionStorage.loggedPaths.add(path);
+      
+      // Setze nach einer gewissen Zeit zurück, um erneute Logs zu ermöglichen
+      setTimeout(() => {
+        SessionStorage.loggedPaths.delete(path);
+      }, 5000);
+    }
+  }
+
   // Ruft einen Wert aus dem AsyncStorage oder Cache ab
   async getItem(key: string): Promise<string | null> {
     try {
@@ -76,7 +101,8 @@ class SessionStorage {
 
       // Bei Auth-Tokens prüfen, ob persistiert werden soll
       if (!this.isPersistent && this.isAuthToken(key)) {
-        console.log("Not persisting session, using in-memory cache for:", key);
+        // [FIX] Log-Spam reduzieren
+        this.logOnce(key, `Not persisting session, using in-memory cache for: ${key}`);
         return this.cache.get(key) || null;
       }
 
@@ -108,7 +134,8 @@ class SessionStorage {
 
       // Bei Auth-Tokens prüfen, ob persistiert werden soll
       if (!this.isPersistent && this.isAuthToken(key)) {
-        console.log("Not persisting session, storing in-memory only for:", key);
+        // [FIX] Log-Spam reduzieren
+        this.logOnce(key, `Not persisting session, storing in-memory only for: ${key}`);
         // Nur im Cache speichern, nicht in AsyncStorage
         this.cache.set(key, value);
         return;

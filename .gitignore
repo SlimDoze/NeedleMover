@@ -4,8 +4,11 @@
 credentials.json
 .env
 
-# App Builds
+# App Buildsclear
 .aab
+
+## Local Dev Scripts
+tasks.json
 
 # dependencies
 node_modules/
