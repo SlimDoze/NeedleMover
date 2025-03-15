@@ -128,12 +128,51 @@ function RootLayoutNav() {
     };
   }, [router, refreshUser, isMounted]);
 
-  useEffect(() => {
-    // Hide splash screen when auth check is done
-    if (!isLoading) {
-      SplashScreen.hideAsync();
+ // In app/_layout.tsx - Den Deep-Link-Handler verbessern
+useEffect(() => {
+  // Handler für initiale URL beim App-Start
+  const handleInitialURL = async () => {
+    const initialURL = await Linking.getInitialURL();
+    if (initialURL) {
+      console.log('Initial URL beim App-Start:', initialURL);
+      handleDeepLink(initialURL);
     }
-  }, [isLoading]);
+  };
+
+  // Event-Listener für Links, wenn die App bereits läuft
+  const subscription = Linking.addEventListener('url', (event) => {
+    console.log('Deep Link empfangen während App läuft:', event.url);
+    handleDeepLink(event.url);
+  });
+
+  // URL parsen und entsprechend handeln
+  const handleDeepLink = (url: string) => {
+    console.log('Deep Link wird verarbeitet:', url);
+    
+    // URL-Objekt erstellen
+    const parsedURL = Linking.parse(url);
+    console.log('Geparste URL:', parsedURL);
+    
+    // Prüfen, ob es sich um ein Verify-Link handelt
+    if (parsedURL.scheme === 'needlemover' && parsedURL.path === 'verify') {
+      console.log('Verifizierungs-Link erkannt mit Parametern:', parsedURL.queryParams);
+      
+      // Zur Verifizierungsseite navigieren mit den Parametern
+      router.replace({
+        pathname: '/features/auth/screens/verify',
+        params: parsedURL.queryParams || undefined
+      });
+    }
+  };
+
+  // Initiale URL beim App-Start verarbeiten
+  handleInitialURL();
+
+  // Cleanup beim Unmount der Komponente
+  return () => {
+    subscription.remove();
+  };
+}, [router]);
 
   // Show nothing while loading
   if (isLoading) {

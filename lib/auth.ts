@@ -59,6 +59,56 @@ export class AuthService {
       };
     }
   }
+  // Neue Methode für lib/auth.ts hinzufügen
+static async loginAfterEmailConfirmation(email: string): Promise<AuthResponse> {
+  try {
+    // 1. Versuche, das Profil anhand der E-Mail zu finden
+    const profile = await this.getProfileByEmail(email);
+    
+    if (!profile) {
+      console.error('Kein Profil gefunden für:', email);
+      // Warte einen Moment und versuche es erneut, da das Profil möglicherweise noch erstellt wird
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      const retryProfile = await this.getProfileByEmail(email);
+      
+      if (!retryProfile) {
+        return {
+          success: false,
+          message: 'Profil nicht gefunden. Bitte versuche, dich normal anzumelden.'
+        };
+      }
+    }
+    
+    // 2. Da wir das Passwort nicht haben, verwenden wir eine spezielle Methode
+    // Wir nutzen signInWithOtp, um einen Magic Link zu vermeiden
+    const { data, error } = await supabase.auth.signInWithOtp({
+      email: email,
+      options: {
+        shouldCreateUser: false, // Benutzer existiert bereits
+      }
+    });
+    
+    if (error) {
+      console.error('Login nach Bestätigung fehlgeschlagen:', error);
+      return {
+        success: false,
+        message: error.message || 'Login fehlgeschlagen'
+      };
+    }
+    
+    return {
+      success: true,
+      message: 'Erfolgreich angemeldet',
+      data
+    };
+  } catch (error) {
+    console.error('Unerwarteter Fehler beim Login nach Bestätigung:', error);
+    return {
+      success: false,
+      message: 'Ein unerwarteter Fehler ist aufgetreten'
+    };
+  }
+}
 
 // [Function] Validates and Signs user uo
   static async signUp({ email, password, name, handle }: UserSignupProfileDetails): Promise<AuthResponse> {
