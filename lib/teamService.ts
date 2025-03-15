@@ -11,6 +11,9 @@ export interface Team {
   created_at: string;
   updated_at?: string;
   invite_code: string;
+  memberCount?: number;  
+  lastActive?: string;   
+  image?: any;     
 }
 
 export interface TeamMember {

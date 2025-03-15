@@ -159,27 +159,48 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
   }, []);
 
   // [Function] Refreshed session profile from db (public/profile)
-  const refreshUser = async (): Promise<void> => {
-    try {
-      // [API Call] Retrieve User via Session
-      setIsLoading(true);
-      const currentUser = await AuthService.getCurrentUser();
-      setUser(currentUser);
-
-      // [Validate] user id
-      if (currentUser?.id) {
-        // [API Call] retrieve public/profiles   
-        const userProfile = await AuthService.getProfilebyUserID(currentUser.id);
-        setProfile(userProfile);
+const refreshUser = async (): Promise<void> => {
+  try {
+    setIsLoading(true);
+    
+    // Session explizit aktualisieren
+    await supabase.auth.refreshSession();
+    
+    // Aktuelle Session holen
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session?.user) {
+      // Nutzer setzen
+      setUser(session.user);
+      
+      // Profil abrufen
+      const userProfile = await AuthService.getProfilebyUserID(session.user.id);
+      
+      // Wenn das Profil noch nicht existiert, kurz warten und erneut versuchen
+      if (!userProfile) {
+        console.log("Kein Profil gefunden, warte kurz und versuche erneut...");
+        // Kurz warten (1.5 Sekunden), damit die DB-Trigger Zeit haben, das Profil zu erstellen
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Erneut versuchen, das Profil zu holen
+        const retryProfile = await AuthService.getProfilebyUserID(session.user.id);
+        setProfile(retryProfile);
       } else {
-        setProfile(null);
+        setProfile(userProfile);
       }
-    } catch (error) {
-      console.error('Error refreshing user:', error);
-    } finally {
-      setIsLoading(false);
+      
+      console.log("Benutzer erfolgreich aktualisiert:", session.user.email);
+    } else {
+      console.log("Keine aktive Session gefunden");
+      setUser(null);
+      setProfile(null);
     }
-  };
+  } catch (error) {
+    console.error('Fehler beim Aktualisieren des Benutzers:', error);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // [Function] Signed User out of Session
   const signOut = async (): Promise<void> => {
