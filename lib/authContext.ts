@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { AuthService } from './auth';
 import { supabase } from './supabase';
 import * as SplashScreen from 'expo-splash-screen';
@@ -37,28 +37,19 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
   const [user, setUser] = useState<any | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  // [FIX] Verwende Refs, um zu verfolgen, ob wir bereits initialisiert haben
-  const hasInitialized = useRef(false);
-  const profileChecked = useRef(false);
-  // [FIX] Verwende einen Ref, um zu verfolgen, ob wir bereits zum Selection Screen navigiert haben
-  const hasNavigatedToSelection = useRef(false);
 
   // [Subscribe] to auth state changes when the component mounts
   useEffect(() => {
-    // [FIX] Prüfe, ob wir bereits initialisiert haben, um doppelte Initialisierungen zu vermeiden
-    if (hasInitialized.current) return;
-    hasInitialized.current = true;
 
     // [API Call] Subscribes to AuthentificationState Change Listener
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        // [FIX] Reduziere Logs auf nützliche Informationen
-        if (event !== 'INITIAL_SESSION') {  // Wir ignorieren das initiale Ereignis, das immer auftritt
-          console.log("Auth state changed:", event);
-        }
+        console.log("Auth state changed:", event);
+        
 
         // [CASE] Signed In
         if (event === 'SIGNED_IN') {
+
           // [Validates] User 
           if (session?.user) {
             setUser(session.user);
@@ -69,14 +60,12 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
             // [Validated] public/Profile Rec
             if (userProfile) {
               setProfile(userProfile);
-              if (!hasNavigatedToSelection.current) {
-                // [Navigate] Team Screen (=User+Profile exists)
-                hasNavigatedToSelection.current = true;
-                router.replace('/features/teams/screens/selection');
-              }
+              // [Navigate] Team Screen (=User+Profile exists)
+              router.replace('/features/teams/screens/selection');
             }
           }
           setIsLoading(false);
+
 
           // [Case] Signed Out 
         } else if (event === 'SIGNED_OUT') {
@@ -84,8 +73,7 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
           setUser(null);
           setProfile(null);
           setIsLoading(false);
-          // [FIX] Zurücksetzen des Navigations-Flags
-          hasNavigatedToSelection.current = false;
+
 
           // [Case] User Updated
         } else if (event === 'USER_UPDATED') {
@@ -102,10 +90,7 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
               setProfile(userProfile);
 
               // [Navigate] Team Selection Screen
-              if (!hasNavigatedToSelection.current) {
-                hasNavigatedToSelection.current = true;
-                router.replace('/features/teams/screens/selection');
-              }
+              router.replace('/features/teams/screens/selection');
             } else {
               setProfile(userProfile);
             }
@@ -120,10 +105,6 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
     // [Checks] for existing Session, while mounting component
     const checkUser = async (): Promise<void> => {
       try {
-        // [FIX] Vermeidet doppelte Profilprüfungen
-        if (profileChecked.current) return;
-        profileChecked.current = true;
-
         // [API Call] Retrieves current session
         const session = await AuthService.getSession();
 
@@ -134,12 +115,6 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
           // [API Call] Retrieves public/profiles
           const userProfile = await AuthService.getProfilebyUserID(session.user.id);
           setProfile(userProfile);
-          
-          // [FIX] Navigiere nur, wenn ein gültiges Profil vorhanden ist und noch nicht navigiert wurde
-          if (userProfile && !hasNavigatedToSelection.current && session.user.confirmed_at) {
-            hasNavigatedToSelection.current = true;
-            router.replace('/features/teams/screens/selection');
-          }
         }
       } catch (error) {
         console.error('Error checking user session:', error);
@@ -159,48 +134,58 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
   }, []);
 
   // [Function] Refreshed session profile from db (public/profile)
-const refreshUser = async (): Promise<void> => {
-  try {
-    setIsLoading(true);
-    
-    // Session explizit aktualisieren
-    await supabase.auth.refreshSession();
-    
-    // Aktuelle Session holen
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (session?.user) {
-      // Nutzer setzen
-      setUser(session.user);
+  const refreshUser = async (): Promise<void> => {
+    try {
+      // [API Call] Retrieve User via Session
+      setIsLoading(true);
+      console.log("Refreshing user...");
       
-      // Profil abrufen
-      const userProfile = await AuthService.getProfilebyUserID(session.user.id);
+      // WICHTIG: Holen wir zunächst die aktive Session
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       
-      // Wenn das Profil noch nicht existiert, kurz warten und erneut versuchen
-      if (!userProfile) {
-        console.log("Kein Profil gefunden, warte kurz und versuche erneut...");
-        // Kurz warten (1.5 Sekunden), damit die DB-Trigger Zeit haben, das Profil zu erstellen
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Erneut versuchen, das Profil zu holen
-        const retryProfile = await AuthService.getProfilebyUserID(session.user.id);
-        setProfile(retryProfile);
-      } else {
-        setProfile(userProfile);
+      if (sessionError) {
+        console.error("Session-Abruf fehlgeschlagen:", sessionError);
+        setIsLoading(false);
+        return;
       }
       
-      console.log("Benutzer erfolgreich aktualisiert:", session.user.email);
-    } else {
-      console.log("Keine aktive Session gefunden");
-      setUser(null);
-      setProfile(null);
+      // Wenn keine Session vorhanden, sind wir nicht angemeldet
+      if (!sessionData?.session) {
+        console.log("Keine aktive Session gefunden beim Refresh");
+        setUser(null);
+        setProfile(null);
+        setIsLoading(false);
+        return;
+      }
+      
+      // Session ist vorhanden, aktualisieren wir den Benutzer
+      console.log("Aktive Session gefunden, User ID:", sessionData.session.user.id);
+      
+      // Den aktuellen Benutzer holen
+      const currentUser = sessionData.session.user;
+      setUser(currentUser);
+
+      // [Validate] user id
+      if (currentUser?.id) {
+        // [API Call] retrieve public/profiles   
+        const userProfile = await AuthService.getProfilebyUserID(currentUser.id);
+        
+        if (userProfile) {
+          console.log("Profil gefunden bei Refresh:", userProfile.id);
+          setProfile(userProfile);
+        } else {
+          console.log("Kein Profil gefunden trotz aktiver Session");
+          setProfile(null);
+        }
+      } else {
+        setProfile(null);
+      }
+    } catch (error) {
+      console.error('Error refreshing user:', error);
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    console.error('Fehler beim Aktualisieren des Benutzers:', error);
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   // [Function] Signed User out of Session
   const signOut = async (): Promise<void> => {
@@ -208,8 +193,6 @@ const refreshUser = async (): Promise<void> => {
     await AuthService.logout();
     setUser(null);
     setProfile(null);
-    // [FIX] Zurücksetzen des Navigations-Flags
-    hasNavigatedToSelection.current = false;
   };
 
   // Use React.createElement instead of JSX syntax

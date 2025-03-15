@@ -62,7 +62,8 @@ serve(async (req: Request) => {
     // Fallback für Web - verwendet die SITE_URL aus den Umgebungsvariablen oder localhost
     else {
       const siteUrl = Deno.env.get('SITE_URL') || 'http://localhost:8081';
-      redirectUrl = `${siteUrl}/features/auth/screens/verify?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}&email=${encodeURIComponent(email)}`;
+      // Direkt zu /features/auth/screens/callback navigieren
+      redirectUrl = `${siteUrl}/features/auth/screens/callback`;
       console.log("Desktop erkannt, Umleitung zu:", redirectUrl);
     }
 

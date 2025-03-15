@@ -329,6 +329,45 @@ export class AuthService {
       return null;
     }
   }
+  // Neue Methode zu lib/auth.ts hinzufügen
+static async setSessionWithTokens(accessToken: string, refreshToken: string): Promise<AuthResponse> {
+  try {
+    console.log('Versuche Session mit direkten Tokens zu setzen');
+    
+    // Session mit den gegebenen Tokens setzen
+    const { data, error } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken
+    });
+    
+    if (error) {
+      console.error('Fehler beim Setzen der Session mit Tokens:', error);
+      return {
+        success: false,
+        message: error.message || 'Fehler beim Setzen der Session'
+      };
+    }
+    
+    if (!data.session) {
+      return {
+        success: false,
+        message: 'Keine Session erstellt'
+      };
+    }
+    
+    return {
+      success: true,
+      message: 'Session erfolgreich mit Tokens erstellt',
+      data
+    };
+  } catch (error) {
+    console.error('Unerwarteter Fehler beim Setzen der Session mit Tokens:', error);
+    return {
+      success: false,
+      message: 'Ein unerwarteter Fehler ist aufgetreten'
+    };
+  }
+}
 
   // [Function] Get's public/profiles by User ID
   static async getProfilebyUserID(userId: string): Promise<any> {

@@ -22,17 +22,39 @@ export function useCreateTeam() {
 
     // WICHTIG: Prüfen und warten, bis Benutzer verfügbar ist
     if (!user) {
+      console.log("Kein Benutzer gefunden beim Team-Erstellen, prüfe Session...");
+      
       // Session-Zustand erneut prüfen
       try {
         const { data: sessionData } = await supabase.auth.getSession();
+        
+        console.log("Session-Check für Team-Erstellung:", 
+          sessionData?.session ? "Session vorhanden" : "Keine Session"
+        );
+        
         if (!sessionData?.session) {
+          console.log("Benutzer nicht angemeldet beim Team-Erstellen");
           CustomAlert("Error", "Du musst angemeldet sein, um ein Team zu erstellen");
-          router.replace('/'); // Zurück zur Startseite
+          
+          // Zur Anmeldeseite navigieren
+          setTimeout(() => {
+            router.replace('/');
+          }, 500);
           return;
         }
+        
         // Benutzer neu laden, wenn Session vorhanden aber user nicht
+        console.log("Session vorhanden, aber kein User - lade Benutzer neu");
         await refreshUser();
+        
+        // Nach dem Refresh erneut prüfen
+        if (!user) {
+          console.log("Auch nach Refresh kein Benutzer gefunden");
+          CustomAlert("Error", "Benutzerkontext konnte nicht geladen werden");
+          return;
+        }
       } catch (error) {
+        console.error("Fehler beim Prüfen der Session:", error);
         CustomAlert("Error", "Du musst angemeldet sein, um ein Team zu erstellen");
         return;
       }
@@ -40,14 +62,12 @@ export function useCreateTeam() {
 
     try {
       setIsLoading(true);
+      console.log("Erstelle Team mit Benutzer-ID:", user.id);
 
       const teamData: TeamCreateData = {
         name: teamName,
         description: teamDescription
       };
-
-      // Zusätzliches Logging für Debugging
-      console.log("Erstelle Team mit Benutzer-ID:", user?.id);
       
       const response = await TeamService.createTeam(user.id, teamData);
 
