@@ -1,13 +1,11 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-      {
-        "name": "Attach to Expo",
-        "request": "attach",
-        "type": "reactnative",
-        "program": "${workspaceFolder}/.expo/.expo-server.js",
-        "cwd": "${workspaceFolder}"
-      }
-    ]
-  }
-  
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Attach to Expo Go",
+      "request": "attach",
+      "type": "reactnative",
+      "cwd": "${workspaceFolder}",
+    }
+  ]
+}
