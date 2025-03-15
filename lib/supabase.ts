@@ -49,7 +49,8 @@ class SessionStorage {
       console.log("Loaded persist state:", this.isPersistent);
     } catch (error) {
       console.error("Error loading persistence state:", error);
-      this.isPersistent = false;
+      // WICHTIG: Default auf true setzen für bessere Benutzererfahrung
+      this.isPersistent = true;
     }
   }
 
@@ -66,12 +67,23 @@ class SessionStorage {
       await this.waitForInitialization();
       console.log("Setting persist session to:", persist);
       this.isPersistent = persist;
+      
+      // WICHTIG: Wir speichern die Einstellung
       await AsyncStorage.setItem('persistSession', persist ? 'true' : 'false');
+      
+      // WICHTIG: Wenn wir auf persistent umschalten, vorhandene im-Memory-Tokens in AsyncStorage sichern
+      if (persist) {
+        for (const [key, value] of this.cache.entries()) {
+          if (this.isAuthToken(key)) {
+            console.log("Persisting cached auth token:", key);
+            await AsyncStorage.setItem(key, value);
+          }
+        }
+      }
     } catch (error) {
       console.error("Error setting persistence state:", error);
     }
   }
-
   // Überprüft, ob ein Schlüssel ein Authentifizierungs-Token ist
   isAuthToken(key: string): boolean {
     return key.includes('supabase.auth.token') || 

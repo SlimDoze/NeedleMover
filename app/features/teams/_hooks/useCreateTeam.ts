@@ -2,13 +2,14 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { CustomAlert } from "@/common/lib/alert";
-import { TeamService, TeamCreateData } from "@/lib/teamService"
+import { TeamService, TeamCreateData } from "@/lib/teamService";
 import { useAuth } from "@/lib/authContext";
 import { Team_Routes } from "../_constants/routes";
+import { supabase } from "@/lib/supabase";
 
 export function useCreateTeam() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [teamName, setTeamName] = useState("");
   const [teamDescription, setTeamDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -19,9 +20,22 @@ export function useCreateTeam() {
       return;
     }
 
+    // WICHTIG: Prüfen und warten, bis Benutzer verfügbar ist
     if (!user) {
-      CustomAlert("Error", "You must be logged in to create a team");
-      return;
+      // Session-Zustand erneut prüfen
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!sessionData?.session) {
+          CustomAlert("Error", "Du musst angemeldet sein, um ein Team zu erstellen");
+          router.replace('/'); // Zurück zur Startseite
+          return;
+        }
+        // Benutzer neu laden, wenn Session vorhanden aber user nicht
+        await refreshUser();
+      } catch (error) {
+        CustomAlert("Error", "Du musst angemeldet sein, um ein Team zu erstellen");
+        return;
+      }
     }
 
     try {
@@ -32,6 +46,9 @@ export function useCreateTeam() {
         description: teamDescription
       };
 
+      // Zusätzliches Logging für Debugging
+      console.log("Erstelle Team mit Benutzer-ID:", user?.id);
+      
       const response = await TeamService.createTeam(user.id, teamData);
 
       setIsLoading(false);

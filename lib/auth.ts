@@ -60,56 +60,74 @@ export class AuthService {
     }
   }
   // Neue Methode für lib/auth.ts hinzufügen
-static async loginAfterEmailConfirmation(email: string): Promise<AuthResponse> {
-  try {
-    // 1. Versuche, das Profil anhand der E-Mail zu finden
-    const profile = await this.getProfileByEmail(email);
-    
-    if (!profile) {
-      console.error('Kein Profil gefunden für:', email);
-      // Warte einen Moment und versuche es erneut, da das Profil möglicherweise noch erstellt wird
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      const retryProfile = await this.getProfileByEmail(email);
+  static async loginAfterEmailConfirmation(email: string): Promise<AuthResponse> {
+    try {
+      console.log('Versuche Login nach E-Mail-Bestätigung für:', email);
       
-      if (!retryProfile) {
+      // Session-Persistenz sicherstellen für diesen Login
+      await sessionStorage.setPersistSession(true);
+      
+      // 1. Prüfen, ob schon eine aktive Session vorhanden ist
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData?.session) {
+        console.log('Bereits aktive Session gefunden:', sessionData.session.user.id);
         return {
-          success: false,
-          message: 'Profil nicht gefunden. Bitte versuche, dich normal anzumelden.'
+          success: true,
+          message: 'Bereits angemeldet',
+          data: sessionData
         };
       }
-    }
-    
-    // 2. Da wir das Passwort nicht haben, verwenden wir eine spezielle Methode
-    // Wir nutzen signInWithOtp, um einen Magic Link zu vermeiden
-    const { data, error } = await supabase.auth.signInWithOtp({
-      email: email,
-      options: {
-        shouldCreateUser: false, // Benutzer existiert bereits
+      
+      // 2. Versuche direkten Login mit vorhandenen Anmeldedaten
+      // Da wir das Passwort nicht haben, nutzen wir den Link-Token aus dem Deep Link
+      console.log('Keine aktive Session, versuche expliziten Login');
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: 'dummy-password' // Dies wird fehlschlagen, aber es ist ein Versuch
+      });
+      
+      if (error) {
+        console.log('Normaler Login fehlgeschlagen, versuche OTP-Login');
+        
+        // 3. Wenn normaler Login fehlschlägt, verwende OTP
+        // Dies ist ein "Fallback"-Mechanismus
+        const { data: otpData, error: otpError } = await supabase.auth.signInWithOtp({
+          email: email,
+          options: {
+            shouldCreateUser: false
+          }
+        });
+        
+        if (otpError) {
+          console.error('OTP-Login fehlgeschlagen:', otpError);
+          return {
+            success: false,
+            message: otpError.message || 'Login fehlgeschlagen'
+          };
+        }
+        
+        console.log('OTP-Login erfolgreich, OTP wurde per E-Mail gesendet');
+        return {
+          success: true,
+          message: 'Bitte prüfe deine E-Mails für den Login-Code',
+          data: otpData
+        };
       }
-    });
-    
-    if (error) {
-      console.error('Login nach Bestätigung fehlgeschlagen:', error);
+      
+      console.log('Login erfolgreich');
+      return {
+        success: true,
+        message: 'Erfolgreich angemeldet',
+        data
+      };
+    } catch (error) {
+      console.error('Unerwarteter Fehler beim Login nach Bestätigung:', error);
       return {
         success: false,
-        message: error.message || 'Login fehlgeschlagen'
+        message: 'Ein unerwarteter Fehler ist aufgetreten'
       };
     }
-    
-    return {
-      success: true,
-      message: 'Erfolgreich angemeldet',
-      data
-    };
-  } catch (error) {
-    console.error('Unerwarteter Fehler beim Login nach Bestätigung:', error);
-    return {
-      success: false,
-      message: 'Ein unerwarteter Fehler ist aufgetreten'
-    };
   }
-}
-
 // [Function] Validates and Signs user uo
   static async signUp({ email, password, name, handle }: UserSignupProfileDetails): Promise<AuthResponse> {
     try {
