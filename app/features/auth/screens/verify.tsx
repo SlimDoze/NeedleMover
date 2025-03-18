@@ -1,58 +1,77 @@
-// app/features/auth/screens/verify.tsx - Überarbeitete Version
+// app/features/auth/screens/verify.tsx - überarbeitete Version
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+import { AuthService } from '@/lib/auth';
 import { AppColors } from '@/common/constants/AppColors';
 import { Team_Routes } from '../_constants/routes';
-import { AuthService } from '@/lib/auth';
-import { useAuth } from '@/lib/authContext';
 
 export default function VerifyScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { refreshUser } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
-  const [isVerified, setIsVerified] = useState(false);
-  const [message, setMessage] = useState('Validiere E-Mail...');
+  const [message, setMessage] = useState('Überprüfe Bestätigung...');
   const [error, setError] = useState<string | null>(null);
-  const [email, setEmail] = useState<string | null>(null);
   
   useEffect(() => {
-    async function verifyEmail() {
+    // Polling-Intervall für Profilprüfung
+    let pollingInterval: NodeJS.Timeout | null = null;
+
+    async function checkEmailConfirmation() {
       try {
-        const token = params.token as string;
-        const type = params.type as string;
-        const emailParam = params.email as string;
+        const email = params.email as string;
         
-        if (!token || !type || !emailParam) {
-          setError('Ungültige Parameter. Erforderlich: token, type, email');
+        if (!email) {
+          setError('E-Mail-Parameter fehlt');
           setIsLoading(false);
           return;
         }
         
-        setEmail(emailParam);
+        console.log('Überprüfe E-Mail-Bestätigung für:', email);
         
-        // Verifizierung mit Supabase
-        const { error: verifyError } = await supabase.auth.verifyOtp({
-          email: emailParam,
-          token,
-          type: 'signup',
-        });
+        // Versuche, das Profil zu finden (was bedeutet, dass die E-Mail bestätigt wurde)
+        const checkProfile = async () => {
+          const profile = await AuthService.getProfileByEmail(email);
+          
+          if (profile) {
+            console.log('Profil gefunden:', profile);
+            // Erfolg - Profil existiert
+            if (pollingInterval) {
+              clearInterval(pollingInterval);
+              pollingInterval = null;
+            }
+            
+            setMessage('E-Mail bestätigt! Du wirst weitergeleitet...');
+            
+            // Kurze Verzögerung für bessere Benutzererfahrung
+            setTimeout(() => {
+              router.replace(Team_Routes.Selection);
+            }, 1500);
+          }
+        };
         
-        if (verifyError) {
-          console.error('Verifizierungsfehler:', verifyError);
-          setError(verifyError.message);
-          setIsLoading(false);
-          return;
+        // Prüfe sofort einmal
+        await checkProfile();
+        
+        // Wenn kein Profil gefunden wurde, starte Polling
+        if (isLoading) {
+          pollingInterval = setInterval(checkProfile, 2000); // Alle 2 Sekunden prüfen
+          
+          // Nach 30 Sekunden Timeout
+          setTimeout(() => {
+            if (pollingInterval) {
+              clearInterval(pollingInterval);
+              pollingInterval = null;
+              
+              if (isLoading) {
+                setError('Zeitüberschreitung bei der Bestätigung. Bitte versuche es später erneut.');
+                setIsLoading(false);
+              }
+            }
+          }, 30000);
         }
-        
-        // Email wurde erfolgreich verifiziert
-        setIsVerified(true);
-        setMessage('E-Mail bestätigt! Du kannst dich jetzt anmelden.');
-        setIsLoading(false);
         
       } catch (err) {
         console.error('Unerwarteter Fehler:', err);
@@ -61,39 +80,15 @@ export default function VerifyScreen() {
       }
     }
     
-    verifyEmail();
-  }, [params, router]);
-  
-  // Funktion zum automatischen Login nach Verifizierung
-  const handleLogin = async () => {
-    if (!email) return;
+    checkEmailConfirmation();
     
-    setIsLoading(true);
-    setMessage('Melde dich an...');
-    
-    try {
-      // Verzögerung hinzufügen, um sicherzustellen, dass das Profil erstellt wurde
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Nach erfolgreicher Verifizierung den Login-Vorgang starten
-      const response = await AuthService.loginAfterEmailConfirmation(email);
-      
-      if (response.success) {
-        // Aktualisiere den Auth-Zustand mit dem neuen Benutzer
-        await refreshUser();
-        
-        // Zur Team-Auswahl weiterleiten
-        router.replace(Team_Routes.Selection);
-      } else {
-        setError('Login fehlgeschlagen: ' + (response.message || 'Unbekannter Fehler'));
-        setIsLoading(false);
+    // Cleanup beim Unmount
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
       }
-    } catch (err) {
-      console.error('Login-Fehler:', err);
-      setError('Ein unerwarteter Fehler ist aufgetreten beim Login');
-      setIsLoading(false);
-    }
-  };
+    };
+  }, [params, router]);
   
   return (
     <SafeAreaView style={styles.container}>
@@ -116,15 +111,6 @@ export default function VerifyScreen() {
           <>
             <Text style={styles.successTitle}>Bestätigt!</Text>
             <Text style={styles.message}>{message}</Text>
-            
-            {isVerified && (
-              <TouchableOpacity 
-                style={styles.loginButton}
-                onPress={handleLogin}
-              >
-                <Text style={styles.loginButtonText}>Jetzt anmelden</Text>
-              </TouchableOpacity>
-            )}
           </>
         )}
       </View>
@@ -133,6 +119,7 @@ export default function VerifyScreen() {
 }
 
 const styles = StyleSheet.create({
+  // Styles unverändert
   container: {
     flex: 1,
     backgroundColor: AppColors.background,
@@ -156,7 +143,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     color: AppColors.text.muted,
-    marginBottom: 24,
   },
   errorTitle: {
     fontSize: 20,
@@ -174,17 +160,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 8,
     color: '#38A169',
-  },
-  loginButton: {
-    backgroundColor: AppColors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    marginTop: 16,
-  },
-  loginButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });
