@@ -43,9 +43,7 @@ serve(async (req: Request) => {
 
     // Geräteerkennung für adaptive Weiterleitung
     const userAgent = req.headers.get('user-agent') || '';
-    const isMobile = userAgent.includes('Mobile') || 
-                     userAgent.includes('Android') || 
-                     userAgent.includes('iPhone');
+    const isMobile = userAgent.includes('Mobile') ||  userAgent.includes('Android') ||  userAgent.includes('iPhone');
 
     console.log("User-Agent:", userAgent.substring(0, 50) + "...");
     console.log("Erkannt als:", isMobile ? "Mobile" : "Desktop");
