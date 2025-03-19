@@ -1,4 +1,5 @@
-import React from 'react';
+// app/index.tsx
+import React, { useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -9,9 +10,59 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { AppColors } from '@/common/constants/AppColors';
+import { supabase } from '@/lib/supabase';
 
 export default function AuthSelectionScreen() {
   const router = useRouter();
+
+  // Deep-Link & Hash-Parameter verarbeiten
+  useEffect(() => {
+    const processHashParams = async () => {
+      try {
+        if (typeof window !== 'undefined') {
+          const hash = window.location.hash;
+          console.log("URL Hash gefunden:", hash);
+          
+          // Nach access_token suchen
+          const accessTokenMatch = hash.match(/access_token=([^&]*)/);
+          const refreshTokenMatch = hash.match(/refresh_token=([^&]*)/);
+          
+          if (accessTokenMatch && accessTokenMatch[1]) {
+            const accessToken = decodeURIComponent(accessTokenMatch[1]);
+            console.log("Access token extrahiert (erste 10 Zeichen):", accessToken.substring(0, 10));
+            
+            let refreshToken = '';
+            if (refreshTokenMatch && refreshTokenMatch[1]) {
+              refreshToken = decodeURIComponent(refreshTokenMatch[1]);
+              console.log("Refresh token gefunden");
+            }
+            
+            // Session mit dem Token setzen
+            console.log("Setze Session mit dem Token...");
+            const { data, error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken
+            });
+            
+            if (error) {
+              console.error("Fehler beim Setzen der Session:", error);
+            } else {
+              console.log("Session erfolgreich gesetzt für:", data.user?.email);
+              
+              // Warten, bis das Profil erstellt wird, dann zur Team-Auswahl weiterleiten
+              setTimeout(() => {
+                router.replace('/features/teams/screens/selection');
+              }, 1000);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Fehler bei URL-Hash-Verarbeitung:", err);
+      }
+    };
+    
+    processHashParams();
+  }, [router]);
 
   const navigateToSignUp = () => {
     router.push('/features/auth/screens/signup');
@@ -50,6 +101,7 @@ export default function AuthSelectionScreen() {
 }
 
 const styles = StyleSheet.create({
+  // Styles bleiben gleich...
   container: {
     flex: 1,
     backgroundColor: AppColors.background,
