@@ -129,45 +129,61 @@ export class AuthService {
     }
   }
 // [Function] Validates and Signs user uo
-  static async signUp({ email, password, name, handle }: UserSignupProfileDetails): Promise<AuthResponse> {
-    try {
-      // [API Call] Registrieren der Nutzerdaten
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            pending_profile: {
-              name,
-              handle
-            }
-          }
-        }
-      });
-
-      // [Validation] API Rückgabe
-      if (authError) {
-        console.error('Signup auth error:', authError);
-        return {
-          success: false,
-          message: authError.message || 'Failed to create account',
-        };
+static async signUp({ email, password, name, handle }: UserSignupProfileDetails): Promise<AuthResponse> {
+  try {
+    // Logging hinzufügen für Debugging
+    console.log('Signing up user with metadata:', { email, name, handle });
+    
+    // Nutzerdaten strukturieren
+    const userMetadata = {
+      pending_profile: {
+        name,
+        handle
       }
+    };
+    
+    console.log('Full user metadata:', userMetadata);
+    
+    // Auth-Nutzer mit Metadaten erstellen
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: userMetadata
+      }
+    });
 
-      // [When] Success
-      return {
-        success: true,
-        message: 'Please check your email to confirm your account.',
-        data: authData
-      };
-    } catch (error) {
-      console.error('Signup error:', error);
+    // Mehr Logging hinzufügen
+    console.log('Auth response:', { 
+      user: authData?.user?.id,
+      email: authData?.user?.email,
+      metadata: authData?.user?.user_metadata,
+      error: authError 
+    });
+
+    // Validierung
+    if (authError) {
+      console.error('Signup auth error:', authError);
       return {
         success: false,
-        message: 'An unexpected error occurred during signup',
+        message: authError.message || 'Failed to create account',
       };
     }
+
+    // Erfolgsmeldung
+    return {
+      success: true,
+      message: 'Please check your email to confirm your account.',
+      data: authData
+    };
+  } catch (error) {
+    console.error('Signup error:', error);
+    return {
+      success: false,
+      message: 'An unexpected error occurred during signup',
+    };
   }
+}
   
   // [Function] Validates and logs user out
   static async logout(): Promise<AuthResponse> {
@@ -394,28 +410,31 @@ static async setSessionWithTokens(accessToken: string, refreshToken: string): Pr
   }
   
   // [Function] Get's public/profile by Email
+// Verbesserte getProfileByEmail Methode
 static async getProfileByEmail(email: string): Promise<any> {
   try {
-    // [Validation] Email Adress
+    // Validierung der E-Mail-Adresse
     if (!email || typeof email !== 'string') {
       console.error("Invalid email format");
       return null;
     }
 
-    // Alternative Abfrage: Suche mit ilike für case-insensitive Suche
+    console.log(`Searching for profile with email: ${email}`);
+
+    // Verwende ilike für case-insensitive Suche
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
       .ilike("email", email)
-      .maybeSingle(); // maybeSingle statt single
+      .maybeSingle(); // maybeSingle statt single für keine Fehler bei keinen Ergebnissen
 
-    // [Validation] API Rückgabe
+    // API-Rückgabe validieren
     if (error) {
       console.error("Get profile by email error:", error);
       return null;
     }
 
-    // [When] Success
+    console.log(`Profile search result for ${email}:`, data);
     return data;
   } catch (error) {
     console.error("Unexpected error fetching profile by email:", error);
