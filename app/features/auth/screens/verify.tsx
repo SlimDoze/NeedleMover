@@ -1,6 +1,6 @@
 // app/features/auth/screens/verify.tsx
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
@@ -18,14 +18,70 @@ export default function VerifyScreen() {
   useEffect(() => {
     let pollInterval: NodeJS.Timeout | null = null;
     
-    // Funktion zum Abrufen des Benutzerprofils
+    // 1. Funktion, um Token aus der URL zu extrahieren und zu verarbeiten
+    async function processUrlToken() {
+      try {
+        // Nur für Web-Plattform relevant
+        if (Platform.OS === 'web' && window.location.hash) {
+          setMessage('Verarbeite Bestätigungslink...');
+          
+          const hash = window.location.hash;
+          console.log('URL-Hash gefunden:', hash);
+            
+          // Token aus der URL extrahieren
+          const params = new URLSearchParams(hash.replace('#', ''));
+          const accessToken = params.get('access_token');
+          const refreshToken = params.get('refresh_token');
+          const type = params.get('type');
+          
+          if (!accessToken || !refreshToken) {
+            console.error('Keine gültigen Tokens in der URL gefunden');
+            // Wir machen trotzdem weiter, um zu sehen, ob bereits eine aktive Session existiert
+          } else {
+            console.log('Token extrahiert, Typ:', type);
+            
+            // Session mit den Tokens setzen
+            setMessage('Authentifiziere mit Token...');
+            const { error: sessionError } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken
+            });
+            
+            if (sessionError) {
+              console.error('Fehler beim Setzen der Session:', sessionError);
+              setError('Fehler bei der Authentifizierung. Bitte versuche es erneut.');
+              setIsLoading(false);
+              return;
+            }
+            
+            console.log('Session erfolgreich mit Token aus URL gesetzt');
+            
+            // URL-Fragment entfernen, damit wir nicht mehrfach verarbeiten
+            if (window.history && window.history.replaceState) {
+              window.history.replaceState(null, "", window.location.pathname);
+            }
+          }
+        }
+        
+        // Nach Token-Verarbeitung mit normaler Profilprüfung fortfahren
+        await checkUserProfile();
+      } catch (err) {
+        console.error('Fehler bei der Token-Verarbeitung:', err);
+        setError(`Fehler bei der Token-Verarbeitung: ${err}`);
+        setIsLoading(false);
+      }
+    }
+    
+    // 2. Funktion zum Abrufen des Benutzerprofils (bestehende Logik)
     async function checkUserProfile() {
       try {
         // Aktuelle Session abrufen
+        setMessage('Prüfe Anmeldestatus...');
         const { data: { session } } = await supabase.auth.getSession();
         
         // Wenn keine Session vorhanden ist, zeigen wir einen Fehler an
         if (!session) {
+          console.error('Keine aktive Session gefunden');
           setError('Keine aktive Benutzersitzung gefunden. Bitte logge dich erneut ein.');
           setIsLoading(false);
           return;
@@ -103,10 +159,10 @@ export default function VerifyScreen() {
       }
     }
     
-    // Profil-Überprüfung starten
-    checkUserProfile();
+    // 3. Starte den Prozess mit Token-Verarbeitung
+    processUrlToken();
     
-    // Aufräumen bei Komponenten-Unmount
+    // 4. Aufräumen bei Komponenten-Unmount
     return () => {
       if (pollInterval) {
         clearInterval(pollInterval);
