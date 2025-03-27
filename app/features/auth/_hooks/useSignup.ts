@@ -7,6 +7,7 @@ import { ValidateEmail, ValidatePassword, ValidateRequired } from "../_lib/AuthV
 import { AuthService, UserSignupProfileDetails } from "@/lib/auth";
 import { sessionStorage } from "@/lib/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from "react-native";
 
 // Setzt Struktur für die Nutzerdaten
 interface SignUpData {
@@ -224,7 +225,43 @@ export function UseSignUp() {
       CustomAlert(SignupMsg.ErrorHeader, "Failed to resend confirmation email.");
     }
   };
-  
+
+  // Neue Funktion zur Verarbeitung von Authentifizierungs-Tokens
+  const handleAuthTokens = () => {
+    useEffect(() => {
+      // Plattformspezifische Logik
+      if (Platform.OS === 'web') {
+        // Web: Token aus URL extrahieren
+        if (window.location.hash) {
+          const hash = window.location.hash;
+          const params = new URLSearchParams(hash.replace('#', ''));
+          const accessToken = params.get('access_token');
+          const refreshToken = params.get('refresh_token');
+          
+          if (accessToken && refreshToken) {
+            console.log("Token in URL gefunden, setze Session...");
+            // Session mit den Tokens setzen
+            AuthService.setSessionWithTokens(accessToken, refreshToken)
+              .then(response => {
+                if (response.success) {
+                  console.log("Session erfolgreich mit Token gesetzt");
+                  // URL bereinigen
+                  window.history.replaceState(null, "", window.location.pathname);
+                  // Polling starten
+                  startConfirmMailPolling();
+                }
+              });
+          }
+        }
+      } else {
+        // Mobile: App wird über Deep Link mit Tokens aufgerufen
+        // Dies würde typischerweise mit einer Expo Linking-Lösung implementiert
+        // z.B. Expo Linking.addEventListener
+        // Hier würde der Code stehen, der die Deep Links in der App verarbeitet
+      }
+    }, []);
+  };
+
   return {
     formStep,
     userData,

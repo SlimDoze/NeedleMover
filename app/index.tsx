@@ -26,6 +26,7 @@ export default function AuthSelectionScreen() {
           // Nach access_token suchen
           const accessTokenMatch = hash.match(/access_token=([^&]*)/);
           const refreshTokenMatch = hash.match(/refresh_token=([^&]*)/);
+          const typeMatch = hash.match(/type=([^&]*)/);
           
           if (accessTokenMatch && accessTokenMatch[1]) {
             const accessToken = decodeURIComponent(accessTokenMatch[1]);
@@ -49,10 +50,21 @@ export default function AuthSelectionScreen() {
             } else {
               console.log("Session erfolgreich gesetzt für:", data.user?.email);
               
-              // Warten, bis das Profil erstellt wird, dann zur Team-Auswahl weiterleiten
-              setTimeout(() => {
-                router.replace('/features/teams/screens/selection');
-              }, 1000);
+              // Prüfe den Typ des Auth-Vorgangs
+              const type = typeMatch && typeMatch[1] ? typeMatch[1] : '';
+              console.log("Auth-Typ:", type);
+              
+              // Bei Signup zur Verify-Seite weiterleiten
+              if (type === 'signup') {
+                console.log("Signups werden zur Verify-Seite weitergeleitet");
+                router.replace('/features/auth/screens/verify');
+              } else {
+                // Bei anderen Auth-Typen, zur Team-Auswahl weiterleiten
+                console.log("Andere Auth-Typen zur Team-Auswahl weiterleiten");
+                setTimeout(() => {
+                  router.replace('/features/teams/screens/selection');
+                }, 1000);
+              }
             }
           }
         }
