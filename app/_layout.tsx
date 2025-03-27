@@ -1,29 +1,37 @@
-// app/_layout.tsx
+/**
+ * [BEREITSTELLUNG] Haupt-Layout der Anwendung
+ * 
+ * Diese Datei definiert das Root-Layout der gesamten Anwendung.
+ * Sie implementiert:
+ * - Den AuthProvider für die anwendungsweite Authentifizierungslogik
+ * - Die SplashScreen-Steuerung während des Authentifizierungsprozesses
+ * - Die StatusBar-Konfiguration für die gesamte Anwendung
+ */
 import React, { useEffect } from 'react';
 import { Slot, SplashScreen } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '@/lib/authContext';
 
-// Prevent the splash screen from auto-hiding
+// [VERHINDERT] Automatisches Verschwinden des Splash-Screens
 SplashScreen.preventAutoHideAsync();
 
-// Root layout without auth check
+// [DEFINIERT] Inneres Layout ohne Authentifizierungsprüfung
 function RootLayoutNav() {
   const { isLoading } = useAuth();
 
+  // [BLENDET] Splash-Screen aus, sobald die Authentifizierungsprüfung abgeschlossen ist
   useEffect(() => {
-    // Hide splash screen when auth check is done
     if (!isLoading) {
       SplashScreen.hideAsync();
     }
   }, [isLoading]);
 
-  // Show nothing while loading
+  // [ZEIGT] Nichts während des Ladevorgangs
   if (isLoading) {
     return null;
   }
 
-  // Render the app once loading is complete
+  // [RENDERT] Die App nach abgeschlossenem Ladevorgang
   return (
     <>
       <StatusBar style="dark" />
@@ -32,7 +40,7 @@ function RootLayoutNav() {
   );
 }
 
-// Root layout with auth provider
+// [EXPORTIERT] Root-Layout mit AuthProvider
 export default function RootLayout() {
   return (
     <AuthProvider>

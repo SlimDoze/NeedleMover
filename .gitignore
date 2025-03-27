@@ -10,6 +10,9 @@ credentials.json
 ## Local Dev Scripts
 tasks.json
 
+## Copilot Ruleset
+RuleSet.mdc
+
 # dependencies
 node_modules/
 
@@ -47,3 +50,5 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+

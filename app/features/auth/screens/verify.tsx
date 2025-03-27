@@ -1,4 +1,12 @@
-// app/features/auth/screens/verify.tsx
+/**
+ * [BEREITSTELLUNG] E-Mail-Verifizierungsbildschirm
+ * 
+ * Diese Datei implementiert den Verifizierungsbildschirm, der nach der Bestätigung der 
+ * E-Mail-Adresse angezeigt wird. Sie verarbeitet Token aus der URL und prüft
+ * kontinuierlich auf die Erstellung des Benutzerprofils.
+ * Zeigt verschiedene Statusinformationen während des Verifizierungsprozesses.
+ * Plattformspezifische Anpassungen für Web-Token-Verarbeitung.
+ */
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,17 +26,17 @@ export default function VerifyScreen() {
   useEffect(() => {
     let pollInterval: NodeJS.Timeout | null = null;
     
-    // 1. Funktion, um Token aus der URL zu extrahieren und zu verarbeiten
+    // [VERARBEITET] Token aus der URL und initialisiert die Authentifizierung
     async function processUrlToken() {
       try {
-        // Nur für Web-Plattform relevant
+        // [PRÜFT] Plattformspezifische URL-Token-Verarbeitung (nur Web)
         if (Platform.OS === 'web' && window.location.hash) {
           setMessage('Verarbeite Bestätigungslink...');
           
           const hash = window.location.hash;
           console.log('URL-Hash gefunden:', hash);
             
-          // Token aus der URL extrahieren
+          // [EXTRAHIERT] Authentifizierungstoken aus der URL
           const params = new URLSearchParams(hash.replace('#', ''));
           const accessToken = params.get('access_token');
           const refreshToken = params.get('refresh_token');
@@ -36,11 +44,11 @@ export default function VerifyScreen() {
           
           if (!accessToken || !refreshToken) {
             console.error('Keine gültigen Tokens in der URL gefunden');
-            // Wir machen trotzdem weiter, um zu sehen, ob bereits eine aktive Session existiert
+            // [FÄHRT] Mit Sitzungsprüfung fort, auch ohne gültige Tokens
           } else {
             console.log('Token extrahiert, Typ:', type);
             
-            // Session mit den Tokens setzen
+            // [SETZT] Sitzung mit den extrahierten Tokens
             setMessage('Authentifiziere mit Token...');
             const { error: sessionError } = await supabase.auth.setSession({
               access_token: accessToken,
@@ -56,14 +64,14 @@ export default function VerifyScreen() {
             
             console.log('Session erfolgreich mit Token aus URL gesetzt');
             
-            // URL-Fragment entfernen, damit wir nicht mehrfach verarbeiten
+            // [BEREINIGT] URL nach erfolgreicher Token-Verarbeitung
             if (window.history && window.history.replaceState) {
               window.history.replaceState(null, "", window.location.pathname);
             }
           }
         }
         
-        // Nach Token-Verarbeitung mit normaler Profilprüfung fortfahren
+        // [SETZT] Profilprüfung nach Token-Verarbeitung fort
         await checkUserProfile();
       } catch (err) {
         console.error('Fehler bei der Token-Verarbeitung:', err);
@@ -72,14 +80,14 @@ export default function VerifyScreen() {
       }
     }
     
-    // 2. Funktion zum Abrufen des Benutzerprofils (bestehende Logik)
+    // [PRÜFT] Benutzerprofil mit Supabase-Abfragen
     async function checkUserProfile() {
       try {
-        // Aktuelle Session abrufen
+        // [RUFT] Aktuelle Sitzung ab
         setMessage('Prüfe Anmeldestatus...');
         const { data: { session } } = await supabase.auth.getSession();
         
-        // Wenn keine Session vorhanden ist, zeigen wir einen Fehler an
+        // [VALIDIERT] Vorhandene Sitzung
         if (!session) {
           console.error('Keine aktive Session gefunden');
           setError('Keine aktive Benutzersitzung gefunden. Bitte logge dich erneut ein.');
@@ -90,7 +98,7 @@ export default function VerifyScreen() {
         console.log('Session gefunden für:', session.user.email);
         setMessage(`Suche Profil für ${session.user.email}...`);
         
-        // Profil direkt mit der Benutzer-ID suchen
+        // [DEFINIERT] Funktion für Profilsuche
         const findProfile = async () => {
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
@@ -106,23 +114,23 @@ export default function VerifyScreen() {
           return profile;
         };
         
-        // Profil sofort suchen
+        // [PRÜFT] Sofortige Profilsuche
         const initialProfile = await findProfile();
         
-        // Wenn das Profil gefunden wurde, direkt weiterleiten
+        // [NAVIGIERT] Direkt bei gefundenem Profil
         if (initialProfile) {
           console.log('Profil sofort gefunden:', initialProfile.name);
           router.replace(Team_Routes.Selection);
           return;
         }
         
-        // Wenn kein Profil gefunden wurde, starten wir das Polling
+        // [STARTET] Polling für verzögerte Profilprüfung
         console.log('Kein Profil gefunden, starte Polling...');
         setMessage('Warte auf Profilaktivierung...');
         
-        // Polling-Logik
+        // [KONFIGURIERT] Polling-Parameter
         let attempts = 0;
-        const maxAttempts = 15; // 15 Versuche mit je 2 Sekunden Abstand (30 Sekunden gesamt)
+        const maxAttempts = 15; // [BEGRENZT] Auf 15 Versuche (30 Sekunden)
         
         pollInterval = setInterval(async () => {
           attempts++;
@@ -130,7 +138,7 @@ export default function VerifyScreen() {
           
           console.log(`Polling-Versuch ${attempts}/${maxAttempts}`);
           
-          // Prüfen, ob das maximale Limit erreicht wurde
+          // [BEENDET] Polling bei Erreichen der maximalen Versuche
           if (attempts >= maxAttempts) {
             clearInterval(pollInterval!);
             setError('Zeitüberschreitung bei der Suche nach deinem Profil. Bitte versuche, dich erneut anzumelden.');
@@ -138,31 +146,33 @@ export default function VerifyScreen() {
             return;
           }
           
-          // Profil erneut suchen
+          // [PRÜFT] Erneut auf Profilvorhandensein
           const profile = await findProfile();
           
+          // [NAVIGIERT] Bei gefundenem Profil zur Team-Auswahl
           if (profile) {
             console.log('Profil nach Polling gefunden:', profile.name);
             clearInterval(pollInterval!);
             router.replace(Team_Routes.Selection);
           }
-        }, 2000); // Alle 2 Sekunden prüfen
+        }, 2000); // [WIEDERHOLT] Alle 2 Sekunden
         
       } catch (err) {
         console.error('Unerwarteter Fehler:', err);
         setError(`Ein unerwarteter Fehler ist aufgetreten: ${err}`);
         setIsLoading(false);
         
+        // [BEREINIGT] Aktives Polling bei Fehler
         if (pollInterval) {
           clearInterval(pollInterval);
         }
       }
     }
     
-    // 3. Starte den Prozess mit Token-Verarbeitung
+    // [STARTET] Verifikationsprozess
     processUrlToken();
     
-    // 4. Aufräumen bei Komponenten-Unmount
+    // [BEREINIGT] Ressourcen beim Komponenten-Unmount
     return () => {
       if (pollInterval) {
         clearInterval(pollInterval);
@@ -178,6 +188,7 @@ export default function VerifyScreen() {
         <Text style={styles.title}>Konto-Verifizierung</Text>
         
         {isLoading ? (
+          // [ZEIGT] Ladeansicht während der Verarbeitung
           <>
             <ActivityIndicator size="large" color={AppColors.primary} style={styles.loader} />
             <Text style={styles.message}>{message}</Text>
@@ -186,11 +197,13 @@ export default function VerifyScreen() {
             )}
           </>
         ) : error ? (
+          // [ZEIGT] Fehleransicht bei Problemen
           <>
             <Text style={styles.errorTitle}>Fehler</Text>
             <Text style={styles.errorMessage}>{error}</Text>
           </>
         ) : (
+          // [ZEIGT] Erfolgsansicht bei erfolgreicher Verifikation
           <>
             <Text style={styles.successTitle}>Verifiziert!</Text>
             <Text style={styles.message}>Du wirst weitergeleitet...</Text>
@@ -201,6 +214,7 @@ export default function VerifyScreen() {
   );
 }
 
+// [DEFINIERT] Stile für den Verifizierungsbildschirm
 const styles = StyleSheet.create({
   container: {
     flex: 1,

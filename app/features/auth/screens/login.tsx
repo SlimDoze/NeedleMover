@@ -1,4 +1,11 @@
-// app/features/auth/screens/login.tsx
+/**
+ * [BEREITSTELLUNG] Login-Bildschirm
+ * 
+ * Diese Datei implementiert den Anmeldebildschirm für die Anwendung.
+ * Bietet Benutzern die Möglichkeit, sich mit E-Mail und Passwort anzumelden.
+ * Unterstützt die "Eingeloggt bleiben"-Funktion und enthält Links zur Passwort-Zurücksetzung.
+ * Verwendet plattformspezifische Anpassungen für Web und Mobile.
+ */
 import React, { useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
@@ -29,12 +36,12 @@ const LoginScreen: React.FC = () => {
     loadRememberedEmail
   } = UseLogin();
 
-  // Load remembered email on component mount
+  // [LÄDT] Gespeicherte E-Mail beim Komponenten-Mount
   useEffect(() => {
     loadRememberedEmail();
   }, []);
 
-  // Add CSS style for web forms
+  // [FÜGT] Web-spezifische Stile für Formulare hinzu
   useEffect(() => {
     if (Platform.OS === 'web') {
       const style = document.createElement('style');
@@ -61,6 +68,7 @@ const LoginScreen: React.FC = () => {
       />
       
       {Platform.OS === 'web' ? (
+        // [RENDERT] Web-spezifisches Formular
         <form className="web-form-container" onSubmit={(e) => {
           e.preventDefault();
           handleLogin();
@@ -79,6 +87,7 @@ const LoginScreen: React.FC = () => {
           />
         </form>
       ) : (
+        // [RENDERT] Mobile-spezifisches Formular
         <View style={formStyles.formContainer}>
           <UserInput
             placeholder={AuthInfoText.InputEmail}

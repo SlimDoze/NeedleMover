@@ -1,4 +1,10 @@
-// app/features/teams/_hooks/useTeams.ts
+/**
+ * [BEREITSTELLUNG] Team-Verwaltungsfunktionalität
+ * 
+ * Dieser Hook lädt und verwaltet Team-Daten des angemeldeten Benutzers.
+ * Er bietet Zugriff auf Teams, Ladestatus und eine Aktualisierungsfunktion.
+ * Nutzt den AuthContext für Benutzerinformationen und TeamService für Datenabfragen.
+ */
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/authContext";
 import { TeamService, Team } from "@/lib/teamService";
@@ -8,6 +14,7 @@ export function useTeams() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // [LÄDT] Teams des angemeldeten Nutzers
   const loadTeams = async () => {
     if (!user) {
       setTeams([]);
@@ -26,7 +33,7 @@ export function useTeams() {
     }
   };
 
-  // Load teams on mount and when user changes
+  // [AKTUALISIERT] Teams bei Komponenteninitialisierung oder Benutzeränderung
   useEffect(() => {
     loadTeams();
   }, [user]);

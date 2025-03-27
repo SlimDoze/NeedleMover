@@ -1,4 +1,12 @@
-// app/features/auth/_hooks/useReset.ts
+/**
+ * [BEREITSTELLUNG] Passwort-Zurücksetzungs-Logik
+ * 
+ * Dieser Hook verwaltet den mehrstufigen Prozess der Passwort-Zurücksetzung:
+ * - E-Mail-Eingabe und Validierung
+ * - Verifikationscode-Eingabe
+ * - Neue Passwort-Eingabe und Validierung
+ * - Integration mit AuthService für Backend-Kommunikation
+ */
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { CustomAlert } from "@/common/lib/alert";
@@ -16,6 +24,7 @@ export function UseResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  // [VERARBEITET] E-Mail-Eingabe und sendet Zurücksetzungs-Link
   const handleEmailSubmit = async () => {
     if (!ValidateEmail(email)) {
       CustomAlert(ResetMsg.InvalidEmailHeader, ResetMsg.InvalidEmailErr);
@@ -25,7 +34,7 @@ export function UseResetPassword() {
     try {
       setIsLoading(true);
       
-      // Call the AuthService to request a password reset
+      // [RUFT] AuthService für Zurücksetzungsanfrage auf
       const response = await AuthService.requestPasswordReset(email);
       
       setIsLoading(false);
@@ -46,6 +55,7 @@ export function UseResetPassword() {
     }
   };
 
+  // [VALIDIERT] Eingabe des Verifikationscodes
   const checkVerificationCode = () => {
     if (ValidateRequired(verificationCode) && verificationCode.length === 6) {
       setStep(3);
@@ -54,6 +64,7 @@ export function UseResetPassword() {
     }
   };
 
+  // [AKTUALISIERT] Passwort nach Validierung
   const handleUpdatePassword = async () => {
     if (!ValidateMatch(newPassword, confirmPassword)) {
       CustomAlert(ResetMsg.PasswordMismatchHeader, ResetMsg.PasswordMismatchBody);
@@ -68,7 +79,7 @@ export function UseResetPassword() {
     try {
       setIsLoading(true);
 
-      // Call the AuthService to reset the password
+      // [RUFT] AuthService für Passwort-Aktualisierung auf
       const response = await AuthService.resetPassword(newPassword);
       
       setIsLoading(false);
@@ -87,6 +98,7 @@ export function UseResetPassword() {
     }
   };
 
+  // [NAVIGIERT] Zurück zum vorherigen Schritt oder zur vorherigen Seite
   const handleGoBack = () => {
     if (step > 1) {
       setStep(step - 1);

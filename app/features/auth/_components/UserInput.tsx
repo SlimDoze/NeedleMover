@@ -1,6 +1,15 @@
+/**
+ * [BEREITSTELLUNG] Wiederverwendbare Benutzereingabekomponente
+ * 
+ * Diese Komponente bietet ein einheitliches Eingabefeld für Benutzerinformationen
+ * mit plattformspezifischen Anpassungen für Web und Mobile.
+ * Unterstützt reguläre Texteingaben und Passwortfelder mit entsprechenden
+ * Zugänglichkeitsattributen für die jeweilige Plattform.
+ */
 import React, { useState } from "react";
 import { View, TextInput, StyleSheet, Platform, TextInputProps } from "react-native";
 
+// [DEFINIERT] Erweiterte Eigenschaften für angepasste Eingabekomponente
 interface CustomInputProps extends TextInputProps {
   placeholder: string;
   value?: string;
@@ -19,6 +28,7 @@ const UserInput: React.FC<CustomInputProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState(value || "");
 
+  // [VERARBEITET] Texteingabeänderungen und gibt sie weiter
   const handleTextChange = (text: string) => {
     setInputValue(text);
     if (onChangeText) onChangeText(text);
@@ -34,7 +44,7 @@ const UserInput: React.FC<CustomInputProps> = ({
         secureTextEntry={secureTextEntry}
         autoCapitalize="none"
         autoCorrect={false}
-        // Web-specific accessibility attributes
+        // [SETZT] Web-spezifische Zugänglichkeitsattribute
         aria-label={placeholder}
         {...(Platform.OS === 'web' ? {
           type: secureTextEntry ? 'password' : 'text',

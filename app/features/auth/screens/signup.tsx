@@ -1,3 +1,13 @@
+/**
+ * [BEREITSTELLUNG] Registrierungsbildschirm
+ * 
+ * Diese Datei implementiert den Registrierungsbildschirm (SignUp) für neue Benutzer.
+ * Sie bietet einen mehrstufigen Registrierungsprozess mit:
+ * - Erster Schritt: Eingabe von Name und Benutzername (Handle)
+ * - Zweiter Schritt: Eingabe von E-Mail und Passwort mit "Eingeloggt bleiben"-Option
+ * - Bestätigungsansicht nach erfolgreicher Registrierung mit E-Mail-Verifizierungsstatus
+ * Enthält plattformspezifische Anpassungen für Web und Mobile.
+ */
 import { useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
@@ -13,7 +23,7 @@ import { formStyles, webFormStyles } from "../_constants/formStyle";
 import ToggleSwitch from "@/common/components/toggleSwitch";
 
 export default function SignUpScreen() {
-  // [router] Steuert Navigation innerhalb der App
+  // [VERWENDET] Router für die Navigation zwischen Bildschirmen
   const router = useRouter();
   const {
     formStep,
@@ -28,27 +38,27 @@ export default function SignUpScreen() {
     handleResendEmail
   } = UseSignUp();
   
-  // [Form CSS] Webkompaitbilität für gewährleistet
-  // return Function wird beim unmount ausgeführt
+  // [ADDS] Web-spezifische Stile für Formulare
   useEffect(() => {
     if (Platform.OS === 'web') {
-      // Custom CSS Stil für Web
+      // [ERSTELLT] Benutzerdefiniertes Stylesheet für Web-Formulare
       const style = document.createElement('style');
       style.textContent = webFormStyles;
       document.head.appendChild(style);
       
-      // [CSS Form] Eigenständiges entfernen aus Head, beim unmounten
+      // [ENTFERNT] Stylesheet beim Unmount der Komponente
       return () => {
         document.head.removeChild(style);
       };
     }
   }, []);
   
+  // [VERARBEITET] Klick auf das Benutzeravatar-Bild
   const handleUserAvatarClick = () => {
     console.log("Profile picture clicked");
   };
 
-  // If confirmation message is showing, display a different UI
+  // [ZEIGT] Bestätigungsansicht nach erfolgreicher Registrierung
   if (isConfirmMailSent) {
     return (
       <SafeAreaView style={styles.container}>
@@ -66,17 +76,17 @@ export default function SignUpScreen() {
           
           <View style={emailConfirmStyles.infoBox}>
             <Text style={emailConfirmStyles.infoText}>
-
               {isPolling ? 
-              // Wenn isPolling true ist, wird diese Nachricht angezeigt
+                // [ZEIGT] Polling-Statusmeldung
                 "Warte auf Bestätigung... Du wirst automatisch weitergeleitet, sobald du den Link in der E-Mail angeklickt hast." :
-              // Wenn isPolling false ist, wird diese Nachricht angezeigt
+                // [ZEIGT] Standardmeldung ohne aktives Polling
                 "Nach der Bestätigung deiner E-Mail wirst du automatisch weitergeleitet."
-              }</Text>
+              }
+            </Text>
 
               
             {isPolling && (
-            // Wenn isPolling true ist, wird der ActivityIndicator angezeigt
+              // [ZEIGT] Ladeindikator während des Pollings
               <ActivityIndicator 
                 size="small" 
                 color={AppColors.primary} 
@@ -88,15 +98,13 @@ export default function SignUpScreen() {
           <TouchableOpacity 
             style={emailConfirmStyles.resendButton}
             onPress={handleResendEmail}
-            disabled={isLoading} // Button wird deaktiviert, wenn isLoading true ist
+            disabled={isLoading} // [DEAKTIVIERT] Button während des Ladens
           >
-
-
             {isLoading ? (
-              // Wenn isLoading true ist, wird der ActivityIndicator angezeigt
+              // [ZEIGT] Ladeindikator während des erneuten Sendens
               <ActivityIndicator size="small" color="white" />
             ) : (
-              // Wenn isLoading false ist, wird der Text angezeigt
+              // [ZEIGT] Button-Text im Ruhezustand
               <Text style={emailConfirmStyles.resendButtonText}>Bestätigungs-E-Mail erneut senden</Text>
             )}
           </TouchableOpacity>
@@ -132,10 +140,11 @@ export default function SignUpScreen() {
         />
       </TouchableOpacity>
 
-      {/* First Step: Name and Handle */}
+      {/* [RENDERT] Ersten Schritt: Name und Benutzername (Handle) */}
       {formStep === 1 && (
         <>
           {Platform.OS === 'web' ? (
+            // [ZEIGT] Web-spezifisches Formular
             <form className="web-form-container">
               <UserInput 
                 placeholder={AuthInfoText.InputName} 
@@ -150,6 +159,7 @@ export default function SignUpScreen() {
               />
             </form>
           ) : (
+            // [ZEIGT] Mobile-spezifisches Formular
             <View style={formStyles.formContainer}>
               <UserInput 
                 placeholder={AuthInfoText.InputName} 
@@ -174,10 +184,11 @@ export default function SignUpScreen() {
         </>
       )}
 
-      {/* Second Step: E-Mail, Password and Auto-Login */}
+      {/* [RENDERT] Zweiten Schritt: E-Mail, Passwort und "Eingeloggt bleiben"-Option */}
       {formStep === 2 && (
         <>
           {Platform.OS === 'web' ? (
+            // [ZEIGT] Web-spezifisches Formular
             <form className="web-form-container">
               <UserInput 
                 placeholder={AuthInfoText.InputEmail} 
@@ -193,6 +204,7 @@ export default function SignUpScreen() {
               />
             </form>
           ) : (
+            // [ZEIGT] Mobile-spezifisches Formular
             <View style={formStyles.formContainer}>
               <UserInput 
                 placeholder={AuthInfoText.InputEmail} 
@@ -219,8 +231,10 @@ export default function SignUpScreen() {
 
           <View style={styles.Button}>
             {isLoading ? (
+              // [ZEIGT] Ladeindikator während der Registrierung
               <ActivityIndicator size="large" color={AppColors.primary} />
             ) : (
+              // [ZEIGT] Registrierungsbutton im Ruhezustand
               <Button 
                 title={AuthInfoText.Register} 
                 onPress={handleSignUp} 
@@ -233,6 +247,7 @@ export default function SignUpScreen() {
   );
 }
 
+// [DEFINIERT] Stile für die E-Mail-Bestätigungsansicht
 const emailConfirmStyles = StyleSheet.create({
   container: {
     alignItems: 'center',
@@ -252,46 +267,46 @@ const emailConfirmStyles = StyleSheet.create({
   message: {
     fontSize: 16,
     textAlign: 'center',
-    color: AppColors.text.muted,
+    lineHeight: 22,
     marginBottom: 24,
+    color: AppColors.text.muted,
   },
   email: {
     fontWeight: 'bold',
     color: AppColors.text.dark,
   },
   infoBox: {
-    backgroundColor: '#F0F9FF',
-    borderWidth: 1,
-    borderColor: '#BAE6FD',
+    backgroundColor: AppColors.background,
     borderRadius: 8,
     padding: 16,
     marginBottom: 24,
     width: '100%',
-    maxWidth: 400,
+    alignItems: 'center',
   },
   infoText: {
-    color: '#0C4A6E',
     fontSize: 14,
+    textAlign: 'center',
+    color: AppColors.text.muted,
   },
   resendButton: {
     backgroundColor: AppColors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
     borderRadius: 8,
-    marginBottom: 16,
-    width: '100%',
-    maxWidth: 300,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginBottom: 12,
+    minWidth: 250,
     alignItems: 'center',
   },
   resendButtonText: {
     color: 'white',
-    fontWeight: '600',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   backButton: {
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
   backButtonText: {
     color: AppColors.text.muted,
-    textDecorationLine: 'underline',
-  },
+    fontSize: 14,
+  }
 });

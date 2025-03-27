@@ -1,4 +1,11 @@
-// app/features/teams/screens/selection.tsx - Geänderte Version
+/**
+ * [BEREITSTELLUNG] Team-Auswahlbildschirm
+ * 
+ * Diese Datei implementiert den Hauptbildschirm für die Team-Auswahl nach der Anmeldung.
+ * Zeigt eine animierte Liste der Teams des Benutzers und Optionen zur Team-Verwaltung.
+ * Enthält vorübergehende Beispieldaten für die Entwicklungsphase.
+ * Bietet Debug-Funktionen zur Anzeige der Profilinformationen.
+ */
 import React, { useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, Image, Dimensions, Animated, RefreshControl, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,12 +21,12 @@ import LogoutButton from '@/common/components/logoutButton';
 const { height } = Dimensions.get("window");
 const CARD_HEIGHT = height * 0.5;
 
-// !!!IMPORTANT!!! TEMPORARY MOCK DATA
-// To switch back to server fetching:
-// 1. Remove this mockTeams constant
-// 2. Uncomment the useTeams() hook at the top of the component
-// 3. Replace 'mockTeams' with 'teams' throughout the component
-// 4. Restore the refreshTeams function call in the RefreshControl
+// [TEMPORÄR] Beispiel-Teammitglieder für die Entwicklung
+// [HINWEIS] Für Serverantwort:
+// 1. Entferne diese mockTeams-Konstante
+// 2. Kommentiere den useTeams()-Hook am Anfang der Komponente ein
+// 3. Ersetze 'mockTeams' durch 'teams' in der gesamten Komponente
+// 4. Stelle die refreshTeams-Funktion im RefreshControl wieder her
 const mockTeams = [
   {
     id: '11111111-1111-1111-1111-111111111111',
@@ -57,39 +64,40 @@ const mockTeams = [
     color: '#4AFFB4',
     image: require('@/assets/images/userAvatar.png')
   },
-  // Additional teams can be included here if needed
+  // [HINWEIS] Weitere Teams können hier hinzugefügt werden
 ];
 
 export default function TeamSelectionScreen() {
   const router = useRouter();
   const scrollY = useRef(new Animated.Value(0)).current;
   
-  // !!!IMPORTANT!!! TEMPORARILY COMMENTED OUT SERVER FETCHING
-  // Uncomment this when ready to fetch from server
+  // [TEMPORÄR] Kommentierte Server-Datenabfrage
+  // [HINWEIS] Einkommentieren für tatsächliche Datenabfrage
   // const { teams, isLoading, refreshTeams } = useTeams();
   
-  // NEXT 1 LINE TEMPORARY replacement for server state
+  // [TEMPORÄR] Ersatz für Server-Status
   const [isLoading, setIsLoading] = useState(false);
   const { profile, user } = useAuth();
 
+  // [NAVIGIERT] Zur Detailansicht des ausgewählten Teams
   const navigateToTeam = (teamId: string) => {
     router.push(`./${teamId}`);
   };
 
-  // TEMPORARY mock refresh function
+  // [TEMPORÄR] Simulates Aktualisierung ohne Server
   const mockRefresh = () => {
     setIsLoading(true);
     setTimeout(() => setIsLoading(false), 1000);
   };
 
-  // Neue Debug-Funktion für Profil
+  // [ZEIGT] Debug-Informationen zum Benutzerprofil
   const showProfileDebugInfo = () => {
     console.log("=== AKTUELLES PROFIL ===");
     console.log(JSON.stringify(profile, null, 2));
     console.log("=== AKTUELLER USER ===");
     console.log(JSON.stringify(user, null, 2));
     
-    // Alert für bessere Sichtbarkeit
+    // [ZEIGT] Alert für bessere Sichtbarkeit
     Alert.alert(
       "Profil-Debug-Info", 
       `Angemeldet als: ${profile?.email || 'Unbekannt'}\n` +
@@ -101,7 +109,7 @@ export default function TeamSelectionScreen() {
     );
   };
 
-  // Create a placeholder card if no teams exist
+  // [RENDERT] Ersatzkarte bei leerer Teamliste
   const renderNoTeamsCard = () => (
     <Animated.View style={[styles.teamCard, { backgroundColor: AppColors.primary }]}>
       <TouchableOpacity 
@@ -110,7 +118,7 @@ export default function TeamSelectionScreen() {
       >
         <View style={styles.createTeamContent}>
           <Text style={styles.createTeamDescription}>
-            {mockTeams.length === 0 // !!!IMPORTANT!!! Change to 'teams' when switching back
+            {mockTeams.length === 0 // [HINWEIS] Zu 'teams' ändern bei Server-Umstellung
               ? ComponentCaptions.teamSelection.createCard.startFirstCollab 
               : ComponentCaptions.teamSelection.createCard.createTeamDescription}
           </Text>
@@ -133,7 +141,7 @@ export default function TeamSelectionScreen() {
         </View>
         <TouchableOpacity 
           style={styles.profileButton}
-          onPress={showProfileDebugInfo} // Neuer Debug-Handler
+          onPress={showProfileDebugInfo} // [VERWENDET] Debug-Handler
         >
           <Image 
             source={
@@ -163,15 +171,15 @@ export default function TeamSelectionScreen() {
         refreshControl={
           <RefreshControl
             refreshing={isLoading}
-            onRefresh={mockRefresh} // !!!IMPORTANT!!! Replace with 'refreshTeams' when switching back
+            onRefresh={mockRefresh} // [HINWEIS] Bei Server-Umstellung durch 'refreshTeams' ersetzen
             colors={[AppColors.primary]}
             tintColor={AppColors.primary}
           />
         }
       >
-        {mockTeams.length === 0 && !isLoading ? renderNoTeamsCard() : null} {/* !!!IMPORTANT!!! Change to 'teams' when switching back */}
+        {mockTeams.length === 0 && !isLoading ? renderNoTeamsCard() : null} {/* [HINWEIS] Zu 'teams' ändern bei Server-Umstellung */}
         
-        {mockTeams.map((team, index) => ( // !!!IMPORTANT!!! Change to 'teams' when switching back
+        {mockTeams.map((team, index) => ( // [HINWEIS] Zu 'teams' ändern bei Server-Umstellung
           <TeamCard 
             key={team.id} 
             team={{
