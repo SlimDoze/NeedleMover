@@ -7,63 +7,76 @@
  * - Login-Prozess mit Validierung und Fehlerbehandlung
  * - Navigation nach erfolgreicher Anmeldung
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { Auth_Routes, Team_Routes } from "../_constants/routes";
 import { CustomAlert } from "@/common/lib/alert";
 import { LoginMsg } from "../_constants/AuthErrorText";
 import { AuthService } from "@/lib/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { sessionStorage } from "@/lib/supabase";
+import { ValidateEmail, ValidateRequired } from "../_lib/AuthValidation";
 
 export function UseLogin() {
   const router = useRouter();
   const [emailValue, setEmail] = useState<string>("");
   const [passwordValue, setPassword] = useState<string>("");
   const [isRememberMe, setRememberMe] = useState<boolean>(false);
-  const [isLoading, SetIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // [VERARBEITET] Login-Anfrage mit Validierung und Fehlerbehandlung
-const HandleLogin = async () => {
-  if (!emailValue.trim() || !passwordValue.trim()) {
-    CustomAlert(LoginMsg.ErrorHeader, LoginMsg.ErrorBody);
-    return;
-  }
-
-  try {
-    SetIsLoading(true);
-    
-    // [SPEICHERT] "Stay logged in"-Status in sessionStorage
-    await sessionStorage.setPersistSession(isRememberMe);
-    
-    // [RUFT] AuthService für Login-Prozess auf
-    const response = await AuthService.login({
-      email: emailValue,
-      password: passwordValue
-    });
-    
-    SetIsLoading(false);
-    
-    if (response.success) {
-      // [SPEICHERT] E-Mail für "Remember Me"-Funktion
-      if (isRememberMe) {
-        await AsyncStorage.setItem('rememberedEmail', emailValue);
-      } else {
-        // [ENTFERNT] Gespeicherte E-Mail, wenn "Remember Me" nicht aktiviert
-        await AsyncStorage.removeItem('rememberedEmail');
-      }
-      
-      // [LEITET] Zur Team-Auswahl weiter
-      router.replace(Team_Routes.Selection);
-    } else {
-      // [ZEIGT] Fehlermeldung bei Login-Fehler
-      CustomAlert("Login Error", response.message || "Invalid email or password");
+  const HandleLogin = async () => {
+    // [VALIDIERT] E-Mail und Passwort vor dem Senden
+    if (!ValidateRequired(emailValue)) {
+      CustomAlert(LoginMsg.ErrorHeader, LoginMsg.EmptyEmailErr);
+      return;
     }
-  } catch (error) {
-    SetIsLoading(false);
-    console.error("Login error:", error);
-    CustomAlert("Login Error", "An unexpected error occurred. Please try again.");
-  }
-};
+    
+    if (!ValidateEmail(emailValue)) {
+      CustomAlert(LoginMsg.ErrorHeader, LoginMsg.InvalidEmailErr);
+      return;
+    }
+    
+    if (!ValidateRequired(passwordValue)) {
+      CustomAlert(LoginMsg.ErrorHeader, LoginMsg.EmptyPasswordErr);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      
+      // [SPEICHERT] "Stay logged in"-Status in sessionStorage
+      await sessionStorage.setPersistSession(isRememberMe);
+      
+      // [RUFT] AuthService für Login-Prozess auf
+      const response = await AuthService.login({
+        email: emailValue,
+        password: passwordValue
+      });
+      
+      setIsLoading(false);
+      
+      if (response.success) {
+        // [SPEICHERT] E-Mail für "Remember Me"-Funktion
+        if (isRememberMe) {
+          await AsyncStorage.setItem('rememberedEmail', emailValue);
+        } else {
+          // [ENTFERNT] Gespeicherte E-Mail, wenn "Remember Me" nicht aktiviert
+          await AsyncStorage.removeItem('rememberedEmail');
+        }
+        
+        // [LEITET] Zur Team-Auswahl weiter
+        router.replace(Team_Routes.Selection);
+      } else {
+        // [ZEIGT] Fehlermeldung bei Login-Fehler
+        CustomAlert(LoginMsg.ErrorHeader, response.message || LoginMsg.InvalidCredentialsErr);
+      }
+    } catch (error) {
+      setIsLoading(false);
+      console.error("Login error:", error);
+      CustomAlert(LoginMsg.ErrorHeader, LoginMsg.UnexpectedErr);
+    }
+  };
 
   // [NAVIGIERT] Zurück zur vorherigen Seite
   const HandleGoBack = () => {
@@ -88,7 +101,10 @@ const HandleLogin = async () => {
     }
   };
 
-  // [HINWEIS] Diese Funktion sollte in useEffect im Login-Screen aufgerufen werden
+  // [INITIALISIERT] Gespeicherte E-Mail beim Mounting
+  useEffect(() => {
+    loadRememberedEmail();
+  }, []);
 
   return {
     emailValue,

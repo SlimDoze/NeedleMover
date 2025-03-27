@@ -15,7 +15,7 @@ import { styles } from "../_constants/LoginStylesheet";
 import { formStyles, webFormStyles } from "../_constants/formStyle";
 import { UseLogin } from "../_hooks/useLogin";
 import { CommonImages } from "@/common/constants/CONST_Image";
-import { View, Text, TouchableOpacity, Platform } from "react-native";
+import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView } from "react-native";
 import BackButton from "@/common/components/backButton";
 import ProfilePicture from "@/common/components/userAvatar";
 import LoadingButton from "@/common/components/loadingButton";
@@ -32,14 +32,8 @@ const LoginScreen: React.FC = () => {
     isLoading,
     handleLogin,
     handleGoBack,
-    navigateToResetPassword,
-    loadRememberedEmail
+    navigateToResetPassword
   } = UseLogin();
-
-  // [LÄDT] Gespeicherte E-Mail beim Komponenten-Mount
-  useEffect(() => {
-    loadRememberedEmail();
-  }, []);
 
   // [FÜGT] Web-spezifische Stile für Formulare hinzu
   useEffect(() => {
@@ -54,6 +48,12 @@ const LoginScreen: React.FC = () => {
     }
   }, []);
 
+  // [HANDHABT] Formular-Absendung bei Drücken der Enter-Taste im Web
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleLogin();
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
@@ -67,46 +67,54 @@ const LoginScreen: React.FC = () => {
         onPress={() => console.log("Profile picture clicked")} 
       />
       
-      {Platform.OS === 'web' ? (
-        // [RENDERT] Web-spezifisches Formular
-        <form className="web-form-container" onSubmit={(e) => {
-          e.preventDefault();
-          handleLogin();
-        }}>
-          <UserInput
-            placeholder={AuthInfoText.InputEmail}
-            value={emailValue}
-            onChangeText={setEmail}
-          />
-          
-          <UserInput
-            placeholder={AuthInfoText.InputPassword}
-            value={passwordValue}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-        </form>
-      ) : (
-        // [RENDERT] Mobile-spezifisches Formular
-        <View style={formStyles.formContainer}>
-          <UserInput
-            placeholder={AuthInfoText.InputEmail}
-            value={emailValue}
-            onChangeText={setEmail}
-          />
-          
-          <UserInput
-            placeholder={AuthInfoText.InputPassword}
-            value={passwordValue}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-        </View>
-      )}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ width: '100%' }}
+      >
+        {Platform.OS === 'web' ? (
+          // [RENDERT] Web-spezifisches Formular
+          <form className="web-form-container" onSubmit={handleSubmit}>
+            <UserInput
+              placeholder={AuthInfoText.InputEmail}
+              value={emailValue}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            
+            <UserInput
+              placeholder={AuthInfoText.InputPassword}
+              value={passwordValue}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+            
+            <button type="submit" style={{ display: 'none' }}></button>
+          </form>
+        ) : (
+          // [RENDERT] Mobile-spezifisches Formular
+          <View style={formStyles.formContainer}>
+            <UserInput
+              placeholder={AuthInfoText.InputEmail}
+              value={emailValue}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            
+            <UserInput
+              placeholder={AuthInfoText.InputPassword}
+              value={passwordValue}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+          </View>
+        )}
+      </KeyboardAvoidingView>
       
       <View style={styles.Button}>
         <LoadingButton
-          title="Log In"
+          title="Anmelden"
           onPress={handleLogin}
           isLoading={isLoading}
           loadingColor="#8A4FFF"
