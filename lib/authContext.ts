@@ -1,49 +1,56 @@
-// lib/authContext.ts - Verbesserungen
+/**
+ * [BEREITSTELLUNG] Authentifizierungskontext für die gesamte Anwendung
+ * 
+ * Diese Datei implementiert einen React-Kontext für die Authentifizierung,
+ * der übergreifend in der gesamten Anwendung verwendet wird.
+ * Verwaltet den Benutzerzustand, Profilinformationen und Authentifizierungsereignisse.
+ * Nutzt Supabase für die Authentifizierung und Expo SplashScreen zur Steuerung des Ladebildschirms.
+ */
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { AuthService } from './auth';
 import { supabase } from './supabase';
 import * as SplashScreen from 'expo-splash-screen';
 import { router } from 'expo-router';
 
-// [Ensures] Splashscren visible until Authentification complete
+// [VERHINDERT] Automatisches Ausblenden des Splash-Screens bis Authentifizierung abgeschlossen
 SplashScreen.preventAutoHideAsync();
 
-// [Structure] AuthContext 
+// [DEFINIERT] Struktur des Authentifizierungskontexts
 interface AuthContext {
   user: any | null;
   profile: any | null;
   isLoading: boolean;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
-  forceRefreshProfile: () => Promise<void>; // Neue Funktion
+  forceRefreshProfile: () => Promise<void>; // Erzwungene Profilaktualisierung
 }
 
-// [Structure] AuthProvider
+// [DEFINIERT] Eigenschaften für den AuthProvider
 interface AuthProvider {
   children: ReactNode;
 }
 
-// [Initialize] Empty AuthContext 
+// [INITIALISIERT] Leeren Authentifizierungskontext mit Standardwerten
 const AuthContext = createContext<AuthContext>({
   user: null,
   profile: null,
   isLoading: true,
   signOut: async () => {},
   refreshUser: async () => {},
-  forceRefreshProfile: async () => {}, // Neue Funktion
+  forceRefreshProfile: async () => {}, // Standardimplementierung
 });
 
-// [Export] Auth Provider Component
+// [EXPORTIERT] AuthProvider-Komponente für die App
 export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => {
 
-  // [Initialize] React Hooks
+  // [INITIALISIERT] Zustandsvariablen für den Kontext
   const [user, setUser] = useState<any | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const [lastProfileFetch, setLastProfileFetch] = useState(0);
 
-  // Verbesserte Funktion zum Laden des Profils mit Retry-Mechanismus
+  // [LÄDT] Benutzerprofil mit Wiederholungsmechanismus
   const loadUserProfile = async (userId: string): Promise<any> => {
     try {
       console.log(`Versuche Profil zu laden für User ID: ${userId}`);
@@ -54,10 +61,10 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
         setProfile(userProfile);
         return userProfile;
       } else {
-        // Profil nicht gefunden - wir warten kurz und versuchen es erneut
+        // [IMPLEMENTIERT] Wiederholungsversuch bei nicht gefundenem Profil
         console.log(`Profil nicht gefunden für ${userId}, Versuch ${retryCount + 1}`);
         
-        if (retryCount < 5) { // Max 5 Wiederholungen
+        if (retryCount < 5) { // [BEGRENZT] Auf maximal 5 Wiederholungen
           setRetryCount(prev => prev + 1);
           return new Promise(resolve => {
             setTimeout(async () => {
@@ -70,7 +77,7 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
                 console.log("Profil auch nach Wiederholung nicht gefunden");
                 resolve(null);
               }
-            }, 2000); // 2 Sekunden warten
+            }, 2000); // [WARTET] 2 Sekunden zwischen Versuchen
           });
         }
         
@@ -82,7 +89,7 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
     }
   };
 
-  // Neue Funktion: Erzwingt eine Profilaktualisierung
+  // [ERZWINGT] Aktualisierung des Benutzerprofils unabhängig von Cachingmechanismen
   const forceRefreshProfile = async (): Promise<void> => {
     if (!user?.id) {
       console.log("Kann Profil nicht aktualisieren - kein Benutzer angemeldet");
@@ -100,31 +107,30 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
     }
   };
 
-  // [Subscribe] to auth state changes when the component mounts
+  // [ÜBERWACHT] Authentifizierungsstatuswechsel beim Komponenten-Mount
   useEffect(() => {
     console.log("AuthProvider wird initialisiert");
 
-    // [API Call] Subscribes to AuthentificationState Change Listener
+    // [ABONNIERT] Authentifizierungsstatuswechsel von Supabase
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log("Auth state changed:", event);
         
 
-        // [CASE] Signed In
+        // [BEHANDELT] Anmeldeereignis
         if (event === 'SIGNED_IN') {
           console.log("Sign-In erkannt");
-          // [Validates] User 
+          // [VALIDIERT] Benutzerdaten in der Session
           if (session?.user) {
             console.log(`User eingeloggt: ${session.user.email}`);
             setUser(session.user);
 
-            // [Get] public/profiles => sets local rec var
+            // [LÄDT] Benutzerprofil aus der Datenbank
             const userProfile = await loadUserProfile(session.user.id);
             
-            // [Validated] public/Profile Rec
+            // [NAVIGIERT] Bei vorhandenem Profil zur Team-Auswahl
             if (userProfile) {
               console.log("Profil gefunden, Navigation zur Team-Auswahl");
-              // [Navigate] Team Screen (=User+Profile exists)
               router.replace('/features/teams/screens/selection');
             } else {
               console.log("Kein Profil gefunden nach Sign-In");
@@ -133,31 +139,31 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
           setIsLoading(false);
 
 
-          // [Case] Signed Out 
+          // [BEHANDELT] Abmeldeereignis
         } else if (event === 'SIGNED_OUT') {
           console.log("Sign-Out erkannt");
-          // [Cleaning] Initializing the Session Objects
+          // [BEREINIGT] Sitzungsinformationen beim Abmelden
           setUser(null);
           setProfile(null);
           setRetryCount(0);
           setIsLoading(false);
 
 
-          // [Case] User Updated
+          // [BEHANDELT] Aktualisierungsereignis
         } else if (event === 'USER_UPDATED') {
           console.log("User-Update erkannt");
-          // [Validates] User 
+          // [AKTUALISIERT] Benutzerdaten bei Änderungen
           if (session?.user) {
             console.log(`User aktualisiert: ${session.user.email}`);
             setUser(session.user);
 
-            // [API Call] Get public/profiles
+            // [LÄDT] Aktuelles Profil aus der Datenbank
             const userProfile = await loadUserProfile(session.user.id);
             
-            // [Check] Is User Confirmed + profile created
+            // [PRÜFT] Bestätigungsstatus und Profilvorhandensein
             if (session.user.confirmed_at && userProfile) {
               console.log("Bestätigter Benutzer mit Profil, Navigation zur Team-Auswahl");
-              // [Navigate] Team Selection Screen
+              // [NAVIGIERT] Zur Team-Auswahl bei bestätigtem Benutzer
               router.replace('/features/teams/screens/selection');
             } else {
               setProfile(userProfile);
@@ -170,8 +176,7 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
           if (session?.user) {
             setUser(session.user);
             
-            // Nur Profil aktualisieren, wenn seit der letzten Aktualisierung 
-            // mindestens 5 Sekunden vergangen sind
+            // [VERHINDERT] Zu häufige Profilaktualisierungen
             const now = Date.now();
             if (now - lastProfileFetch > 5000) {
               setLastProfileFetch(now);
@@ -189,19 +194,19 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
       }
     );
 
-    // [Checks] for existing Session, while mounting component
+    // [PRÜFT] Bestehende Sitzung beim Anwendungsstart
     const checkUser = async (): Promise<void> => {
       try {
         console.log("Prüfe bestehende Session");
-        // [API Call] Retrieves current session
+        // [LÄDT] Aktuelle Sitzungsinformationen
         const session = await AuthService.getSession();
 
-        /// [Validate] User in Session
+        // [VALIDIERT] Benutzerdaten in vorhandener Sitzung
         if (session?.user) {
           console.log(`Bestehende Session gefunden für: ${session.user.email}`);
           setUser(session.user);
 
-          // [API Call] Retrieves public/profiles
+          // [LÄDT] Benutzerprofil für vorhandene Sitzung
           const userProfile = await loadUserProfile(session.user.id);
           if (userProfile) {
             console.log("Profil für bestehende Session gefunden");
@@ -220,7 +225,7 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
   
     checkUser();
 
-    // [Clean up] Subscriptions
+    // [BEREINIGT] Abonnements beim Komponenten-Unmount
     return () => {
       if (authListener && authListener.subscription) {
         authListener.subscription.unsubscribe();
@@ -228,18 +233,18 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
     };
   }, []);
 
-  // [Function] Refreshed session profile from db (public/profile)
+  // [AKTUALISIERT] Benutzerdaten aus aktueller Sitzung
   const refreshUser = async (): Promise<void> => {
     try {
-      // [API Call] Retrieve User via Session
+      // [LÄDT] Aktuelle Benutzerdaten
       setIsLoading(true);
       const currentUser = await AuthService.getCurrentUser();
       setUser(currentUser);
 
-      // [Validate] user id
+      // [AKTUALISIERT] Profilinformationen für aktualisierten Benutzer
       if (currentUser?.id) {
         console.log(`Aktualisiere Profil für: ${currentUser.id}`);
-        // [API Call] retrieve public/profiles   
+        // [LÄDT] Aktuelles Profil aus der Datenbank
         const userProfile = await loadUserProfile(currentUser.id);
         if (!userProfile) {
           console.log("Kein Profil während refreshUser gefunden");
@@ -255,16 +260,16 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
     }
   };
 
-  // [Function] Signed User out of Session
+  // [BEENDET] Aktuelle Benutzersitzung
   const signOut = async (): Promise<void> => {
-    // [API Call] Logout session
+    // [RUFT] Logout-Funktion von AuthService auf
     await AuthService.logout();
     setUser(null);
     setProfile(null);
     setRetryCount(0);
   };
 
-  // Use React.createElement instead of JSX syntax
+  // [ERSTELLT] Provider mit Kontextwerten
   return React.createElement(
     AuthContext.Provider,
     {
@@ -281,5 +286,5 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
   );
 };
 
-// Create a hook for using the auth context
+// [EXPORTIERT] Hook für einfachen Zugriff auf den Authentifizierungskontext
 export const useAuth = (): AuthContext => useContext(AuthContext);

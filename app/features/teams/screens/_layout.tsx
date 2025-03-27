@@ -1,4 +1,10 @@
-// app/(teams)/_layout.tsx
+/**
+ * [BEREITSTELLUNG] Layout für Team-Bildschirme
+ * 
+ * Diese Datei definiert das gemeinsame Layout für alle Team-bezogenen Bildschirme
+ * (Team-Auswahl, Team-Erstellung, Team-Beitritt, Team-Detailansicht).
+ * Konfiguriert Header-Stile und Navigationsoptionen für die verschiedenen Team-Routen.
+ */
 import React from 'react';
 import { Stack } from 'expo-router';
 import { AppColors } from '@/common/constants/AppColors';
@@ -42,7 +48,7 @@ export default function TeamsLayout() {
           headerShown: false
         }} 
       />
-      {/* Add this to hide the [id] header */}
+      {/* [VERSTECKT] Team-ID-Header */}
       <Stack.Screen
         name="[id]"
         options={{

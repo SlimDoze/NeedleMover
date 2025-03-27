@@ -1,32 +1,38 @@
+/**
+ * [BEREITSTELLUNG] Supabase-Client und Session-Management
+ * 
+ * Diese Datei konfiguriert den Supabase-Client für die Anwendung und
+ * implementiert einen angepassten SessionStorage-Handler für die Authentifizierung.
+ * Unterstützt persistente und nicht-persistente Sitzungen basierend auf Benutzereinstellungen.
+ * Implementiert Caching-Mechanismen und plattformübergreifende Speicherstrategien.
+ */
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 
-// Benutzerdefinierter SessionStorage-Handler, der den "Stay logged in"-Status berücksichtigt
-// Benutzerdefinierter SessionStorage-Handler mit robusterer Implementierung
-
+// [IMPLEMENTIERT] Angepassten SessionStorage mit Persistenzsteuerung
 class SessionStorage {
   private isPersistent: boolean = false;
   private isInitialized: boolean = false;
-  // [FIX] Verwende Static Instance, um mehrfache parallele Initialisierungen zu vermeiden
+  // [VERWENDET] Statische Instanz zur Vermeidung paralleler Initialisierungen
   private static initPromise: Promise<void> | null = null;
   private cache: Map<string, string> = new Map();
-  // [FIX] Verwende einen Prozess-Flag, um zu vermeiden, dass Log-Meldungen gespammt werden
+  // [VERHINDERT] Wiederholte Protokollierung gleicher Pfade
   private static loggedPaths = new Set<string>();
 
   constructor() {
-    // Initialisieren der Klasse und speichern des Promise für spätere Verwendung
+    // [STARTET] Einmalige Initialisierung beim Erstellen
     this.initializeOnce();
   }
 
-  // [FIX] Singleton-Pattern für die Initialisierung implementieren
+  // [IMPLEMENTIERT] Singleton-Muster für die Initialisierung
   private initializeOnce() {
     if (!SessionStorage.initPromise) {
       SessionStorage.initPromise = this.initialize();
     }
   }
 
-  // Initialisierungsmethode, die ein Promise zurückgibt
+  // [INITIALISIERT] Storage-Handler asynchron
   private async initialize() {
     try {
       if (!this.isInitialized) {
@@ -41,7 +47,7 @@ class SessionStorage {
     }
   }
   
-  // [Native] Lädt Persistenz-Status aus dem AsyncStorage
+  // [LÄDT] Persistenzstatus aus dem AsyncStorage
   async loadPersistState() {
     try {
       const shouldPersist = await AsyncStorage.getItem('persistSession');
@@ -49,29 +55,29 @@ class SessionStorage {
       console.log("Loaded persist state:", this.isPersistent);
     } catch (error) {
       console.error("Error loading persistence state:", error);
-      // WICHTIG: Default auf true setzen für bessere Benutzererfahrung
+      // [SETZT] Default auf true für bessere Benutzererfahrung
       this.isPersistent = true;
     }
   }
 
-  // [Native] Warten auf Initialisierung
+  // [WARTET] Auf Abschluss der Initialisierung
   private async waitForInitialization(): Promise<void> {
     if (!this.isInitialized && SessionStorage.initPromise) {
       await SessionStorage.initPromise;
     }
   }
 
-  // Setzt den Persistenzzustand und speichert ihn im AsyncStorage
+  // [KONFIGURIERT] Persistenzmodus für Sitzungen
   async setPersistSession(persist: boolean) {
     try {
       await this.waitForInitialization();
       console.log("Setting persist session to:", persist);
       this.isPersistent = persist;
       
-      // WICHTIG: Wir speichern die Einstellung
+      // [SPEICHERT] Einstellung im AsyncStorage
       await AsyncStorage.setItem('persistSession', persist ? 'true' : 'false');
       
-      // WICHTIG: Wenn wir auf persistent umschalten, vorhandene im-Memory-Tokens in AsyncStorage sichern
+      // [MIGRIERT] Cache-Token in persistenten Speicher bei Aktivierung
       if (persist) {
         for (const [key, value] of this.cache.entries()) {
           if (this.isAuthToken(key)) {
@@ -84,7 +90,7 @@ class SessionStorage {
       console.error("Error setting persistence state:", error);
     }
   }
-  // Überprüft, ob ein Schlüssel ein Authentifizierungs-Token ist
+  // [IDENTIFIZIERT] Authentifizierungs-Token anhand des Schlüsselnamens
   isAuthToken(key: string): boolean {
     return key.includes('supabase.auth.token') || 
            key.includes('sb-') || 
@@ -92,41 +98,41 @@ class SessionStorage {
            key.includes('refresh_token');
   }
 
-  // [FIX] Log-Begrenzung hinzufügen um Spam zu vermeiden
+  // [PROTOKOLLIERT] Nachrichten einmalig zur Vermeidung von Spam
   private logOnce(path: string, message: string) {
     if (!SessionStorage.loggedPaths.has(path)) {
       console.log(message);
       SessionStorage.loggedPaths.add(path);
       
-      // Setze nach einer gewissen Zeit zurück, um erneute Logs zu ermöglichen
+      // [BEREINIGT] Pfadcache nach einer bestimmten Zeit
       setTimeout(() => {
         SessionStorage.loggedPaths.delete(path);
       }, 5000);
     }
   }
 
-  // Ruft einen Wert aus dem AsyncStorage oder Cache ab
+  // [LIEST] Wert aus AsyncStorage oder Cache
   async getItem(key: string): Promise<string | null> {
     try {
-      // Warte auf die Initialisierung, bevor fortgefahren wird
+      // [WARTET] Auf Abschluss der Initialisierung
       await this.waitForInitialization();
 
-      // Bei Auth-Tokens prüfen, ob persistiert werden soll
+      // [PRÜFT] Persistenzmodus für Auth-Tokens
       if (!this.isPersistent && this.isAuthToken(key)) {
-        // [FIX] Log-Spam reduzieren
+        // [VERWENDET] Nur In-Memory-Cache im nicht-persistenten Modus
         this.logOnce(key, `Not persisting session, using in-memory cache for: ${key}`);
         return this.cache.get(key) || null;
       }
 
-      // Aus Cache lesen, falls vorhanden
+      // [PRÜFT] Cache für schnellen Zugriff
       if (this.cache.has(key)) {
         return this.cache.get(key) || null;
       }
 
-      // Aus AsyncStorage lesen
+      // [LIEST] Aus AsyncStorage bei Cache-Miss
       const value = await AsyncStorage.getItem(key);
       
-      // In Cache speichern
+      // [AKTUALISIERT] Cache mit dem gelesenen Wert
       if (value !== null) {
         this.cache.set(key, value);
       }
@@ -138,22 +144,21 @@ class SessionStorage {
     }
   }
 
-  // Speichert einen Wert im AsyncStorage und Cache
+  // [SPEICHERT] Wert im Cache und ggf. AsyncStorage
   async setItem(key: string, value: string): Promise<void> {
     try {
-      // Warte auf die Initialisierung, bevor fortgefahren wird
+      // [WARTET] Auf Abschluss der Initialisierung
       await this.waitForInitialization();
 
-      // Bei Auth-Tokens prüfen, ob persistiert werden soll
+      // [PRÜFT] Persistenzmodus für Auth-Tokens
       if (!this.isPersistent && this.isAuthToken(key)) {
-        // [FIX] Log-Spam reduzieren
+        // [SPEICHERT] Nur im Cache im nicht-persistenten Modus
         this.logOnce(key, `Not persisting session, storing in-memory only for: ${key}`);
-        // Nur im Cache speichern, nicht in AsyncStorage
         this.cache.set(key, value);
         return;
       }
 
-      // In AsyncStorage und Cache speichern
+      // [SPEICHERT] In Cache und AsyncStorage im persistenten Modus
       this.cache.set(key, value);
       await AsyncStorage.setItem(key, value);
     } catch (error) {
@@ -161,10 +166,10 @@ class SessionStorage {
     }
   }
 
-  // Rest der Methoden bleiben unverändert...
+  // [ENTFERNT] Gespeicherten Wert aus Cache und AsyncStorage
   async removeItem(key: string): Promise<void> {
     try {
-      // Aus Cache und AsyncStorage entfernen
+      // [BEREINIGT] Aus beiden Speicherorten
       this.cache.delete(key);
       await AsyncStorage.removeItem(key);
     } catch (error) {
@@ -172,20 +177,21 @@ class SessionStorage {
     }
   }
 
+  // [LÖSCHT] Alle Authentifizierungs-Tokens
   async clearAuthTokens(): Promise<void> {
     try {
-      // Liste aller Schlüssel holen
+      // [ERMITTELT] Alle Schlüssel aus dem AsyncStorage
       const allKeys = await AsyncStorage.getAllKeys();
       
-      // Auth-Token-Schlüssel herausfiltern
+      // [FILTERT] Authentifizierungs-Token
       const authKeys = allKeys.filter(key => this.isAuthToken(key));
       
-      // Aus Cache und AsyncStorage entfernen
+      // [ENTFERNT] Aus dem Cache
       for (const key of authKeys) {
         this.cache.delete(key);
       }
       
-      // In einem Batch entfernen
+      // [ENTFERNT] Aus dem AsyncStorage in einem Batchvorgang
       if (authKeys.length > 0) {
         await AsyncStorage.multiRemove(authKeys);
         console.log("Cleared auth tokens:", authKeys.length);
@@ -196,19 +202,19 @@ class SessionStorage {
   }
 }
 
-// Instanziiert die Session Storage Klasse
+// [ERSTELLT] Instanz des SessionStorage-Handlers
 const sessionStorage = new SessionStorage();
 
-// Umgebungsvariablen holen via Expo Constants
+// [LÄDT] Konfigurationswerte aus Expo-Umgebungsvariablen
 const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl;
 const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey;
 
-// [Validate] Benötigte Werte müssen existieren, befor Client erstellt werden kann
+// [VALIDIERT] Verfügbarkeit der erforderlichen Konfigurationswerte
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error("Missing Supabase configuration. Please check your app.config.js and .env file.");
 }
 
-// [Export] Erstellt Supabase Client
+// [INITIALISIERT] Supabase-Client mit Konfiguration
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: sessionStorage,
@@ -222,7 +228,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       'Accept': 'application/json'
     }
   },
-  // Retry-Strategie für bessere Stabilität bei schlechter Verbindung
+  // [IMPLEMENTIERT] Wiederholungsstrategie für Verbindungsprobleme
   realtime: {
     params: {
       eventsPerSecond: 10
@@ -230,5 +236,5 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 });
 
-// Exportiert den Session Storage für direkte Nutzung
+// [EXPORTIERT] SessionStorage für direkte Verwendung in der Anwendung
 export { sessionStorage };

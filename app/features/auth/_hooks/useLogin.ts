@@ -1,4 +1,12 @@
-// app/features/auth/_hooks/useLogin.ts
+/**
+ * [BEREITSTELLUNG] Login-Logik für Authentifizierung
+ * 
+ * Dieser Hook handhabt die gesamte Login-Funktionalität, einschließlich:
+ * - Formularstatusverwaltung für E-Mail und Passwort
+ * - "Remember Me"-Funktionalität mit AsyncStorage
+ * - Login-Prozess mit Validierung und Fehlerbehandlung
+ * - Navigation nach erfolgreicher Anmeldung
+ */
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { Auth_Routes, Team_Routes } from "../_constants/routes";
@@ -14,7 +22,7 @@ export function UseLogin() {
   const [isRememberMe, setRememberMe] = useState<boolean>(false);
   const [isLoading, SetIsLoading] = useState<boolean>(false);
 
-  // Im UseLogin.ts
+  // [VERARBEITET] Login-Anfrage mit Validierung und Fehlerbehandlung
 const HandleLogin = async () => {
   if (!emailValue.trim() || !passwordValue.trim()) {
     CustomAlert(LoginMsg.ErrorHeader, LoginMsg.ErrorBody);
@@ -24,10 +32,10 @@ const HandleLogin = async () => {
   try {
     SetIsLoading(true);
     
-    // Speichere den "Stay logged in"-Status
+    // [SPEICHERT] "Stay logged in"-Status in sessionStorage
     await sessionStorage.setPersistSession(isRememberMe);
     
-    // Call the AuthService to log in the user
+    // [RUFT] AuthService für Login-Prozess auf
     const response = await AuthService.login({
       email: emailValue,
       password: passwordValue
@@ -36,18 +44,18 @@ const HandleLogin = async () => {
     SetIsLoading(false);
     
     if (response.success) {
-      // Wenn der Nutzer "Remember Me" ausgewählt hat, speichere die E-Mail
+      // [SPEICHERT] E-Mail für "Remember Me"-Funktion
       if (isRememberMe) {
         await AsyncStorage.setItem('rememberedEmail', emailValue);
       } else {
-        // Wenn "Remember Me" nicht ausgewählt ist, lösche gespeicherte E-Mail
+        // [ENTFERNT] Gespeicherte E-Mail, wenn "Remember Me" nicht aktiviert
         await AsyncStorage.removeItem('rememberedEmail');
       }
       
-      // Navigiere zur Team-Auswahl
+      // [LEITET] Zur Team-Auswahl weiter
       router.replace(Team_Routes.Selection);
     } else {
-      // Behandle Login-Fehler
+      // [ZEIGT] Fehlermeldung bei Login-Fehler
       CustomAlert("Login Error", response.message || "Invalid email or password");
     }
   } catch (error) {
@@ -57,15 +65,17 @@ const HandleLogin = async () => {
   }
 };
 
+  // [NAVIGIERT] Zurück zur vorherigen Seite
   const HandleGoBack = () => {
     router.back();
   };
 
+  // [NAVIGIERT] Zur Passwort-Zurücksetzungsseite
   const NavigateToResetPassword = () => {
     router.push(Auth_Routes.ResetPassword);
   };
 
-  // Load remembered email when component mounts
+  // [LÄDT] Gespeicherte E-Mail-Adresse für "Remember Me"-Funktion
   const loadRememberedEmail = async () => {
     try {
       const savedEmail = await AsyncStorage.getItem('rememberedEmail');
@@ -78,7 +88,7 @@ const HandleLogin = async () => {
     }
   };
 
-  // Call this function from useEffect in the login screen component
+  // [HINWEIS] Diese Funktion sollte in useEffect im Login-Screen aufgerufen werden
 
   return {
     emailValue,

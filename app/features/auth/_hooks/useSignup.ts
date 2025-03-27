@@ -1,3 +1,13 @@
+/**
+ * [BEREITSTELLUNG] Registrierungsprozess-Logik
+ * 
+ * Dieser Hook verwaltet den mehrstufigen Registrierungsprozess:
+ * - Formularstatusverwaltung für alle Benutzerinformationen
+ * - Validierung der Eingaben in verschiedenen Schritten
+ * - Benutzerregistrierung über AuthService
+ * - E-Mail-Bestätigungsverfolgung mit Polling-Mechanismus
+ * - Plattformspezifische Tokenverarbeitung (Web/Mobile)
+ */
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "expo-router";
 import { Team_Routes } from "../_constants/routes";
@@ -9,7 +19,7 @@ import { sessionStorage } from "@/lib/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 
-// Setzt Struktur für die Nutzerdaten
+// [DEFINIERT] Struktur für Registrierungsdaten
 interface SignUpData {
   name: string;
   handle: string;
@@ -29,17 +39,17 @@ export function UseSignUp() {
     stayLoggedIn: false
   };
   
-  // useState Hooks werden initialisiert
+  // [INITIALISIERT] Zustandsvariablen für das Formular
   const [formStep, setFormStep] = useState<number>(1);
   const [userData, setUserData] = useState<SignUpData>(initialState);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isConfirmMailSent, setIsConfirmMailSent] = useState<boolean>(false);
   
-  // Polling-Status werden initialisiert => Prüfen ob public/profiles Rec. existiert 
+  // [INITIALISIERT] Polling-Mechanismus für Profilbestätigung
   const [isPolling, setIsPolling] = useState<boolean>(false);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // [Polling] Intervall wird gecleard beim Unmount der Komponente
+  // [BEREINIGT] Polling-Intervall beim Unmount der Komponente
   useEffect(() => {
     return () => {
       if (pollingIntervalRef.current) {
@@ -48,27 +58,27 @@ export function UseSignUp() {
     };
   }, []);
 
-  // [Function] Start Polling for Email Confirm 
+  // [STARTET] Polling für E-Mail-Bestätigung
   const startConfirmMailPolling = () => {
     if (isPolling || !userData.email) return;
     
     console.log("Starting profile polling for email:", userData.email);
     setIsPolling(true);
     
-    // Alle 3 Sekunden prüfen, ob das Profil erstellt wurde
+    // [PRÜFT] Alle 3 Sekunden auf Profilanlage
     pollingIntervalRef.current = setInterval(checkProfileCreated, 3000);
   };
 
-  // [Function] Validates the creation of public/profile Record
+  // [ÜBERPRÜFT] Ob das Benutzerprofil bereits angelegt wurde
   const checkProfileCreated = async () => {
     try {
       console.log("Checking for profile with email:", userData.email);
       
-      // Sucht nach Profil über E-Mail adresse
+      // [SUCHT] Profil anhand der E-Mail-Adresse
       const profile = await AuthService.getProfileByEmail(userData.email);
       
 
-      // Profil gefunden => Stop Polling, Nav. zur Selection
+      // [NAVIGIERT] Bei gefundenem Profil zur Team-Auswahl
       if (profile) {
         console.log("Profile found, redirecting to team selection");
         stopConfirmMailPolling();
@@ -82,35 +92,34 @@ export function UseSignUp() {
     }
   };
 
-  // [Function] Stops Polling for Email Confirmation
+  // [BEENDET] Polling für E-Mail-Bestätigung
   const stopConfirmMailPolling = () => {
-    // Setzt sich auf aktives intervall
+    // [BEREINIGT] Aktives Intervall
     if (pollingIntervalRef.current) {
-      // Stoppt aktives Intervall
       clearInterval(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
     }
     setIsPolling(false);
   };
   
-  // [Function] Can update single Fields of UserData, instead of setting the whole new State
+  // [AKTUALISIERT] Einzelne Felder der Benutzerdaten
   const UpdateField = (field: keyof SignUpData, value: string | boolean) => {
     setUserData(prev => ({
-      // Kopiert alle bestehenden Felder aus dem vorherigen Zustand
+      // [ÜBERNIMMT] Bestehende Felder
       ...prev,
-      // Aktualisiert das spezifische Feld mit dem neuen Wert
+      // [AKTUALISIERT] Spezifisches Feld
       [field]: value
     }));
   };
 
-  // [Function] Validates First Form Step
+  // [VALIDIERT] Ersten Schritt des Formulars (Name und Handle)
   const ValidateFirstStep = () => {
-    // Name eingegeben?
+    // [PRÜFT] Name-Eingabe
     if (!ValidateRequired(userData.name)) {
       CustomAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterNameErr);
       return false;
     }
-    // Handle eingegeben?
+    // [PRÜFT] Handle-Eingabe
     if (!ValidateRequired(userData.handle)) {
       CustomAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterHandleErr);
       return false;
@@ -118,24 +127,24 @@ export function UseSignUp() {
     return true;
   };
 
-  // [Function] Validates Second Form Step
+  // [VALIDIERT] Zweiten Schritt des Formulars (E-Mail und Passwort)
   const ValidateSecondStep = () => {
-    // Email eingegeben?
+    // [PRÜFT] E-Mail-Eingabe
     if (!ValidateRequired(userData.email)) {
       CustomAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterEmailErr);
       return false;
     }
-    // Email Valide?
+    // [PRÜFT] E-Mail-Format
     if (!ValidateEmail(userData.email)) {
       CustomAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterValidMailEr);
       return false;
     }
-    // Password eingegeben?
+    // [PRÜFT] Passwort-Eingabe
     if (!ValidateRequired(userData.password)) {
       CustomAlert(SignupMsg.ValidationErrHeader, SignupMsg.EnterPasswordErr);
       return false;
     }
-    // Password valid?
+    // [PRÜFT] Passwort-Komplexität
     if (!ValidatePassword(userData.password)) {
       CustomAlert(SignupMsg.ValidationErrHeader, SignupMsg.PasswordCharErr);
       return false;
@@ -143,14 +152,14 @@ export function UseSignUp() {
     return true;
   };
 
-  // [Function] Moves the Form Step forward
+  // [WECHSELT] Zum nächsten Formularschritt
   const NextStep = () => {
     if (formStep === 1 && ValidateFirstStep()) {
       setFormStep(2);
     }
   };
 
-  // [Function] Moves the Form Step back
+  // [WECHSELT] Zum vorherigen Formularschritt oder zurück
   const PrevStep = () => {
     if (formStep > 1) {
       setFormStep(prev => prev - 1);
@@ -158,21 +167,20 @@ export function UseSignUp() {
       router.back();
     }
   };
-  // [Function] Executes Sign-Up DB Logic
+  // [FÜHRT] Registrierung mit validierten Daten durch
   const HandleSignUp = async () => {
     try {
       console.log("Starting Sign-Up with data:", userData);
 
-      // [Validiert] Letzte Form-Inputs
+      // [VALIDIERT] Formulardaten vor Absendung
       const isValid = ValidateSecondStep();
       if (isValid) {
         setIsLoading(true);
-        // [Prüft] SessionStorage-Objekt verfügbar && benötigte Funktion verfügbar
+        // [SPEICHERT] Anmeldestatuspräferenz
         if (typeof sessionStorage !== 'undefined' && sessionStorage.setPersistSession) {
-          // [Speichert] "Stay logged in"-Status im SessionStorage
           await sessionStorage.setPersistSession(userData.stayLoggedIn);
         }
-        // Supabase API Call => Erstellt auth/user aus UserData Object
+        // [REGISTRIERT] Benutzer über AuthService
         const response = await AuthService.signUp({
           name: userData.name,
           handle: userData.handle,
@@ -182,7 +190,7 @@ export function UseSignUp() {
         setIsLoading(false);
         
         if (response.success) {
-          // [Speicher Email] Wenn "Stay logged in" aktiviert ist
+          // [SPEICHERT] E-Mail bei aktivierter "Stay logged in"-Option
           if (userData.stayLoggedIn) {
             await AsyncStorage.setItem('rememberedEmail', userData.email);
           }
@@ -190,10 +198,10 @@ export function UseSignUp() {
             [{ text: "OK" }]
            );
           setIsConfirmMailSent(true);
-          // [Start] Polling für Profil-Check
+          // [STARTET] Polling für Profilüberprüfung
           startConfirmMailPolling();
         } else {
-          // [Handle] Registrierungs Fehler
+          // [ZEIGT] Fehlermeldung bei Registrierungsproblemen
           CustomAlert(SignupMsg.ErrorHeader, response.message || SignupMsg.ErrorBody);
         }
       }
@@ -204,10 +212,10 @@ export function UseSignUp() {
     }
   };
 
-  // [Function] Resends Mail, Manages isLoading & Profile-Polling
+  // [SENDET] Bestätigungs-E-Mail erneut und startet Polling
   const HandleResendEmail = async () => {
     try {
-      // Wenn Email leer => Ausstieg
+      // [PRÜFT] E-Mail-Verfügbarkeit
       if (!userData.email) {
         CustomAlert(SignupMsg.ErrorHeader, "Please enter your email first.");
         return;
@@ -226,12 +234,12 @@ export function UseSignUp() {
     }
   };
 
-  // Neue Funktion zur Verarbeitung von Authentifizierungs-Tokens
+  // [VERARBEITET] Authentifizierungs-Tokens aus URLs oder Deep Links
   const handleAuthTokens = () => {
     useEffect(() => {
-      // Plattformspezifische Logik
+      // [BEHANDELT] Plattformspezifische Token-Verarbeitung
       if (Platform.OS === 'web') {
-        // Web: Token aus URL extrahieren
+        // [EXTRAHIERT] Tokens aus URL-Hash für Web
         if (window.location.hash) {
           const hash = window.location.hash;
           const params = new URLSearchParams(hash.replace('#', ''));
@@ -240,24 +248,23 @@ export function UseSignUp() {
           
           if (accessToken && refreshToken) {
             console.log("Token in URL gefunden, setze Session...");
-            // Session mit den Tokens setzen
+            // [SETZT] Session mit extrahierten Tokens
             AuthService.setSessionWithTokens(accessToken, refreshToken)
               .then(response => {
                 if (response.success) {
                   console.log("Session erfolgreich mit Token gesetzt");
-                  // URL bereinigen
+                  // [BEREINIGT] URL nach erfolgreicher Verarbeitung
                   window.history.replaceState(null, "", window.location.pathname);
-                  // Polling starten
+                  // [STARTET] Polling für Profilüberprüfung
                   startConfirmMailPolling();
                 }
               });
           }
         }
       } else {
-        // Mobile: App wird über Deep Link mit Tokens aufgerufen
+        // [HINWEIS] Mobile: Hier würde Deep-Link-Integration folgen
         // Dies würde typischerweise mit einer Expo Linking-Lösung implementiert
         // z.B. Expo Linking.addEventListener
-        // Hier würde der Code stehen, der die Deep Links in der App verarbeitet
       }
     }, []);
   };

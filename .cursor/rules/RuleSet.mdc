@@ -6,7 +6,8 @@ alwaysApply: true
 
 # My Rule Content
 - Antworte immer auf deutsch.
-- Prüfe, ob deine Syntax und Befehle auf dem aktuellstem Stand ist.
-- Prüfe, ob die best Pratices der verwendeten Sprache/Tevhnologien eingehalten werden 
+- Verwende best Pratices der verwendeten Sprache/Tevhnologien eingehalten werden
+- Stelle sicher, dass deine Syntax und Befehle dem neustem Stand entsprechen.
+- Wenn du Code veränderst, musst du die dazugehörigen Kommentare entsprechend anpassen
 
 

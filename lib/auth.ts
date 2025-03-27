@@ -1,17 +1,24 @@
+/**
+ * [BEREITSTELLUNG] Authentifizierungsdienste
+ * 
+ * Diese Datei enthält alle Authentifizierungsfunktionen für die Anwendung.
+ * Verwendet Supabase als Backend-Dienst für Authentifizierung und Benutzerprofilmanagement.
+ * Implementiert Login, Registrierung, Logout und Profilverwaltung.
+ */
 import { supabase } from './supabase';
 
-// [Struktur] Anmeldeinformationen eines Nutzers
+// [DEFINIERT] Anmeldeinformationen eines Nutzers
 export interface UserCredentials {
   email: string;
   password: string;
 }
 
-// [Struktur] Anmeldeinformationen eines Nutzers
+// [DEFINIERT] Registrierungsinformationen eines Nutzers mit Profildetails
 export interface UserSignupProfileDetails extends UserCredentials {
   name: string;
   handle: string;
 }
-// [Struktur] Auth Response => Rückgabewert jeder Funktion
+// [DEFINIERT] Standardisierte Antwortstruktur für alle Auth-Funktionen
 export interface AuthResponse {
   success: boolean;
   message?: string;
@@ -20,10 +27,10 @@ export interface AuthResponse {
 
 export class AuthService {
   
-  // [Function] Validates and Logs user in
+  // [FÜHRT AUS] Benutzeranmeldung mit E-Mail und Passwort
   static async login({ email, password }: UserCredentials): Promise<AuthResponse> {
     try {
-      // [API Call] Einloggen mit Passwort
+      // [SENDET] Anmeldedaten an Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -37,7 +44,7 @@ export class AuthService {
         };
       }
 
-      // [API Call] Nutzer holen => Ist Email comfirmed
+      // [PRÜFT] Ob E-Mail-Adresse bestätigt wurde
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user?.confirmed_at) {
         return {
@@ -45,7 +52,7 @@ export class AuthService {
           message: 'Please verify your email before logging in',
         };
       }
-      // [When] Success
+      // [GIBT ZURÜCK] Erfolgreiche Anmeldung
       return { 
         success: true,
         message: 'Logged in successfully',
@@ -59,82 +66,14 @@ export class AuthService {
       };
     }
   }
-  // Neue Methode für lib/auth.ts hinzufügen
-  static async loginAfterEmailConfirmation(email: string): Promise<AuthResponse> {
-    try {
-      console.log('Versuche Login nach E-Mail-Bestätigung für:', email);
-      
-      // Session-Persistenz sicherstellen für diesen Login
-      await sessionStorage.setPersistSession(true);
-      
-      // 1. Prüfen, ob schon eine aktive Session vorhanden ist
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (sessionData?.session) {
-        console.log('Bereits aktive Session gefunden:', sessionData.session.user.id);
-        return {
-          success: true,
-          message: 'Bereits angemeldet',
-          data: sessionData
-        };
-      }
-      
-      // 2. Versuche direkten Login mit vorhandenen Anmeldedaten
-      // Da wir das Passwort nicht haben, nutzen wir den Link-Token aus dem Deep Link
-      console.log('Keine aktive Session, versuche expliziten Login');
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: 'dummy-password' // Dies wird fehlschlagen, aber es ist ein Versuch
-      });
-      
-      if (error) {
-        console.log('Normaler Login fehlgeschlagen, versuche OTP-Login');
-        
-        // 3. Wenn normaler Login fehlschlägt, verwende OTP
-        // Dies ist ein "Fallback"-Mechanismus
-        const { data: otpData, error: otpError } = await supabase.auth.signInWithOtp({
-          email: email,
-          options: {
-            shouldCreateUser: false
-          }
-        });
-        
-        if (otpError) {
-          console.error('OTP-Login fehlgeschlagen:', otpError);
-          return {
-            success: false,
-            message: otpError.message || 'Login fehlgeschlagen'
-          };
-        }
-        
-        console.log('OTP-Login erfolgreich, OTP wurde per E-Mail gesendet');
-        return {
-          success: true,
-          message: 'Bitte prüfe deine E-Mails für den Login-Code',
-          data: otpData
-        };
-      }
-      
-      console.log('Login erfolgreich');
-      return {
-        success: true,
-        message: 'Erfolgreich angemeldet',
-        data
-      };
-    } catch (error) {
-      console.error('Unerwarteter Fehler beim Login nach Bestätigung:', error);
-      return {
-        success: false,
-        message: 'Ein unerwarteter Fehler ist aufgetreten'
-      };
-    }
-  }
-// [Function] Validates and Signs user uo
+
+// [REGISTRIERT] Neuen Benutzer mit Profilinformationen
 static async signUp({ email, password, name, handle }: UserSignupProfileDetails): Promise<AuthResponse> {
   try {
-    // Logging hinzufügen für Debugging
+    // [PROTOKOLLIERT] Registrierungsdaten für Debugging
     console.log('Signing up user with metadata:', { email, name, handle });
     
-    // Nutzerdaten strukturieren
+    // [STRUKTURIERT] Nutzerdaten für Metadaten-Speicherung
     const userMetadata = {
       pending_profile: {
         name,
@@ -144,7 +83,7 @@ static async signUp({ email, password, name, handle }: UserSignupProfileDetails)
     
     console.log('Full user metadata:', userMetadata);
     
-    // Auth-Nutzer mit Metadaten erstellen
+    // [ERSTELLT] Auth-Nutzer mit Metadaten
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -153,7 +92,7 @@ static async signUp({ email, password, name, handle }: UserSignupProfileDetails)
       }
     });
 
-    // Mehr Logging hinzufügen
+    // [PROTOKOLLIERT] Antwort für Debugging
     console.log('Auth response:', { 
       user: authData?.user?.id,
       email: authData?.user?.email,
@@ -161,7 +100,7 @@ static async signUp({ email, password, name, handle }: UserSignupProfileDetails)
       error: authError 
     });
 
-    // Validierung
+    // [VALIDIERT] Antwort
     if (authError) {
       console.error('Signup auth error:', authError);
       return {
@@ -170,7 +109,7 @@ static async signUp({ email, password, name, handle }: UserSignupProfileDetails)
       };
     }
 
-    // Erfolgsmeldung
+    // [GIBT ZURÜCK] Erfolgsmeldung
     return {
       success: true,
       message: 'Please check your email to confirm your account.',
@@ -185,13 +124,13 @@ static async signUp({ email, password, name, handle }: UserSignupProfileDetails)
   }
 }
   
-  // [Function] Validates and logs user out
+  // [BEENDET] Benutzersitzung
   static async logout(): Promise<AuthResponse> {
     try {
-      // [API Call] Ausloggen des Nutzers
+      // [SENDET] Abmeldeanforderung an Supabase
       const { error } = await supabase.auth.signOut();
       
-      // [Validation] API Rückgabe
+      // [VALIDIERT] API-Antwort
       if (error) {
         console.error('Logout error:', error);
         return {
@@ -200,7 +139,7 @@ static async signUp({ email, password, name, handle }: UserSignupProfileDetails)
         };
       }
       
-      // [When] Success
+      // [GIBT ZURÜCK] Erfolgsmeldung
       return {
         success: true,
         message: 'Signed out successfully',
@@ -214,16 +153,16 @@ static async signUp({ email, password, name, handle }: UserSignupProfileDetails)
     }
   }
 
-// [Function] Resends Email Adress
+// [SENDET] Bestätigungs-E-Mail erneut
   static async resendConfirmationEmail(email: string): Promise<AuthResponse> {
     try {
-      // [API Call] Resend Email
+      // [SENDET] Anforderung zum erneuten Versenden der Bestätigungs-E-Mail
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email,
       });
   
-      // [Validation] API Rückgabe
+      // [VALIDIERT] API-Antwort
       if (error) {
         console.error("Resend confirmation error:", error);
         return {
@@ -232,7 +171,7 @@ static async signUp({ email, password, name, handle }: UserSignupProfileDetails)
         };
       }
   
-      // [When] Success
+      // [GIBT ZURÜCK] Erfolgsmeldung
       return {
         success: true,
         message: "A new confirmation email has been sent. Please check your inbox.",
@@ -246,13 +185,13 @@ static async signUp({ email, password, name, handle }: UserSignupProfileDetails)
     }
   }
   
-  // [Function] Requests Password Reset Mail
+  // [INITIIERT] Passwort-Zurücksetzung
   static async requestPasswordReset(email: string): Promise<AuthResponse> {
     try {
-      // [API Call] Passwort zurücksetzen
+      // [SENDET] Anforderung zur Passwort-Zurücksetzung
       const { error } = await supabase.auth.resetPasswordForEmail(email);
 
-      // [Validation] API Rückgabe
+      // [VALIDIERT] API-Antwort
       if (error) {
         console.error("Password reset request error:", error);
         return {
@@ -261,7 +200,7 @@ static async signUp({ email, password, name, handle }: UserSignupProfileDetails)
         };
       }
 
-      // [When] Success
+      // [GIBT ZURÜCK] Erfolgsmeldung
       return {
         success: true,
         message: "Password reset instructions have been sent to your email",
@@ -275,15 +214,15 @@ static async signUp({ email, password, name, handle }: UserSignupProfileDetails)
     }
   }
 
-  // [Function] Resets Password
+  // [SETZT] Passwort zurück
   static async resetPassword(newPassword: string): Promise<AuthResponse> {
     try {
-      // [API Call] Nutzer-Passwort updaten
+      // [AKTUALISIERT] Nutzer-Passwort
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
 
-      // [Validation] API Rückgabe
+      // [VALIDIERT] API-Antwort
       if (error) {
         console.error("Password reset error:", error);
         return {
@@ -292,7 +231,7 @@ static async signUp({ email, password, name, handle }: UserSignupProfileDetails)
         };
       }
 
-      // [When] Success
+      // [GIBT ZURÜCK] Erfolgsmeldung
       return {
         success: true,
         message: "Password has been reset successfully",
@@ -306,19 +245,19 @@ static async signUp({ email, password, name, handle }: UserSignupProfileDetails)
     }
   }
   
-  // [Function] Gets User of current Session
+  // [LÄDT] Aktuellen Benutzer aus der Session
   static async getCurrentUser(): Promise<any> {
     try {
-      // [API Call] Einloggen mit Passwort
+      // [HOLT] Benutzerinformationen aus Supabase
       const { data, error } = await supabase.auth.getUser();
 
-      // [Validation] API Rückgabe
+      // [VALIDIERT] API-Antwort
       if (error) {
         console.error("Get user error:", error);
         return null;
       }
 
-      // [When] Success
+      // [GIBT ZURÜCK] Benutzerdaten
       return data.user;
     } catch (error) {
       console.error("Unexpected error fetching user:", error);
@@ -326,31 +265,31 @@ static async signUp({ email, password, name, handle }: UserSignupProfileDetails)
     }
   }
 
-  // [Function] Get's current session
+  // [LÄDT] Aktuelle Sitzungsinformationen
   static async getSession(): Promise<any> {
     try {
-      // [API Call] Session wird geholt
+      // [HOLT] Sitzungsinformationen aus Supabase
       const { data, error } = await supabase.auth.getSession();
 
-      // [Validation] API Rückgabe
+      // [VALIDIERT] API-Antwort
       if (error) {
         console.error("Get session error:", error);
         return null;
       }
 
-      // [When] Success
+      // [GIBT ZURÜCK] Sitzungsdaten
       return data.session;
     } catch (error) {
       console.error("Unexpected error fetching session:", error);
       return null;
     }
   }
-  // Neue Methode zu lib/auth.ts hinzufügen
+  // [ERSTELLT] Sitzung mit direkten Tokens
 static async setSessionWithTokens(accessToken: string, refreshToken: string): Promise<AuthResponse> {
   try {
     console.log('Versuche Session mit direkten Tokens zu setzen');
     
-    // Session mit den gegebenen Tokens setzen
+    // [SETZT] Session mit den gegebenen Tokens
     const { data, error } = await supabase.auth.setSession({
       access_token: accessToken,
       refresh_token: refreshToken
@@ -385,23 +324,23 @@ static async setSessionWithTokens(accessToken: string, refreshToken: string): Pr
   }
 }
 
-  // [Function] Get's public/profiles by User ID
+  // [LÄDT] Benutzerprofil anhand der Benutzer-ID
   static async getProfilebyUserID(userId: string): Promise<any> {
     try {
-      // [API Call] Datensatz aus public/profile Dabelle => Basiert auf UserID
+      // [ABFRAGT] Profildaten aus der profiles-Tabelle
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", userId)
         .single();
 
-      // [Validation] API Rückgabe
+      // [VALIDIERT] API-Antwort
       if (error) {
         console.error("Get profile error:", error);
         return null;
       }
 
-      // [When] Success
+      // [GIBT ZURÜCK] Profildaten
       return data;
     } catch (error) {
       console.error("Unexpected error fetching user profile:", error);
@@ -409,11 +348,10 @@ static async setSessionWithTokens(accessToken: string, refreshToken: string): Pr
     }
   }
   
-  // [Function] Get's public/profile by Email
-// Verbesserte getProfileByEmail Methode
+  // [LÄDT] Benutzerprofil anhand der E-Mail-Adresse
 static async getProfileByEmail(email: string): Promise<any> {
   try {
-    // Validierung der E-Mail-Adresse
+    // [VALIDIERT] E-Mail-Format
     if (!email || typeof email !== 'string') {
       console.error("Invalid email format");
       return null;
@@ -421,14 +359,14 @@ static async getProfileByEmail(email: string): Promise<any> {
 
     console.log(`Searching for profile with email: ${email}`);
 
-    // Verwende ilike für case-insensitive Suche
+    // [ABFRAGT] Profil mit case-insensitiver E-Mail-Suche
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
       .ilike("email", email)
-      .maybeSingle(); // maybeSingle statt single für keine Fehler bei keinen Ergebnissen
+      .maybeSingle(); // [VERWENDET] maybeSingle für keine Fehler bei fehlenden Ergebnissen
 
-    // API-Rückgabe validieren
+    // [VALIDIERT] API-Antwort
     if (error) {
       console.error("Get profile by email error:", error);
       return null;
