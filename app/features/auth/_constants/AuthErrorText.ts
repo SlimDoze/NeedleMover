@@ -15,8 +15,13 @@ export const SignupMsg = {
 }
 
 export const LoginMsg = {
-    ErrorHeader: "Hint", 
-    ErrorBody: "Please enter Email and Password",
+    ErrorHeader: "Login Fehler",
+    ErrorBody: "Bitte überprüfe deine Eingaben und versuche es erneut.",
+    EmptyEmailErr: "Bitte gib eine E-Mail-Adresse ein.",
+    InvalidEmailErr: "Bitte gib eine gültige E-Mail-Adresse ein.",
+    EmptyPasswordErr: "Bitte gib ein Passwort ein.",
+    InvalidCredentialsErr: "Ungültige E-Mail oder falsches Passwort.",
+    UnexpectedErr: "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut."
 }
 
 export const ResetMsg = {
