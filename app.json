@@ -1,7 +1,22 @@
 {
     "expo": {
       "name": "NeedleMover",
-      "slug": "needlemover"
+      "slug": "needlemover",
+      "scheme": "needlemover",
+      "android": {
+        "intentFilters": [
+          {
+            "action": "VIEW",
+            "category": ["DEFAULT", "BROWSABLE"],
+            "data": {
+              "scheme": "needlemover"
+            }
+          }
+        ]
+      },
+      "ios": {
+        "supportsTablet": true
+      }
     }
   }
     
