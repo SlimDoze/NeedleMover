@@ -110,6 +110,9 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
   // [ÜBERWACHT] Authentifizierungsstatuswechsel beim Komponenten-Mount
   useEffect(() => {
     console.log("AuthProvider wird initialisiert");
+    
+    // [WICHTIG] Stellen sicher, dass der SplashScreen angezeigt wird, bis die Auth abgeschlossen ist
+    SplashScreen.preventAutoHideAsync().catch(console.warn);
 
     // [ABONNIERT] Authentifizierungsstatuswechsel von Supabase
     const { data: authListener } = supabase.auth.onAuthStateChange(
@@ -209,7 +212,11 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
           // [LÄDT] Benutzerprofil für vorhandene Sitzung
           const userProfile = await loadUserProfile(session.user.id);
           if (userProfile) {
-            console.log("Profil für bestehende Session gefunden");
+            console.log("Profil für bestehende Session gefunden, navigiere zur Team-Auswahl");
+            // [WICHTIG] Navigation zur Team-Auswahl bei bestehendem Profil nach Reload
+            setTimeout(() => {
+              router.replace('/features/teams/screens/selection');
+            }, 100);
           } else {
             console.log("Kein Profil für bestehende Session gefunden");
           }
