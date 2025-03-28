@@ -21,7 +21,7 @@ export function UseLogin() {
   const router = useRouter();
   const [emailValue, setEmail] = useState<string>("");
   const [passwordValue, setPassword] = useState<string>("");
-  const [isRememberMe, setRememberMe] = useState<boolean>(false);
+  const [isRememberMe, setRememberMe] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // [VERARBEITET] Login-Anfrage mit Validierung und Fehlerbehandlung

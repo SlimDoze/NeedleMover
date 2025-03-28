@@ -199,36 +199,38 @@ export const AuthProvider = ({ children }: AuthProvider): React.ReactElement => 
 
     // [PRÜFT] Bestehende Sitzung beim Anwendungsstart
     const checkUser = async (): Promise<void> => {
-      try {
-        console.log("Prüfe bestehende Session");
-        // [LÄDT] Aktuelle Sitzungsinformationen
-        const session = await AuthService.getSession();
+    try {
+    console.log("Prüfe bestehende Session");
+    // [LÄDT] Aktuelle Sitzungsinformationen
+    const session = await AuthService.getSession();
 
-        // [VALIDIERT] Benutzerdaten in vorhandener Sitzung
-        if (session?.user) {
-          console.log(`Bestehende Session gefunden für: ${session.user.email}`);
-          setUser(session.user);
+    // [VALIDIERT] Benutzerdaten in vorhandener Sitzung
+    if (session?.user) {
+    console.log(`Bestehende Session gefunden für: ${session.user.email}`);
+    setUser(session.user);
 
-          // [LÄDT] Benutzerprofil für vorhandene Sitzung
-          const userProfile = await loadUserProfile(session.user.id);
-          if (userProfile) {
-            console.log("Profil für bestehende Session gefunden, navigiere zur Team-Auswahl");
-            // [WICHTIG] Navigation zur Team-Auswahl bei bestehendem Profil nach Reload
-            setTimeout(() => {
-              router.replace('/features/teams/screens/selection');
-            }, 100);
-          } else {
-            console.log("Kein Profil für bestehende Session gefunden");
-          }
-        } else {
-          console.log("Keine bestehende Session gefunden");
-        }
-      } catch (error) {
-        console.error('Error checking user session:', error);
-      } finally {
+    // [LÄDT] Benutzerprofil für vorhandene Sitzung
+    const userProfile = await loadUserProfile(session.user.id);
+    
+    // Wichtiger Verzögerungsmechanismus für die Navigation
+    if (userProfile) {
+    console.log("Profil für bestehende Session gefunden, navigiere zur Team-Auswahl");
+    // [WICHTIG] Längere Verzögerung beim Direktladen einer geschützten Seite
+    setTimeout(() => {
+        router.replace('/features/teams/screens/selection');
+    }, 500);
+    } else {
+        console.log("Kein Profil für bestehende Session gefunden");
+    }
+    } else {
+        console.log("Keine bestehende Session gefunden");
+    }
+    } catch (error) {
+    console.error('Error checking user session:', error);
+    } finally {
         setIsLoading(false);
-      }
-    };
+    }
+  };
   
     checkUser();
 
