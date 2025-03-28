@@ -51,7 +51,16 @@ class SessionStorage {
   async loadPersistState() {
     try {
       const shouldPersist = await AsyncStorage.getItem('persistSession');
-      this.isPersistent = shouldPersist === 'true';
+      
+      // Wenn kein Wert gespeichert ist, standardmäßig auf true setzen
+      if (shouldPersist === null) {
+        this.isPersistent = true;
+        // Persistenten Modus speichern
+        await AsyncStorage.setItem('persistSession', 'true');
+      } else {
+        this.isPersistent = shouldPersist === 'true';
+      }
+      
       console.log("Loaded persist state:", this.isPersistent);
     } catch (error) {
       console.error("Error loading persistence state:", error);
@@ -221,7 +230,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    debug: true, // [WICHTIG] Aktiviere Debug-Modus für bessere Fehlerdiagnose
+    debug: false, // Deaktiviere Debug-Logs in der Konsole
   },
   global: {
     headers: {

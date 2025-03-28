@@ -77,7 +77,16 @@ export default function TeamSelectionScreen() {
   
   // [TEMPORÄR] Ersatz für Server-Status
   const [isLoading, setIsLoading] = useState(false);
-  const { profile, user } = useAuth();
+  const { profile, user, isLoading: authLoading } = useAuth();
+
+  // Rendert einen Ladeindikator, wenn die Authentifizierung noch lädt
+  if (authLoading) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={styles.title}>Lade Profil...</Text>
+      </SafeAreaView>
+    );
+  }
 
   // [NAVIGIERT] Zur Detailansicht des ausgewählten Teams
   const navigateToTeam = (teamId: string) => {
