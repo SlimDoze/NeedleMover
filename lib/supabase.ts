@@ -221,6 +221,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
+    debug: true, // [WICHTIG] Aktiviere Debug-Modus für bessere Fehlerdiagnose
   },
   global: {
     headers: {

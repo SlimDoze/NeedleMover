@@ -13,7 +13,7 @@ import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '@/lib/authContext';
 
 // [VERHINDERT] Automatisches Verschwinden des Splash-Screens
-SplashScreen.preventAutoHideAsync();
+// Anmerkung: preventAutoHideAsync() wird bereits in authContext.ts aufgerufen
 
 // [DEFINIERT] Inneres Layout ohne Authentifizierungsprüfung
 function RootLayoutNav() {
