@@ -245,6 +245,61 @@ static async signUp({ email, password, name, handle }: UserSignupProfileDetails)
     }
   }
   
+  // [VERIFIZIERT] Token und setzt Passwort zurück
+  static async verifyPasswordReset(token: string, email: string, newPassword: string): Promise<AuthResponse> {
+    try {
+      console.log('Verifiziere Passwort-Reset mit Token');
+      
+      // [SCHRITT 1] Verifiziere OTP Token um den Benutzer anzumelden
+      const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'recovery'
+      });
+
+      // [VALIDIERE] OTP Verifizierung
+      if (verifyError) {
+        console.error("Token-Verifizierungsfehler:", verifyError);
+        return {
+          success: false,
+          message: verifyError.message || "Ungültiger oder abgelaufener Token"
+        };
+      }
+      
+      // [PROTOKOLLIERT] Erfolgreich verifiziert und Sitzung erhalten
+      console.log("OTP erfolgreich verifiziert, Benutzer angemeldet", verifyData.user?.id);
+
+      // [SCHRITT 2] Aktualisiere das Passwort nach erfolgreicher Verifizierung
+      const { data: updateData, error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      // [VALIDIERE] Passwort-Update
+      if (updateError) {
+        console.error("Passwort-Update-Fehler:", updateError);
+        return {
+          success: false,
+          message: updateError.message || "Fehler beim Aktualisieren des Passworts"
+        };
+      }
+      
+      // [PROTOKOLLIERT] Erfolgreiche Passwort-Aktualisierung
+      console.log("Passwort erfolgreich aktualisiert für Benutzer:", updateData.user?.id);
+
+      // [WENN] Erfolgreich
+      return {
+        success: true,
+        message: "Passwort wurde erfolgreich zurückgesetzt"
+      };
+    } catch (error) {
+      console.error("Unerwarteter Fehler beim Zurücksetzen des Passworts:", error);
+      return {
+        success: false,
+        message: "Ein unerwarteter Fehler ist aufgetreten"
+      };
+    }
+  }
+  
   // [LÄDT] Aktuellen Benutzer aus der Session
   static async getCurrentUser(): Promise<any> {
     try {

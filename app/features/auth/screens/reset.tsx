@@ -3,7 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { AntDesign } from "@expo/vector-icons";
 import { View, Text, Button, TouchableOpacity, Image, TextInput, ActivityIndicator, Platform } from "react-native";
-import { UseResetPassword } from "../_hooks/useReset";
+import { UseResetPassword, ResetStep } from "../_hooks/useReset";
 import { styles } from "../_constants/resetStylesheet";
 import { formStyles, webFormStyles } from "../_constants/formStyle";
 import { AuthInfoText } from "../_constants/AuthInfoText";
@@ -27,9 +27,12 @@ export default function ResetPasswordFlow() {
     checkVerificationCode,
     handleUpdatePassword,
     handleGoBack,
+    // Neue Eigenschaften für Deep-Link-Verarbeitung
+    hasToken,
+    tokenEmail
   } = UseResetPassword();
 
-  // Füge CSS-Stil für Web-Formulare hinzu
+  // [CSS] Stil für Web-Formulare hinzufügen
   useEffect(() => {
     if (Platform.OS === 'web') {
       const style = document.createElement('style');
@@ -41,6 +44,14 @@ export default function ResetPasswordFlow() {
       };
     }
   }, []);
+
+  // [ZEIGT] bei Deep-Link-Navigation die entsprechende E-Mail an
+  useEffect(() => {
+    if (hasToken && tokenEmail) {
+      console.log(`Reset für E-Mail ${tokenEmail} mit Token`);
+      setEmail(tokenEmail);
+    }
+  }, [hasToken, tokenEmail]);
 
   const renderEmailPage = () => (
     <View style={styles.stepContainer}>
@@ -86,9 +97,15 @@ export default function ResetPasswordFlow() {
     </View>
   );
 
+  // [RENDER] Schritt 3: Neues Passwort eingeben
   const renderNewPasswordPage = () => (
     <View style={styles.stepContainer}>
-      <Text style={styles.description}>{AuthInfoText.CreateNewPassword}</Text>
+      <Text style={styles.description}>
+        {hasToken 
+          ? `Erstelle ein neues Passwort für ${tokenEmail || email}`
+          : AuthInfoText.CreateNewPassword
+        }
+      </Text>
       {Platform.OS === 'web' ? (
         <form className="web-form-container">
           <UserInput placeholder={AuthInfoText.NewPassword} value={newPassword} onChangeText={setNewPassword} secureTextEntry />
@@ -124,9 +141,17 @@ export default function ResetPasswordFlow() {
         <Image source={CommonImages.userAvatar} style={styles.userAvatar} />
       </TouchableOpacity>
 
-      {step === 1 && renderEmailPage()}
-      {step === 2 && renderVerificationPage()}
-      {step === 3 && renderNewPasswordPage()}
+      {/* Erfolgsschritt hinzufügen */}
+      {step === ResetStep.REQUEST_EMAIL && renderEmailPage()}
+      {step === ResetStep.ENTER_CODE && renderVerificationPage()}
+      {step === ResetStep.RESET_PASSWORD && renderNewPasswordPage()}
+      {step === ResetStep.SUCCESS && (
+        <View style={styles.stepContainer}>
+          <AntDesign name="checkcircleo" size={64} color="#8A4FFF" style={{ marginBottom: 20 }} />
+          <Text style={styles.description}>Dein Passwort wurde erfolgreich zurückgesetzt.</Text>
+          <Text style={styles.description}>Du kannst dich jetzt mit deinem neuen Passwort anmelden.</Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
